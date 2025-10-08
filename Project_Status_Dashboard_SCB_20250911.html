@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8"/>
+<title>Project Status Dashboard · SCB Theme</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<style>:root{--scb-purple:#462279;--scb-purple-2:#5a33a5;--hero-top:#313a2f;--ink:#ffffff;--ink2:#e9e4ff;--muted:#d3c9ff;--bg:#f7f7fa;--card:#ffffff;--line:#e7e7ee;--ink-dark:#1b1b1f;--ink-muted:#5b6170;--good:#22c55e;--warn:#f59e0b;--bad:#ef4444;--unk:#95a3b3}
+*{box-sizing:border-box}body{margin:0;font-family:"Sukhumvit Set","SukhumvitTadmai","Prompt","Kanit","Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink-dark)}
+.hero-topline{height:3px;background:var(--hero-top)}
+.hero{background:linear-gradient(120deg,var(--scb-purple),var(--scb-purple-2));padding:22px 24px;color:#fff}
+.hero .row{display:flex;gap:14px;align-items:center}
+.hero .badgebox{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.18)}
+.hero .title{font-size:22px;font-weight:800;letter-spacing:.2px}
+.hero .sub{font-size:13px;color:var(--ink2);opacity:.95;margin-top:4px}
+.wrapper{max-width:1200px;margin:0 auto;padding:16px 20px}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.kpi .title{font-size:12px;color:var(--ink-muted)}
+.kpi .val{margin-top:6px;font-size:22px;font-weight:800;color:#1b1b1f}
+.pills{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+.pill .val{color:var(--scb-purple)}
+.import{margin-top:14px}
+.uploader{display:flex;gap:10px;align-items:center;background:var(--card);border:1px dashed #d9d7e6;border-radius:12px;padding:12px}
+.uploader input[type=file]{display:none}
+.uploader .btn{background:var(--scb-purple);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer}
+.uploader .hint{font-size:12px;color:#555}
+.uploader .drop{flex:1;color:#6b6f7b}
+.filters{margin-top:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.filters .ctl{display:flex;flex-direction:column;gap:6px}
+.filters label{font-size:12px;color:var(--ink-muted)}
+select,input[type=text]{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;min-width:180px}
+#f-charge{min-width:160px}
+#res-count{margin-left:auto;color:var(--ink-muted);font-size:12px}
+.table-wrap{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:1000px}
+th{position:sticky;top:0;background:linear-gradient(0deg,#f4f0fa,#fff);color:#3a3f4b;border-bottom:1px solid var(--line)}
+th,td{padding:10px 12px;text-align:left;font-size:13px;vertical-align:middle}
+tr+tr td{border-top:1px solid var(--line)}
+.right{text-align:right}
+.small{font-size:12px;color:var(--ink-muted)}
+.footer{margin-top:10px;color:var(--ink-muted);font-size:12px}
+.dot{display:inline-block;width:12px;height:12px;border-radius:999px;border:1px solid rgba(0,0,0,.1);box-shadow:0 0 0 2px rgba(0,0,0,.04) inset}
+.dot.green{background:var(--good)}.dot.amber{background:var(--warn)}.dot.red{background:var(--bad)}.dot.unknown{background:var(--unk)}
+.pwrap{display:flex;align-items:center;gap:8px;min-width:180px}
+.pbar{position:relative;flex:1;height:18px;background:#f0eef7;border-radius:999px;overflow:hidden;border:1px solid #e3e1ee}
+.pfill{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,var(--scb-purple),#6b3fd2)}
+.pbar .pnum{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;text-align:center;pointer-events:none}
+.pbar.txt-light .pnum{color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.25)}
+.pbar.txt-dark .pnum{color:#3a3f4b}
+.reset{background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;padding:6px 10px;font-size:12px;color:#334155;cursor:pointer}
+</style>
+
+<style id="progress-col-width-5">
+/* ปรับความกว้างคอลัมน์ที่ 6 (ความคืบหน้า) ให้เป็น 5% ของตาราง */
+table th:nth-child(6), table td:nth-child(6) {
+  width: 5%;
+}
+</style>
+</head>
+<body>
+<div class="hero-topline"></div>
+<div class="hero">
+  <div class="row">
+    <div class="badgebox"></div>
+    <div>
+      <div class="title">แดชบอร์ดสถานะโครงการ · SCB Theme</div>
+      <div class="sub">จำค่าตัวกรองล่าสุดอัตโนมัติ</b> (localStorage)</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrapper">
+  <div class="kpi">
+    <div class="card"><div class="title">จำนวนโครงการ</div><div class="val">8</div></div>
+    <div class="card"><div class="title">งบประมาณรวม (Planned)</div><div class="val">฿3,206,000</div></div>
+    <div class="card"><div class="title">ค่าใช้จ่ายรวม (Actual)</div><div class="val">฿1,741,740</div></div>
+    <div class="card"><div class="title">ความคืบหน้าเฉลี่ย</div><div class="val">43.8%</div></div>
+  </div>
+
+  <div class="pills">
+    <div class="card pill"><div class="title">Green</div><div class="val">5</div></div>
+    <div class="card pill"><div class="title">Amber</div><div class="val">2</div></div>
+    <div class="card pill"><div class="title">Red</div><div class="val">1</div></div>
+    <div class="card pill"><div class="title">Unknown</div><div class="val">0</div></div>
+  </div>
+
+  <div class="import">
+    <div class="uploader">
+      <label class="btn" for="file-input">เลือกไฟล์ Excel/CSV</label>
+      <input id="file-input" type="file" accept=".xlsx,.xls,.csv" />
+      <div class="drop">หรือ <b>ลากไฟล์</b> มาวางที่นี่ (.xlsx/.csv)</div>
+      <div class="hint"></div>
+    <div class="small" id="import-msg">โหลดจากข้อมูลฝังในไฟล์แล้ว (8 รายการ)</div>
+  </div>
+
+  
+<div class="filters card">
+  <div class="ctl">
+    <label for="f-type">Project Type</label>
+    <select id="f-type"><option>All</option><option value="BAU">BAU</option><option value="Project">Project</option></select>
+  </div>
+  <div class="ctl">
+    <label for="f-charge">Chargecode</label>
+    <input type="text" id="f-charge" placeholder="เช่น I606" />
+  </div>
+  <div class="ctl">
+    <label for="f-state">Current State</label>
+    <select id="f-state"><option>All</option><option value="Design">Design</option><option value="Req">Req</option><option value="SIT">SIT</option><option value="UAT">UAT</option></select>
+  </div>
+  <div class="ctl">
+    <label for="f-status">Status</label>
+    <select id="f-status"><option>All</option><option value="Amber">Amber</option><option value="Green">Green</option><option value="Red">Red</option></select>
+  </div>
+    <div class="ctl">
+    <label for="f-owner">Owner</label>
+    <select id="f-owner"><option>All</option><option value="SONG">SONG</option><option value="WIN">WIN</option></select>
+  </div>
+<div id="res-count" class="ctl"><span class="small">ผลลัพธ์: <b id="res-num">0</b> รายการ</span></div>
+  <button id="reset-filters" class="reset" title="ล้างค่าและลบข้อมูลที่บันทึกไว้">ล้างตัวกรอง</button>
+</div>
+
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ประเภท</th>
+          <th>Chargecode</th>
+          <th>ชื่อโครงการ</th>
+          <th>Implement Date</th>
+          <th>สถานะปัจจุบัน</th>
+          <th>ความคืบหน้า</th>
+          <th>เวลา</th>
+          <th>Scope</th>
+          <th>Budget</th>
+          <th>Owner</th>
+          <th>สถานะ</th>
+        </tr>
+      </thead>
+      <tbody>
+<tr data-type="project" data-charge="i606" data-state="uat" data-status="green" data-owner="song"><td>Project</td><td>I606</td><td>DDAP For Branch</td><td>2025-09-12 00:00:00</td><td>UAT</td><td><div class="pwrap">
+         <div class="pbar txt-light" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="80.0">
+           <div class="pfill" style="width:80.0%"></div>
+           <span class="pnum">80.0%</span>
+         </div>
+       </div></td><td>-</td><td>Complete UAT Waitng for Deploy</td><td>65.2%</td><td>SONG</td><td><span class="dot green" title="Green" aria-label="Green"></span></td></tr>
+<tr data-type="project" data-charge="i522" data-state="uat" data-status="green" data-owner="song"><td>Project</td><td>I522</td><td>DDAP For Wealth</td><td>2025-09-12 00:00:00</td><td>UAT</td><td><div class="pwrap">
+         <div class="pbar txt-light" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="90.0">
+           <div class="pfill" style="width:90.0%"></div>
+           <span class="pnum">90.0%</span>
+         </div>
+       </div></td><td>-</td><td>Complete UAT Waitng for Deploy</td><td>42.3%</td><td>SONG</td><td><span class="dot green" title="Green" aria-label="Green"></span></td></tr>
+<tr data-type="project" data-charge="i522" data-state="uat" data-status="green" data-owner="song"><td>Project</td><td>I522</td><td>RMX Pitchbook</td><td>2025-09-26 00:00:00</td><td>UAT</td><td><div class="pwrap">
+         <div class="pbar txt-light" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70.0">
+           <div class="pfill" style="width:70.0%"></div>
+           <span class="pnum">70.0%</span>
+         </div>
+       </div></td><td>-</td><td>During Pentest</td><td>—</td><td>SONG</td><td><span class="dot green" title="Green" aria-label="Green"></span></td></tr>
+<tr data-type="project" data-charge="i470" data-state="sit" data-status="green" data-owner="song"><td>Project</td><td>I470</td><td>Preventive</td><td>2025-10-17 00:00:00</td><td>SIT</td><td><div class="pwrap">
+         <div class="pbar txt-light" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60.0">
+           <div class="pfill" style="width:60.0%"></div>
+           <span class="pnum">60.0%</span>
+         </div>
+       </div></td><td>-</td><td>90% of SIT But Still have problem about 
+- CCT Intent Change affect on SIT Senario</td><td>55.5%</td><td>SONG</td><td><span class="dot green" title="Green" aria-label="Green"></span></td></tr>
+<tr data-type="project" data-charge="ap1739" data-state="req" data-status="amber" data-owner="song"><td>Project</td><td>AP1739</td><td>Wealth CardX</td><td>2025-11-14 00:00:00</td><td>Req</td><td><div class="pwrap">
+         <div class="pbar txt-dark" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="10.0">
+           <div class="pfill" style="width:10.0%"></div>
+           <span class="pnum">10.0%</span>
+         </div>
+       </div></td><td>on Risk</td><td>Didn&#x27;t Clear about reqment</td><td>—</td><td>SONG</td><td><span class="dot amber" title="Amber" aria-label="Amber"></span></td></tr>
+<tr data-type="bau" data-charge="ap1739" data-state="req" data-status="amber" data-owner="song"><td>BAU</td><td>AP1739</td><td>Ismart EFCD Migrate</td><td>2025-12-12 00:00:00</td><td>Req</td><td><div class="pwrap">
+         <div class="pbar txt-dark" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="10.0">
+           <div class="pfill" style="width:10.0%"></div>
+           <span class="pnum">10.0%</span>
+         </div>
+       </div></td><td>nan</td><td>Discuss with QA for regression Test</td><td>—</td><td>SONG</td><td><span class="dot amber" title="Amber" aria-label="Amber"></span></td></tr>
+<tr data-type="bau" data-charge="ap1739" data-state="req" data-status="red" data-owner="song"><td>BAU</td><td>AP1739</td><td>VVIP Flag</td><td>-</td><td>Req</td><td><div class="pwrap">
+         <div class="pbar txt-dark" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="10.0">
+           <div class="pfill" style="width:10.0%"></div>
+           <span class="pnum">10.0%</span>
+         </div>
+       </div></td><td>nan</td><td>Already Send Slide to user waiting for meeing With P&#x27;Jai</td><td>—</td><td>SONG</td><td><span class="dot red" title="Red" aria-label="Red"></span></td></tr>
+<tr data-type="project" data-charge="i567" data-state="design" data-status="green" data-owner="win"><td>Project</td><td>I567</td><td>Wealth Stella</td><td>2025-12-12 00:00:00</td><td>Design</td><td><div class="pwrap">
+         <div class="pbar txt-dark" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="20.0">
+           <div class="pfill" style="width:20.0%"></div>
+           <span class="pnum">20.0%</span>
+         </div>
+       </div></td><td>nan</td><td>Win-Update</td><td>—</td><td>WIN</td><td><span class="dot green" title="Green" aria-label="Green"></span></td></tr>
+</tbody>
+    </table>
+  </div>
+
+  <div class="footer">อัปเดตเมื่อ 2025-09-10 09:31</div>
+</div>
+
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js" defer onload="window._xlsxReady=true" onerror="window._xlsxReady=false"></script>
+<script>
+(function(){
+  const $=(s,c=document)=>c.querySelector(s); const $$=(s,c=document)=>Array.from(c.querySelectorAll(s));
+  const LS_KEY = 'psd_filters_v1'; // localStorage key
+
+  function text(v){ return (v==null? '': String(v)); }
+  function dotClass(v){ const s=text(v).trim().toLowerCase(); if(s==='green') return 'green'; if(s==='amber'||s==='yellow') return 'amber'; if(s==='red') return 'red'; return 'unknown'; }
+  function uniq(arr){ return Array.from(new Set(arr.filter(x=>x!=null && String(x).trim()!==''))).map(String).sort(); }
+  function normPct(p){ let v=parseFloat(p); if(isNaN(v)||v<0) v=0; if(v>1.000001) return Math.min(v,100); return v*100; }
+
+  function buildRow(r){
+    const scope = text(r.Scope || r['Scope Detail'] || '');
+    const pct = normPct(r.Progress || r['ความคืบหน้า'] || 0);
+    const txtClass = pct<=50 ? 'txt-dark':'txt-light';
+    const status = r.Status || r['สถานะ'] || '';
+    const planned = parseFloat(r.Planned || r['Planned Budget'] || r['Planned_Budget'] || 0) || 0;
+    const actual  = parseFloat(r.Actual  || r['Actual Budget']  || r['Actual_Budget']  || 0) || 0;
+    const budgetPct = planned>0 ? ((actual/planned)*100).toFixed(1)+'%' : '—';
+    const tds = [
+      text(r['Project Type']||''),
+      text(r['Chargecode']||''),
+      text(r['Project Name']||''),
+      text(r['Implement date']||r['Implement Date']||''),
+      text(r['Current State']||''),
+      `<div class="pwrap">
+         <div class="pbar ${txtClass}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct.toFixed(1)}">
+           <div class="pfill" style="width:${pct.toFixed(1)}%"></div>
+           <span class="pnum">${pct.toFixed(1)}%</span>
+         </div>
+       </div>`,
+      text(r['Time Detail']||''),
+      scope,
+      budgetPct,
+      text(r['Owner']||''),
+      `<span class="dot ${dotClass(status)}" title="${text(status)}" aria-label="${text(status)}"></span>`
+    ];
+    const attrs = ` data-type="${text(r['Project Type']).toLowerCase()}" data-charge="${text(r['Chargecode']).toLowerCase()}" data-state="${text(r['Current State']).toLowerCase()}" data-status="${text(status).toLowerCase()}" data-owner="${text(r['Owner']||'').toLowerCase()}"`;
+    return `<tr${attrs}>` + tds.map(x=>`<td>${x}</td>`).join('') + '</tr>';
+  }
+
+  function computeKPI(rows){
+    let planned=0, actual=0, pctSum=0, count=rows.length; const sCount={Green:0,Amber:0,Red:0,Unknown:0};
+    rows.forEach(r=>{
+      const p=parseFloat(r.Planned || r['Planned Budget'] || r['Planned_Budget']); if(!isNaN(p)) planned+=p;
+      const a=parseFloat(r.Actual  || r['Actual Budget']  || r['Actual_Budget']); if(!isNaN(a)) actual+=a;
+      pctSum += normPct(r.Progress || r['ความคืบหน้า'] || 0);
+      const st = String(r.Status||'Unknown').trim(); const key=st.charAt(0).toUpperCase()+st.slice(1).toLowerCase(); sCount[key]=(sCount[key]||0)+1;
+    });
+    return {count, planned, actual, avg: (count? pctSum/count : 0), sCount};
+  }
+
+  function fillFilters(rows){
+    const types=['All',...uniq(rows.map(r=>r['Project Type']))];
+    const states=['All',...uniq(rows.map(r=>r['Current State']))];
+    const stats=['All',...uniq(rows.map(r=>r['Status']))];
+    const owners=['All',...uniq(rows.map(r=>r['Owner']))];
+    $('#f-type').innerHTML   = types.map(o=>`<option value="${o}">${o}</option>`).join('');
+    $('#f-state').innerHTML  = states.map(o=>`<option value="${o}">${o}</option>`).join('');
+    $('#f-status').innerHTML = stats.map(o=>`<option value="${o}">${o}</option>`).join('');
+    const ownSel=$('#f-owner'); if(ownSel){ ownSel.innerHTML = owners.map(o=>`<option value="${o}">${o}</option>`).join(''); }
+    // restore filters after options are set
+    restoreFilterValues();
+  }
+
+  function setKPI(k){
+    const f=new Intl.NumberFormat('th-TH');
+    const money=n=>'฿'+f.format(Math.round(n||0));
+    const pct=v=>(v||0).toFixed(1)+'%';
+    const vals=document.querySelectorAll('.kpi .card .val');
+    if(vals.length>=4){ vals[0].textContent=k.count; vals[1].textContent=money(k.planned); vals[2].textContent=money(k.actual); vals[3].textContent=pct(k.avg); }
+    const order=['Green','Amber','Red','Unknown'];
+    document.querySelectorAll('.pills .card .val').forEach((el,i)=> el.textContent=(k.sCount[order[i]]||0));
+  }
+
+  function rebuild(rows){
+    const tbody=document.querySelector('tbody');
+    tbody.innerHTML = rows.map(buildRow).join('');
+    fillFilters(rows); setKPI(computeKPI(rows)); cacheRows(); apply();
+  }
+  window.rebuild = rebuild;
+
+  // Filtering
+  let _rows=[]; function cacheRows(){ _rows = Array.from(document.querySelectorAll('tbody tr')); }
+  function apply(){
+    const fType=$('#f-type').value.toLowerCase(); const fCharge=$('#f-charge').value.trim().toLowerCase(); const fState=$('#f-state').value.toLowerCase(); const fStatus=$('#f-status').value.toLowerCase(); const fOwner=($('#f-owner')?.value||'All').toLowerCase();
+    let shown=0; _rows.forEach(tr=>{ const t=tr.dataset.type||'', c=tr.dataset.charge||'', s=tr.dataset.state||'', st=tr.dataset.status||'', o=tr.dataset.owner||''; const vis=((fType==='all')||(t===fType)) && (!fCharge||c.includes(fCharge)) && ((fState==='all')||(s===fState)) && ((fStatus==='all')||(st===fStatus)) && ((fOwner==='all') || (o===fOwner)); tr.style.display=vis?'':'none'; if(vis) shown++; });
+    $('#res-num').textContent=shown;
+    saveFilterValues();
+  }
+  window.apply = apply; window.cacheRows = cacheRows;
+
+  // Persistence
+  function getSaved(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||'{}'); }catch(e){ return {}; } }
+  function saveFilterValues(){
+    const data={ type:$('#f-type')?.value||'All', state:$('#f-state')?.value||'All', status:$('#f-status')?.value||'All', owner:$('#f-owner')?.value||'All', charge:$('#f-charge')?.value||'' };
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(data)); }catch(e){}
+  }
+  function restoreFilterValues(){
+    const saved=getSaved();
+    const setIfExists=(sel,val)=>{ const el=$(sel); if(!el) return; if(el.tagName==='SELECT'){ const opts=Array.from(el.options).map(o=>o.value); el.value=(val && opts.includes(val))?val:'All'; } else if(el.tagName==='INPUT'){ el.value=val||''; } };
+    setIfExists('#f-type',saved.type); setIfExists('#f-state',saved.state); setIfExists('#f-status',saved.status); setIfExists('#f-owner',saved.owner); setIfExists('#f-charge',saved.charge);
+  }
+  function resetFilters(){ try{ localStorage.removeItem(LS_KEY); }catch(e){}; if($('#f-type'))$('#f-type').value='All'; if($('#f-state'))$('#f-state').value='All'; if($('#f-status'))$('#f-status').value='All'; if($('#f-owner'))$('#f-owner').value='All'; if($('#f-charge'))$('#f-charge').value=''; apply(); }
+
+  // Init
+  window.addEventListener('DOMContentLoaded', ()=>{
+    if($('#f-type'))   $('#f-type').addEventListener('change', apply);
+    if($('#f-state'))  $('#f-state').addEventListener('change', apply);
+    if($('#f-status')) $('#f-status').addEventListener('change', apply);
+    if($('#f-owner'))  $('#f-owner').addEventListener('change', apply);
+    if($('#f-charge')) $('#f-charge').addEventListener('input',  apply);
+    if($('#reset-filters')) $('#reset-filters').addEventListener('click', resetFilters);
+    restoreFilterValues(); cacheRows(); apply();
+  });
+
+  // Import via button/drag-drop
+  const fileInput=document.getElementById('file-input');
+  const drop=document.querySelector('.uploader .drop');
+  function handleFiles(files){ if(!files||!files.length) return; const file=files[0]; const reader=new FileReader(); const name=(file.name||'').toLowerCase();
+    if(window._xlsxReady){ reader.onload=e=>{ try{ const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]]; const rows=XLSX.utils.sheet_to_json(ws,{defval:'',raw:true}); rebuild(rows); document.getElementById('import-msg').textContent=`โหลดจากไฟล์ “${file.name}” สำเร็จ (${rows.length} รายการ)`; }catch(err){ console.error(err); document.getElementById('import-msg').textContent='อ่านไฟล์ไม่สำเร็จ: '+err.message; } }; reader.readAsArrayBuffer(file);
+    } else if(name.endsWith('.csv')){ reader.onload=e=>{ const txt=e.target.result; const lines=txt.split(/\r?\n/).filter(x=>x.trim()!==''); const head=lines.shift().split(','); const rows=lines.map(line=>{ const cols=line.split(','); const obj={}; head.forEach((h,i)=>obj[h.trim()]=(cols[i]||'').trim()); return obj;}); rebuild(rows); document.getElementById('import-msg').textContent=`โหลดจาก CSV “${file.name}” สำเร็จ (${rows.length} รายการ)`; }; reader.readAsText(file,'utf-8');
+    } else { document.getElementById('import-msg').textContent='ไม่สามารถอ่าน .xlsx แบบออฟไลน์ได้ กรุณาเชื่อมอินเทอร์เน็ตหรือบันทึกเป็น .csv'; } }
+  if(fileInput && drop){ fileInput.addEventListener('change', e=>handleFiles(e.target.files)); ['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault(); e.dataTransfer.dropEffect='copy'; drop.style.background='#faf7ff';})); ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault(); drop.style.background=''; if(ev==='drop') handleFiles(e.dataTransfer.files);})); }
+})();
+</script>
+
+</body>
+</html>
