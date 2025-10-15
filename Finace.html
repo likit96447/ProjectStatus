@@ -65,6 +65,7 @@
         .trans-amount.income { color: #10b981; }
         .trans-amount.expense { color: #ef4444; }
         .btn-delete { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 20px; }
+        .btn-edit { background: none; border: none; color: #4f46e5; cursor: pointer; font-size: 20px; }
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
         .modal.show { display: flex; }
         .modal-content { background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; }
@@ -231,6 +232,39 @@
             });
         }
 
+        function updateTrans(id) {
+            var radios = document.getElementsByName('type');
+            var type = 'expense';
+            for (var i = 0; i < radios.length; i++) {
+                if (radios[i].checked) {
+                    type = radios[i].value;
+                    break;
+                }
+            }
+            var cat = document.getElementById('cat').value;
+            var amt = parseFloat(document.getElementById('amt').value);
+            var date = document.getElementById('date').value;
+            var desc = document.getElementById('desc').value;
+
+            if (!cat || !amt || !date || !desc) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            db.collection('transactions').doc(id).update({
+                type: type,
+                category: cat,
+                amount: amt,
+                date: date,
+                description: desc,
+                updatedAt: new Date().toISOString()
+            }).then(function() {
+                hideModal();
+            }).catch(function(error) {
+                alert('Error updating transaction: ' + error.message);
+            });
+        }
+
         function delTrans(id) {
             if (confirm('Delete this transaction?')) {
                 db.collection('transactions').doc(id).delete();
@@ -251,6 +285,33 @@
             html += '<div class="input-group"><label>Date</label><input type="date" id="date" required></div>';
             html += '<div class="input-group"><label>Description</label><textarea id="desc" rows="3" required></textarea></div>';
             html += '<button type="button" class="btn btn-primary" onclick="addTrans()">Add Transaction</button>';
+            html += '</div></div>';
+            document.getElementById('modal').innerHTML = html;
+        }
+
+        function showEditModal(id) {
+            var trans = null;
+            for (var i = 0; i < transactions.length; i++) {
+                if (transactions[i].id === id) {
+                    trans = transactions[i];
+                    break;
+                }
+            }
+            if (!trans) return;
+
+            document.getElementById('modal').className = 'modal show';
+            var html = '<div class="modal-content">';
+            html += '<div class="modal-header"><h3>Edit Transaction</h3><button class="btn-close" onclick="hideModal()">✕</button></div>';
+            html += '<div>';
+            html += '<div class="input-group"><label>Type</label><div class="radio-group">';
+            html += '<label class="radio-label income"><input type="radio" name="type" value="income"' + (trans.type === 'income' ? ' checked' : '') + '> Income</label>';
+            html += '<label class="radio-label expense"><input type="radio" name="type" value="expense"' + (trans.type === 'expense' ? ' checked' : '') + '> Expense</label>';
+            html += '</div></div>';
+            html += '<div class="input-group"><label>Category</label><input type="text" id="cat" required placeholder="e.g., Salary, Food" value="' + trans.category + '"></div>';
+            html += '<div class="input-group"><label>Amount</label><input type="number" id="amt" step="0.01" required placeholder="0.00" value="' + trans.amount + '"></div>';
+            html += '<div class="input-group"><label>Date</label><input type="date" id="date" required value="' + trans.date + '"></div>';
+            html += '<div class="input-group"><label>Description</label><textarea id="desc" rows="3" required>' + trans.description + '</textarea></div>';
+            html += '<button type="button" class="btn btn-primary" onclick="updateTrans(\'' + id + '\')">Update Transaction</button>';
             html += '</div></div>';
             document.getElementById('modal').innerHTML = html;
         }
@@ -341,6 +402,7 @@
                     html += '<div class="trans-date">📅 ' + t.date + '</div>';
                     html += '<div class="trans-desc">' + t.description + '</div></div></div>';
                     html += '<div class="trans-right"><div class="trans-amount ' + amtClass + '">' + sign + '$' + t.amount.toFixed(2) + '</div>';
+                    html += '<button class="btn-edit" onclick="showEditModal(\'' + t.id + '\')">✏️</button>';
                     html += '<button class="btn-delete" onclick="delTrans(\'' + t.id + '\')">❌</button></div></div>';
                 }
             }
