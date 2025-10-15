@@ -623,14 +623,21 @@
         .table-container {
             background: white;
             border-radius: 16px;
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: hidden;
             box-shadow: 0 4px 16px rgba(0,0,0,0.08);
             border: 1px solid #e6e9ef;
+            width: 100%;
+        }
+
+        .table-wrapper {
+            min-width: 100%;
+            width: max-content;
         }
 
         .table-header {
             display: grid;
-            grid-template-columns: 60px 1fr 140px 120px 160px 140px 120px 120px 100px;
+            grid-template-columns: 60px minmax(180px, 1.8fr) 140px 120px 180px 150px 130px 130px 120px;
             background: linear-gradient(135deg, #f6f7fb 0%, #e6e9ef 100%);
             border-bottom: 2px solid #e6e9ef;
             font-size: 13px;
@@ -638,11 +645,15 @@
             color: #676879;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            min-width: max-content;
         }
 
         .table-cell {
             padding: 18px 16px;
             border-right: 1px solid #e6e9ef;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .table-cell:last-child {
@@ -651,20 +662,47 @@
 
         .table-row {
             display: grid;
-            grid-template-columns: 60px 1fr 140px 120px 160px 140px 120px 120px 100px;
+            grid-template-columns: 60px minmax(180px, 1.8fr) 140px 120px 180px 150px 130px 130px 120px;
             border-bottom: 1px solid #e6e9ef;
             transition: all 0.3s ease;
+            min-width: max-content;
         }
 
         .table-row:hover {
             background: #f6f7fb;
-            transform: scale(1.01);
+            transform: scale(1.005);
         }
 
         .table-row .table-cell {
             padding: 18px 16px;
             display: flex;
             align-items: center;
+        }
+
+        .table-cell .task-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+
+        /* Custom scrollbar for table container */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: #f6f7fb;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #6a4291 100%);
         }
 
         .row-number {
@@ -1229,10 +1267,61 @@
             background: #c93649;
         }
 
+        /* Tablet responsive design (768px - 1024px) */
+        @media (max-width: 1024px) {
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .table-header,
+            .table-row {
+                grid-template-columns: 50px minmax(150px, 1fr) 120px 100px 140px 110px;
+            }
+
+            /* Hide date and timeline columns on tablet */
+            .table-cell:nth-child(7),
+            .table-cell:nth-child(8) {
+                display: none;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+
+        /* Mobile responsive design (max-width: 768px) */
         @media (max-width: 768px) {
+            .header {
+                padding: 0 16px;
+                height: 60px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+
+            .main-nav {
+                display: none;
+            }
+
+            .search-container {
+                display: none;
+            }
+
+            .header-right {
+                gap: 8px;
+            }
+
+            .icon-btn,
+            .avatar {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+
             .sidebar {
-                width: 80px;
-                padding: 24px 12px;
+                width: 70px;
+                padding: 16px 8px;
             }
 
             .sidebar-title,
@@ -1243,16 +1332,181 @@
 
             .sidebar-item {
                 justify-content: center;
+                padding: 10px;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .board-title {
+                font-size: 24px;
+            }
+
+            .board-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            /* Remove horizontal scroll on mobile */
+            .table-container {
+                overflow-x: visible;
+                overflow-y: visible;
+            }
+
+            /* Hide table header on mobile */
+            .table-header {
+                display: none;
+            }
+
+            /* Convert table rows to card layout */
+            .table-row {
+                display: flex;
+                flex-direction: column;
+                padding: 16px;
+                gap: 12px;
+                border-radius: 12px;
+                margin-bottom: 12px;
+                background: white;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                min-width: auto;
+            }
+
+            .table-row:hover {
+                transform: scale(1);
+            }
+
+            .table-cell {
+                padding: 0 !important;
+                border-right: none !important;
+                display: flex !important;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .table-cell::before {
+                content: attr(data-label);
+                font-weight: 700;
+                color: #676879;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            /* Hide row number on mobile */
+            .table-cell:nth-child(1) {
+                display: none !important;
+            }
+
+            /* Task name - full width, no label */
+            .table-cell:nth-child(2) {
+                flex-direction: column;
+                align-items: flex-start;
+                padding-bottom: 8px !important;
+                border-bottom: 1px solid #e6e9ef;
+            }
+
+            .table-cell:nth-child(2)::before {
+                content: none;
+            }
+
+            .task-name {
+                font-size: 16px;
+                font-weight: 700;
+            }
+
+            /* Show all cells on mobile */
+            .table-cell:nth-child(n) {
+                display: flex !important;
+            }
+
+            .status-badge {
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+
+            .person-cell {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .person-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+
+            .project-badge {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+
+            .action-buttons {
+                gap: 8px;
+            }
+
+            .action-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+
+            .date-cell {
+                font-size: 13px;
+            }
+        }
+
+        /* Extra small mobile (max-width: 480px) */
+        @media (max-width: 480px) {
+            .header {
+                padding: 0 12px;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                z-index: 200;
+                transition: left 0.3s ease;
+                height: calc(100vh - 60px);
+            }
+
+            .sidebar.mobile-open {
+                left: 0;
+            }
+
+            .main-container {
+                margin-left: 0;
+            }
+
+            .content {
+                padding: 12px;
+                width: 100%;
+            }
+
+            .board-title {
+                font-size: 20px;
+            }
+
+            .board-subtitle {
+                font-size: 13px;
+            }
+
+            .table-row {
                 padding: 12px;
             }
 
-            .table-header,
-            .table-row {
-                grid-template-columns: 50px 1fr 100px 80px;
+            .table-cell {
+                font-size: 13px;
             }
 
-            .table-cell:nth-child(n+5) {
-                display: none;
+            .action-buttons {
+                flex-wrap: wrap;
             }
         }
     </style>
@@ -1900,8 +2154,11 @@
                         <input type="number" class="form-input" id="projectBudget" placeholder="0" min="0">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Team Members (comma separated)</label>
-                        <input type="text" class="form-input" id="projectTeamMembers" placeholder="e.g., Sarah Lee, Mike Chen">
+                        <label class="form-label">Team Members</label>
+                        <select class="form-select" id="projectTeamMembers" multiple size="5">
+                            <option value="">Loading team members...</option>
+                        </select>
+                        <small style="color: #676879; font-size: 12px; margin-top: 4px; display: block;">Hold Ctrl/Cmd to select multiple members</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Tags (comma separated)</label>
@@ -2590,45 +2847,48 @@
             tableBody.innerHTML = tasks.map((task, index) => {
                 const displayName = task.personName || task.person || 'Unknown';
                 const avatarText = displayName.split(' ').map(n => n[0]).join('');
-                
+
                 return `
                 <div class="table-row" data-index="${index}">
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="#">
                         <span class="row-number">${index + 1}</span>
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Task">
                         <span class="task-name">${task.name}</span>
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Status">
                         <div class="status-badge status-${task.status}">
                             ${getStatusText(task.status)}
                         </div>
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Priority">
                         <div class="priority">
                             <span class="priority-dot priority-${task.priority}"></span>
                             <span>${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
                         </div>
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Assigned To">
                         <div class="person-cell">
                             <div class="person-avatar">${avatarText}</div>
                             <span>${displayName}</span>
                         </div>
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Project">
                         ${task.project ? `<span class="project-badge">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Date">
                         <span class="date-cell">${task.date}</span>
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Timeline">
                         <span class="date-cell">${task.timeline}</span>
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Actions">
                         <div class="action-buttons">
                             <button class="action-btn edit-btn" data-action="edit" data-index="${index}" title="Edit task">
                                 ✏️
+                            </button>
+                            <button class="action-btn clone-btn" data-action="clone" data-index="${index}" title="Clone task">
+                                📋
                             </button>
                             <button class="action-btn delete-btn" data-action="delete" data-index="${index}" title="Delete task">
                                 🗑️
@@ -2645,9 +2905,11 @@
                     e.stopPropagation();
                     const action = this.getAttribute('data-action');
                     const index = parseInt(this.getAttribute('data-index'));
-                    
+
                     if (action === 'edit') {
                         editTask(index);
+                    } else if (action === 'clone') {
+                        cloneTask(index);
                     } else if (action === 'delete') {
                         deleteTask(index);
                     }
@@ -2689,17 +2951,17 @@
         function editTask(index) {
             editingIndex = index;
             const task = tasks[index];
-            
+
             // Update modal title
             document.getElementById('modalTitle').textContent = 'Edit Task';
-            
+
             // Populate dropdown first
             populateAssignToDropdown().then(() => {
                 // Populate form with task data
                 document.getElementById('itemName').value = task.name;
                 document.getElementById('itemStatus').value = task.status;
                 document.getElementById('itemPriority').value = task.priority;
-                
+
                 // Set the assignedTo (member ID) in dropdown
                 if (task.assignedTo) {
                     document.getElementById('itemPerson').value = task.assignedTo;
@@ -2714,18 +2976,59 @@
                         }
                     }
                 }
-                
+
                 document.getElementById('itemProject').value = task.project || '';
                 document.getElementById('itemDate').value = task.date;
                 document.getElementById('itemTimeline').value = task.timeline;
             });
-            
+
             // Change button text
             const submitBtn = document.querySelector('#taskForm button[type="submit"]');
             submitBtn.textContent = 'Update Task';
-            
+
             // Open modal
             document.getElementById('taskModal').classList.add('active');
+        }
+
+        async function cloneTask(index) {
+            // Set flag to prevent real-time listener interference
+            isManualOperation = true;
+
+            const task = tasks[index];
+
+            // Create a copy of the task with a new name
+            const clonedTask = {
+                name: task.name + ' (Copy)',
+                status: task.status,
+                priority: task.priority,
+                assignedTo: task.assignedTo,
+                person: task.person,
+                project: task.project || '',
+                date: task.date,
+                timeline: task.timeline
+            };
+
+            try {
+                // Add cloned task to Firebase
+                if (db) {
+                    await addTaskToFirebase(clonedTask);
+                    console.log("✅ Task cloned successfully");
+                }
+
+                // Reload tasks from Firebase to prevent duplicates
+                await loadTasksFromFirebase();
+
+                // Re-enable real-time listener after a short delay
+                setTimeout(() => {
+                    isManualOperation = false;
+                    console.log("✅ Real-time listener re-enabled");
+                }, 1000);
+
+            } catch (error) {
+                console.error("❌ Error cloning task:", error);
+                alert('❌ Error cloning task: ' + error.message);
+                isManualOperation = false;  // Reset flag on error
+            }
         }
 
         function openModal() {
@@ -2998,13 +3301,24 @@
                         </div>
                         <div class="project-meta-item">
                             <span class="project-meta-icon">👥</span>
-                            <span>${project.teamMembers.length} members</span>
+                            <span>${project.teamMembers && project.teamMembers.length > 0 ? project.teamMembers.length + ' members' : 'No members'}</span>
                         </div>
                         <div class="project-meta-item">
                             <span class="project-meta-icon">⚡</span>
                             <span>${formatPriority(project.priority)}</span>
                         </div>
                     </div>
+
+                    ${project.teamMembers && project.teamMembers.length > 0 ? `
+                        <div class="project-team-members" style="margin-top: 12px; padding: 12px; background: #f6f7fb; border-radius: 8px;">
+                            <div style="font-size: 12px; font-weight: 700; color: #676879; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Team Members</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                ${project.teamMembers.map(member => `
+                                    <span style="background: white; padding: 4px 10px; border-radius: 6px; font-size: 13px; color: #323338; border: 1px solid #e6e9ef;">${member}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
 
                     ${project.tags && project.tags.length > 0 ? `
                         <div class="project-tags">
@@ -3032,6 +3346,38 @@
             return priority.charAt(0).toUpperCase() + priority.slice(1);
         }
 
+        // Populate team members dropdown for project form
+        async function populateProjectTeamMembersDropdown() {
+            const selectElement = document.getElementById('projectTeamMembers');
+
+            if (!db) {
+                selectElement.innerHTML = '<option value="">Firebase not connected</option>';
+                return;
+            }
+
+            try {
+                const membersSnapshot = await db.collection('teamMembers').get();
+
+                if (membersSnapshot.empty) {
+                    selectElement.innerHTML = '<option value="">No team members found</option>';
+                    return;
+                }
+
+                selectElement.innerHTML = '';
+                membersSnapshot.forEach(doc => {
+                    const member = doc.data();
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.setAttribute('data-member-name', member.name);
+                    option.textContent = `${member.name} - ${member.role}`;
+                    selectElement.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading team members:', error);
+                selectElement.innerHTML = '<option value="">Error loading members</option>';
+            }
+        }
+
         function openProjectModal() {
             editingProjectIndex = -1;
             document.getElementById('projectModalTitle').textContent = 'Create New Project';
@@ -3041,6 +3387,9 @@
             // Set default date to today
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('projectStartDate').value = today;
+
+            // Populate team members dropdown
+            populateProjectTeamMembersDropdown();
 
             document.getElementById('projectModal').classList.add('active');
         }
@@ -3068,8 +3417,30 @@
             document.getElementById('projectEndDate').value = project.endDate;
             document.getElementById('projectProgress').value = project.progress;
             document.getElementById('projectBudget').value = project.budget;
-            document.getElementById('projectTeamMembers').value = project.teamMembers.join(', ');
             document.getElementById('projectTags').value = project.tags ? project.tags.join(', ') : '';
+
+            // Populate team members dropdown and select the correct members
+            populateProjectTeamMembersDropdown().then(() => {
+                const teamMembersSelect = document.getElementById('projectTeamMembers');
+
+                // If project has teamMemberIds, use those. Otherwise try to match by name
+                if (project.teamMemberIds && project.teamMemberIds.length > 0) {
+                    // Select by IDs
+                    Array.from(teamMembersSelect.options).forEach(option => {
+                        if (project.teamMemberIds.includes(option.value)) {
+                            option.selected = true;
+                        }
+                    });
+                } else if (project.teamMembers && project.teamMembers.length > 0) {
+                    // Fallback: try to match by name for old data
+                    Array.from(teamMembersSelect.options).forEach(option => {
+                        const memberName = option.getAttribute('data-member-name');
+                        if (project.teamMembers.includes(memberName)) {
+                            option.selected = true;
+                        }
+                    });
+                }
+            });
 
             // Open modal
             document.getElementById('projectModal').classList.add('active');
@@ -3087,8 +3458,12 @@
         document.getElementById('projectForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const teamMembersInput = document.getElementById('projectTeamMembers').value;
-            const teamMembersArray = teamMembersInput ? teamMembersInput.split(',').map(s => s.trim()).filter(s => s) : [];
+            // Get selected team member IDs and names
+            const teamMembersSelect = document.getElementById('projectTeamMembers');
+            const selectedOptions = Array.from(teamMembersSelect.selectedOptions);
+
+            const teamMemberIds = selectedOptions.map(opt => opt.value).filter(v => v);
+            const teamMemberNames = selectedOptions.map(opt => opt.getAttribute('data-member-name')).filter(n => n);
 
             const tagsInput = document.getElementById('projectTags').value;
             const tagsArray = tagsInput ? tagsInput.split(',').map(s => s.trim()).filter(s => s) : [];
@@ -3102,7 +3477,8 @@
                 endDate: document.getElementById('projectEndDate').value,
                 progress: parseInt(document.getElementById('projectProgress').value),
                 budget: parseInt(document.getElementById('projectBudget').value) || 0,
-                teamMembers: teamMembersArray,
+                teamMemberIds: teamMemberIds,  // Store IDs
+                teamMembers: teamMemberNames,   // Store names for backwards compatibility and display
                 tags: tagsArray
             };
 
