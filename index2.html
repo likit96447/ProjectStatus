@@ -2016,9 +2016,9 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Assign To</label>
+                        <label class="form-label">Assign To <span style="color: #e44258;">*</span></label>
                         <select class="form-select" id="itemPerson" required>
-                            <option value="">Select team member...</option>
+                            <option value="" disabled selected>Select team member...</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -2154,11 +2154,11 @@
                         <input type="number" class="form-input" id="projectBudget" placeholder="0" min="0">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Team Members</label>
-                        <select class="form-select" id="projectTeamMembers" multiple size="5">
-                            <option value="">Loading team members...</option>
+                        <label class="form-label">Team Members <span style="color: #e44258;">*</span></label>
+                        <select class="form-select" id="projectTeamMembers" multiple size="5" required>
+                            <option value="" disabled>Loading team members...</option>
                         </select>
-                        <small style="color: #676879; font-size: 12px; margin-top: 4px; display: block;">Hold Ctrl/Cmd to select multiple members</small>
+                        <small style="color: #676879; font-size: 12px; margin-top: 4px; display: block;">Hold Ctrl/Cmd to select multiple members (at least one required)</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Tags (comma separated)</label>
@@ -2304,51 +2304,48 @@
 
         // Load active team members for dropdown
         async function loadActiveTeamMembers() {
-            if (!db) return [];
+            if (!db) {
+                console.error("❌ Firebase not initialized");
+                return [];
+            }
 
             try {
-                const snapshot = await db.collection('team_members')
-                    .where('active', '==', true)
-                    .get();
-                
+                // First, try to get all team members (more reliable)
+                const snapshot = await db.collection('team_members').get();
+
+                console.log(`📊 Found ${snapshot.size} total team members in database`);
+
                 const activeMembers = [];
+
                 snapshot.forEach(doc => {
-                    activeMembers.push({
-                        id: doc.id,
-                        name: doc.data().name
-                    });
+                    const data = doc.data();
+                    console.log(`👤 Member: ${data.name}, active: ${data.active}, status: ${data.status}`);
+
+                    // Include member if:
+                    // 1. active field is explicitly true, OR
+                    // 2. status field is 'Active', OR
+                    // 3. neither field exists (assume active by default)
+                    const isActive = data.active === true ||
+                                   data.status === 'Active' ||
+                                   (data.active === undefined && data.status === undefined);
+
+                    if (isActive && data.name) {
+                        activeMembers.push({
+                            id: doc.id,
+                            name: data.name
+                        });
+                    }
                 });
-                
+
                 // Sort alphabetically by name
                 activeMembers.sort((a, b) => a.name.localeCompare(b.name));
-                
-                console.log(`✅ Loaded ${activeMembers.length} active team members (active=true) for assignment`);
+
+                console.log(`✅ Loaded ${activeMembers.length} active team members for dropdown`);
                 return activeMembers;
+
             } catch (error) {
-                console.error("❌ Error loading active team members:", error);
-                // Fallback: try without where clause if index not ready
-                try {
-                    const snapshot = await db.collection('team_members').get();
-                    const activeMembers = [];
-                    
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        // Filter active members manually - check both active field and status
-                        if (data.active === true || data.status === 'Active') {
-                            activeMembers.push({
-                                id: doc.id,
-                                name: data.name
-                            });
-                        }
-                    });
-                    
-                    activeMembers.sort((a, b) => a.name.localeCompare(b.name));
-                    console.log(`✅ Loaded ${activeMembers.length} active team members (fallback method)`);
-                    return activeMembers;
-                } catch (fallbackError) {
-                    console.error("❌ Fallback also failed:", fallbackError);
-                    return [];
-                }
+                console.error("❌ Error loading team members:", error);
+                return [];
             }
         }
 
@@ -2370,28 +2367,54 @@
 
         // Populate assign to dropdown
         async function populateAssignToDropdown() {
+            console.log('🔄 populateAssignToDropdown() called');
+
             const personSelect = document.getElementById('itemPerson');
-            if (!personSelect) return;
-            
-            // Show loading state
-            personSelect.innerHTML = '<option value="">Loading active members...</option>';
-            
-            // Get active members with IDs
-            const activeMembers = await loadActiveTeamMembers();
-            
-            // Clear current options
-            personSelect.innerHTML = '<option value="">Select team member...</option>';
-            
-            if (activeMembers.length === 0) {
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = 'No active members available';
-                option.disabled = true;
-                personSelect.appendChild(option);
-                console.warn("⚠️ No active team members found");
+            if (!personSelect) {
+                console.error('❌ itemPerson select element not found!');
                 return;
             }
-            
+
+            console.log('✅ Found itemPerson select element');
+
+            // Show loading state
+            personSelect.innerHTML = '<option value="" disabled selected>Loading active members...</option>';
+            console.log('⏳ Loading state set, calling loadActiveTeamMembers()...');
+
+            // Get active members with IDs
+            const activeMembers = await loadActiveTeamMembers();
+            console.log('📦 Received activeMembers array:', activeMembers);
+
+            if (activeMembers.length === 0) {
+                personSelect.innerHTML = '<option value="" disabled selected>No team members found</option>';
+                console.warn("⚠️ No active team members found in database");
+
+                // Provide helpful guidance
+                const shouldInit = confirm(
+                    '⚠️ No team members found!\n\n' +
+                    'You need to add team members before creating tasks.\n\n' +
+                    'Options:\n' +
+                    '1. Click "OK" to initialize sample data (includes sample team members)\n' +
+                    '2. Click "Cancel" to manually add team members via the Team page\n\n' +
+                    'Initialize sample data now?'
+                );
+
+                if (shouldInit) {
+                    // Close the task modal
+                    closeModal();
+                    // Initialize sample data
+                    await initializeAllSampleData();
+                } else {
+                    // Close task modal and navigate to team page
+                    closeModal();
+                    navigateTo('team');
+                }
+                return;
+            }
+
+            // Clear current options and add placeholder
+            personSelect.innerHTML = '<option value="" disabled selected>Select team member...</option>';
+
             // Add active members with ID as value
             activeMembers.forEach(member => {
                 const option = document.createElement('option');
@@ -2400,7 +2423,7 @@
                 option.setAttribute('data-member-name', member.name);
                 personSelect.appendChild(option);
             });
-            
+
             console.log(`✅ Populated dropdown with ${activeMembers.length} active members`);
         }
 
@@ -2821,7 +2844,11 @@
             } else if (pageName === 'dashboard') {
                 updateDashboardStats();
             } else if (pageName === 'projectslist') {
-                renderProjects();
+                if (db) {
+                    loadProjectsFromFirebase();
+                } else {
+                    renderProjects();
+                }
             }
         }
 
@@ -3032,14 +3059,17 @@
         }
 
         function openModal() {
+            console.log('🚪 openModal() called');
             editingIndex = -1;
             document.getElementById('modalTitle').textContent = 'Create New Task';
             document.getElementById('taskForm').reset();
-            
+
             // Populate assign to dropdown
+            console.log('📞 Calling populateAssignToDropdown()...');
             populateAssignToDropdown();
-            
+
             document.getElementById('taskModal').classList.add('active');
+            console.log('✅ Modal opened');
             
             // Reset button text
             const submitBtn = document.querySelector('#taskForm button[type="submit"]');
@@ -3058,15 +3088,22 @@
 
         document.getElementById('taskForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
+            // Validate that a team member is selected
+            const assignedToId = document.getElementById('itemPerson').value;
+            if (!assignedToId || assignedToId.trim() === '') {
+                alert('⚠️ Please select a team member to assign this task to.');
+                document.getElementById('itemPerson').focus();
+                return;
+            }
+
             // Set flag to prevent real-time listener interference
             isManualOperation = true;
-            
-            const assignedToId = document.getElementById('itemPerson').value;
+
             const personSelect = document.getElementById('itemPerson');
             const selectedOption = personSelect.options[personSelect.selectedIndex];
             const personName = selectedOption.getAttribute('data-member-name') || selectedOption.textContent;
-            
+
             const newTask = {
                 name: document.getElementById('itemName').value,
                 status: document.getElementById('itemStatus').value,
@@ -3346,39 +3383,185 @@
             return priority.charAt(0).toUpperCase() + priority.slice(1);
         }
 
+        // ========================================
+        // PROJECT FIREBASE FUNCTIONS
+        // ========================================
+
+        // Add project to Firebase
+        async function addProjectToFirebase(projectData) {
+            if (!db) {
+                console.error('❌ Firebase not initialized');
+                return null;
+            }
+
+            try {
+                const docRef = await db.collection('projects').add({
+                    ...projectData,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log('✅ Project added to Firebase with ID:', docRef.id);
+                return docRef.id;
+            } catch (error) {
+                console.error('❌ Error adding project to Firebase:', error);
+                throw error;
+            }
+        }
+
+        // Update project in Firebase
+        async function updateProjectInFirebase(projectId, projectData) {
+            if (!db) {
+                console.error('❌ Firebase not initialized');
+                return;
+            }
+
+            try {
+                await db.collection('projects').doc(projectId).update({
+                    ...projectData,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log('✅ Project updated in Firebase:', projectId);
+            } catch (error) {
+                console.error('❌ Error updating project in Firebase:', error);
+                throw error;
+            }
+        }
+
+        // Delete project from Firebase
+        async function deleteProjectFromFirebase(projectId) {
+            if (!db) {
+                console.error('❌ Firebase not initialized');
+                return;
+            }
+
+            try {
+                await db.collection('projects').doc(projectId).delete();
+                console.log('✅ Project deleted from Firebase:', projectId);
+            } catch (error) {
+                console.error('❌ Error deleting project from Firebase:', error);
+                throw error;
+            }
+        }
+
+        // Load projects from Firebase
+        async function loadProjectsFromFirebase() {
+            if (!db) {
+                console.error('❌ Firebase not initialized');
+                return;
+            }
+
+            try {
+                const snapshot = await db.collection('projects')
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                projects = [];
+                snapshot.forEach(doc => {
+                    projects.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                console.log(`✅ Loaded ${projects.length} projects from Firebase`);
+                renderProjects();
+            } catch (error) {
+                console.error('❌ Error loading projects from Firebase:', error);
+                // If orderBy fails (no index), try without ordering
+                try {
+                    const snapshot = await db.collection('projects').get();
+                    projects = [];
+                    snapshot.forEach(doc => {
+                        projects.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    console.log(`✅ Loaded ${projects.length} projects from Firebase (fallback)`);
+                    renderProjects();
+                } catch (fallbackError) {
+                    console.error('❌ Fallback also failed:', fallbackError);
+                }
+            }
+        }
+
         // Populate team members dropdown for project form
         async function populateProjectTeamMembersDropdown() {
+            console.log('🔄 populateProjectTeamMembersDropdown() called');
             const selectElement = document.getElementById('projectTeamMembers');
 
             if (!db) {
+                console.error('❌ Firebase not initialized');
                 selectElement.innerHTML = '<option value="">Firebase not connected</option>';
                 return;
             }
 
             try {
-                const membersSnapshot = await db.collection('teamMembers').get();
+                // FIXED: Changed from 'teamMembers' to 'team_members' to match the actual collection name
+                console.log('📊 Loading from team_members collection...');
+                const membersSnapshot = await db.collection('team_members').get();
+
+                console.log(`📦 Found ${membersSnapshot.size} team members`);
 
                 if (membersSnapshot.empty) {
+                    console.warn('⚠️ No team members found in database');
                     selectElement.innerHTML = '<option value="">No team members found</option>';
+
+                    const shouldInit = confirm(
+                        '⚠️ No team members found!\n\n' +
+                        'You need to add team members before creating projects.\n\n' +
+                        'Options:\n' +
+                        '1. Click "OK" to initialize sample data\n' +
+                        '2. Click "Cancel" to add team members manually\n\n' +
+                        'Initialize sample data now?'
+                    );
+
+                    if (shouldInit) {
+                        closeProjectModal();
+                        await initializeAllSampleData();
+                    } else {
+                        closeProjectModal();
+                        navigateTo('team');
+                    }
                     return;
                 }
 
                 selectElement.innerHTML = '';
+                let loadedCount = 0;
                 membersSnapshot.forEach(doc => {
                     const member = doc.data();
-                    const option = document.createElement('option');
-                    option.value = doc.id;
-                    option.setAttribute('data-member-name', member.name);
-                    option.textContent = `${member.name} - ${member.role}`;
-                    selectElement.appendChild(option);
+
+                    // Only show active members
+                    const isActive = member.active === true ||
+                                   member.status === 'Active' ||
+                                   (member.active === undefined && member.status === undefined);
+
+                    if (isActive && member.name) {
+                        const option = document.createElement('option');
+                        option.value = doc.id;
+                        option.setAttribute('data-member-name', member.name);
+                        option.textContent = `${member.name} - ${member.role || 'Team Member'}`;
+                        selectElement.appendChild(option);
+                        loadedCount++;
+                        console.log(`👤 Added: ${member.name} (${member.role || 'N/A'})`);
+                    }
                 });
+
+                console.log(`✅ Populated project dropdown with ${loadedCount} active team members`);
+
+                if (loadedCount === 0) {
+                    selectElement.innerHTML = '<option value="">No active team members</option>';
+                    console.warn('⚠️ All team members are inactive');
+                }
+
             } catch (error) {
-                console.error('Error loading team members:', error);
+                console.error('❌ Error loading team members:', error);
                 selectElement.innerHTML = '<option value="">Error loading members</option>';
             }
         }
 
         function openProjectModal() {
+            console.log('🚪 openProjectModal() called');
             editingProjectIndex = -1;
             document.getElementById('projectModalTitle').textContent = 'Create New Project';
             document.getElementById('projectSubmitBtn').textContent = 'Create Project';
@@ -3389,9 +3572,11 @@
             document.getElementById('projectStartDate').value = today;
 
             // Populate team members dropdown
+            console.log('📞 Calling populateProjectTeamMembersDropdown()...');
             populateProjectTeamMembersDropdown();
 
             document.getElementById('projectModal').classList.add('active');
+            console.log('✅ Project modal opened');
         }
 
         function closeProjectModal() {
@@ -3446,16 +3631,34 @@
             document.getElementById('projectModal').classList.add('active');
         }
 
-        function deleteProject(index) {
-            if (confirm(`Are you sure you want to delete "${projects[index].name}"?`)) {
-                projects.splice(index, 1);
-                renderProjects();
-                alert('✅ Project deleted successfully!');
+        async function deleteProject(index) {
+            const project = projects[index];
+
+            if (confirm(`Are you sure you want to delete "${project.name}"?`)) {
+                try {
+                    // Delete from Firebase if project has an ID
+                    if (project.id && db) {
+                        await deleteProjectFromFirebase(project.id);
+                        console.log('✅ Project deleted from Firebase:', project.id);
+                        alert('✅ Project deleted successfully!');
+
+                        // Reload projects from Firebase
+                        await loadProjectsFromFirebase();
+                    } else {
+                        // Fallback to local deletion if no ID
+                        projects.splice(index, 1);
+                        renderProjects();
+                        alert('✅ Project deleted successfully (locally)!');
+                    }
+                } catch (error) {
+                    console.error('❌ Error deleting project:', error);
+                    alert('❌ Error deleting project: ' + error.message);
+                }
             }
         }
 
         // Handle project form submission
-        document.getElementById('projectForm').addEventListener('submit', function(e) {
+        document.getElementById('projectForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             // Get selected team member IDs and names
@@ -3464,6 +3667,13 @@
 
             const teamMemberIds = selectedOptions.map(opt => opt.value).filter(v => v);
             const teamMemberNames = selectedOptions.map(opt => opt.getAttribute('data-member-name')).filter(n => n);
+
+            // Validate that at least one team member is selected
+            if (teamMemberIds.length === 0) {
+                alert('⚠️ Please select at least one team member for this project.');
+                teamMembersSelect.focus();
+                return;
+            }
 
             const tagsInput = document.getElementById('projectTags').value;
             const tagsArray = tagsInput ? tagsInput.split(',').map(s => s.trim()).filter(s => s) : [];
@@ -3482,18 +3692,47 @@
                 tags: tagsArray
             };
 
-            if (editingProjectIndex >= 0) {
-                // Update existing project
-                projects[editingProjectIndex] = projectData;
-                alert('✅ Project updated successfully!');
-            } else {
-                // Add new project
-                projects.push(projectData);
-                alert('✅ Project created successfully!');
-            }
+            try {
+                if (editingProjectIndex >= 0) {
+                    // Update existing project
+                    const project = projects[editingProjectIndex];
 
-            renderProjects();
-            closeProjectModal();
+                    // Update in Firebase if project has an ID
+                    if (project.id && db) {
+                        await updateProjectInFirebase(project.id, projectData);
+                        console.log('✅ Project updated in Firebase:', project.id);
+                        alert('✅ Project updated successfully!');
+                    } else {
+                        // Fallback to local storage if no ID
+                        projects[editingProjectIndex] = projectData;
+                        alert('✅ Project updated successfully (locally)!');
+                    }
+                } else {
+                    // Add new project to Firebase
+                    if (db) {
+                        const projectId = await addProjectToFirebase(projectData);
+                        console.log('✅ Project added to Firebase with ID:', projectId);
+                        alert('✅ Project created successfully!');
+                    } else {
+                        // Fallback to local storage if Firebase not available
+                        projects.push(projectData);
+                        alert('✅ Project created successfully (locally)!');
+                    }
+                }
+
+                closeProjectModal();
+
+                // Reload projects from Firebase
+                if (db) {
+                    await loadProjectsFromFirebase();
+                } else {
+                    renderProjects();
+                }
+
+            } catch (error) {
+                console.error('❌ Error saving project:', error);
+                alert('❌ Error saving project: ' + error.message);
+            }
         });
 
         // Close modal when clicking outside
@@ -3509,9 +3748,11 @@
             if (db) {
                 await loadTasksFromFirebase();
                 await loadTeamMembersWithStats();
+                await loadProjectsFromFirebase();
                 setupRealtimeListener();
             } else {
                 renderTasks();
+                renderProjects();
                 updateDashboardStats();
             }
         });

@@ -1562,9 +1562,9 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Assign To</label>
+                        <label class="form-label">Assign To <span style="color: #e44258;">*</span></label>
                         <select class="form-select" id="itemPerson" required>
-                            <option value="">Select team member...</option>
+                            <option value="" disabled selected>Select team member...</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1781,51 +1781,48 @@
 
         // Load active team members for dropdown
         async function loadActiveTeamMembers() {
-            if (!db) return [];
+            if (!db) {
+                console.error("❌ Firebase not initialized");
+                return [];
+            }
 
             try {
-                const snapshot = await db.collection('team_members')
-                    .where('active', '==', true)
-                    .get();
-                
+                // First, try to get all team members (more reliable)
+                const snapshot = await db.collection('team_members').get();
+
+                console.log(`📊 Found ${snapshot.size} total team members in database`);
+
                 const activeMembers = [];
+
                 snapshot.forEach(doc => {
-                    activeMembers.push({
-                        id: doc.id,
-                        name: doc.data().name
-                    });
+                    const data = doc.data();
+                    console.log(`👤 Member: ${data.name}, active: ${data.active}, status: ${data.status}`);
+
+                    // Include member if:
+                    // 1. active field is explicitly true, OR
+                    // 2. status field is 'Active', OR
+                    // 3. neither field exists (assume active by default)
+                    const isActive = data.active === true ||
+                                   data.status === 'Active' ||
+                                   (data.active === undefined && data.status === undefined);
+
+                    if (isActive && data.name) {
+                        activeMembers.push({
+                            id: doc.id,
+                            name: data.name
+                        });
+                    }
                 });
-                
+
                 // Sort alphabetically by name
                 activeMembers.sort((a, b) => a.name.localeCompare(b.name));
-                
-                console.log(`✅ Loaded ${activeMembers.length} active team members (active=true) for assignment`);
+
+                console.log(`✅ Loaded ${activeMembers.length} active team members for dropdown`);
                 return activeMembers;
+
             } catch (error) {
-                console.error("❌ Error loading active team members:", error);
-                // Fallback: try without where clause if index not ready
-                try {
-                    const snapshot = await db.collection('team_members').get();
-                    const activeMembers = [];
-                    
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        // Filter active members manually - check both active field and status
-                        if (data.active === true || data.status === 'Active') {
-                            activeMembers.push({
-                                id: doc.id,
-                                name: data.name
-                            });
-                        }
-                    });
-                    
-                    activeMembers.sort((a, b) => a.name.localeCompare(b.name));
-                    console.log(`✅ Loaded ${activeMembers.length} active team members (fallback method)`);
-                    return activeMembers;
-                } catch (fallbackError) {
-                    console.error("❌ Fallback also failed:", fallbackError);
-                    return [];
-                }
+                console.error("❌ Error loading team members:", error);
+                return [];
             }
         }
 
@@ -1849,26 +1846,43 @@
         async function populateAssignToDropdown() {
             const personSelect = document.getElementById('itemPerson');
             if (!personSelect) return;
-            
+
             // Show loading state
-            personSelect.innerHTML = '<option value="">Loading active members...</option>';
-            
+            personSelect.innerHTML = '<option value="" disabled selected>Loading active members...</option>';
+
             // Get active members with IDs
             const activeMembers = await loadActiveTeamMembers();
-            
-            // Clear current options
-            personSelect.innerHTML = '<option value="">Select team member...</option>';
-            
+
             if (activeMembers.length === 0) {
-                const option = document.createElement('option');
-                option.value = '';
-                option.textContent = 'No active members available';
-                option.disabled = true;
-                personSelect.appendChild(option);
-                console.warn("⚠️ No active team members found");
+                personSelect.innerHTML = '<option value="" disabled selected>No team members found</option>';
+                console.warn("⚠️ No active team members found in database");
+
+                // Provide helpful guidance
+                const shouldInit = confirm(
+                    '⚠️ No team members found!\n\n' +
+                    'You need to add team members before creating tasks.\n\n' +
+                    'Options:\n' +
+                    '1. Click "OK" to initialize sample data (includes sample team members)\n' +
+                    '2. Click "Cancel" to manually add team members via the Team page\n\n' +
+                    'Initialize sample data now?'
+                );
+
+                if (shouldInit) {
+                    // Close the task modal
+                    closeModal();
+                    // Initialize sample data
+                    await initializeAllSampleData();
+                } else {
+                    // Close task modal and navigate to team page
+                    closeModal();
+                    navigateTo('team');
+                }
                 return;
             }
-            
+
+            // Clear current options and add placeholder
+            personSelect.innerHTML = '<option value="" disabled selected>Select team member...</option>';
+
             // Add active members with ID as value
             activeMembers.forEach(member => {
                 const option = document.createElement('option');
@@ -1877,7 +1891,7 @@
                 option.setAttribute('data-member-name', member.name);
                 personSelect.appendChild(option);
             });
-            
+
             console.log(`✅ Populated dropdown with ${activeMembers.length} active members`);
         }
 
@@ -2435,15 +2449,22 @@
 
         document.getElementById('taskForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
+            // Validate that a team member is selected
+            const assignedToId = document.getElementById('itemPerson').value;
+            if (!assignedToId || assignedToId.trim() === '') {
+                alert('⚠️ Please select a team member to assign this task to.');
+                document.getElementById('itemPerson').focus();
+                return;
+            }
+
             // Set flag to prevent real-time listener interference
             isManualOperation = true;
-            
-            const assignedToId = document.getElementById('itemPerson').value;
+
             const personSelect = document.getElementById('itemPerson');
             const selectedOption = personSelect.options[personSelect.selectedIndex];
             const personName = selectedOption.getAttribute('data-member-name') || selectedOption.textContent;
-            
+
             const newTask = {
                 name: document.getElementById('itemName').value,
                 status: document.getElementById('itemStatus').value,
