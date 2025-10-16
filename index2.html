@@ -1743,7 +1743,7 @@
                 <!-- Tasks Page -->
                 <div id="tasksPage" class="page-view">
                     <div class="board-header">
-                        <h1 class="board-title">Project Management</h1>
+                        <h1 class="board-title">Task Management</h1>
                         <p class="board-subtitle">Manage your team's tasks and deliverables</p>
                         <div class="board-actions">
                             <button class="btn btn-primary" onclick="openModal()">
@@ -2427,6 +2427,76 @@
             console.log(`✅ Populated dropdown with ${activeMembers.length} active members`);
         }
 
+        // Populate project dropdown for task form
+        async function populateTaskProjectDropdown() {
+            console.log('🔄 populateTaskProjectDropdown() called');
+            const projectSelect = document.getElementById('itemProject');
+
+            if (!projectSelect) {
+                console.error('❌ itemProject select element not found!');
+                return;
+            }
+
+            // Show loading state
+            projectSelect.innerHTML = '<option value="">Loading projects...</option>';
+
+            if (!db) {
+                console.error('❌ Firebase not initialized');
+                projectSelect.innerHTML = '<option value="">No Project</option>';
+                return;
+            }
+
+            try {
+                const snapshot = await db.collection('projects').get();
+                console.log(`📦 Found ${snapshot.size} projects in database`);
+
+                // Clear and add default option
+                projectSelect.innerHTML = '<option value="">No Project</option>';
+
+                if (snapshot.empty) {
+                    console.warn('⚠️ No projects found in database');
+                    return;
+                }
+
+                // Add projects to dropdown
+                let addedCount = 0;
+                snapshot.forEach(doc => {
+                    const project = doc.data();
+                    if (project.name) {
+                        const option = document.createElement('option');
+                        option.value = doc.id;  // Store project ID
+                        option.textContent = project.name;  // Show project name
+                        option.setAttribute('data-project-name', project.name);
+                        projectSelect.appendChild(option);
+                        addedCount++;
+                        console.log(`📁 Added project: ${project.name}`);
+                    }
+                });
+
+                console.log(`✅ Populated project dropdown with ${addedCount} projects`);
+
+            } catch (error) {
+                console.error('❌ Error loading projects for dropdown:', error);
+                projectSelect.innerHTML = '<option value="">No Project</option>';
+            }
+        }
+
+        // Get project name by ID
+        async function getProjectNameById(projectId) {
+            if (!db || !projectId) return '';
+
+            try {
+                const doc = await db.collection('projects').doc(projectId).get();
+                if (doc.exists) {
+                    return doc.data().name;
+                }
+                return '';
+            } catch (error) {
+                console.error('❌ Error getting project name:', error);
+                return '';
+            }
+        }
+
         // Initialize ALL sample data (tasks, team members, workspaces, projects)
         async function initializeAllSampleData() {
             if (!db) {
@@ -2624,6 +2694,9 @@
             }
         }
 
+        // Prevent concurrent loading
+        let isLoadingTasks = false;
+
         // Load all tasks from Firestore
         async function loadTasksFromFirebase() {
             if (!db) {
@@ -2631,33 +2704,55 @@
                 return;
             }
 
+            // Prevent concurrent loading
+            if (isLoadingTasks) {
+                console.log("⏭️ Task loading already in progress, skipping...");
+                return;
+            }
+
+            isLoadingTasks = true;
+            console.log("📥 Loading tasks from Firebase...");
+
             try {
                 const snapshot = await db.collection('tasks').orderBy('createdAt', 'desc').get();
-                
+
                 // Clear tasks array to prevent duplicates
                 tasks = [];
-                
+
                 for (const doc of snapshot.docs) {
                     const taskData = doc.data();
-                    
+
                     // Get member name if assignedTo is an ID
                     let personName = taskData.person;
                     if (taskData.assignedTo) {
                         personName = await getMemberNameById(taskData.assignedTo);
                     }
-                    
+
+                    // Get REAL-TIME project name if projectId exists
+                    let projectName = taskData.project || '';
+                    if (taskData.projectId) {
+                        const realtimeProjectName = await getProjectNameById(taskData.projectId);
+                        if (realtimeProjectName) {
+                            projectName = realtimeProjectName;
+                            console.log(`🔄 Updated task "${taskData.name}" with real-time project: ${projectName}`);
+                        }
+                    }
+
                     tasks.push({
                         id: doc.id,
                         ...taskData,
-                        personName: personName  // Store display name
+                        personName: personName,      // Store display name
+                        project: projectName         // Store real-time project name
                     });
                 }
-                
+
                 renderTasks();
                 updateDashboardStats();
-                console.log(`✅ Loaded ${tasks.length} tasks from Firebase (cleared duplicates)`);
+                console.log(`✅ Loaded ${tasks.length} tasks from Firebase`);
             } catch (error) {
                 console.error("❌ Error loading tasks:", error);
+            } finally {
+                isLoadingTasks = false;
             }
         }
 
@@ -2708,21 +2803,30 @@
         }
 
         // Real-time listener for tasks
+        let realtimeListenerUnsubscribe = null;
+
         function setupRealtimeListener() {
             if (!db) return;
 
-            db.collection('tasks').onSnapshot(async (snapshot) => {
+            // Prevent setting up multiple listeners
+            if (realtimeListenerUnsubscribe) {
+                console.log("⏭️ Real-time listener already set up, skipping...");
+                return;
+            }
+
+            console.log("📡 Setting up real-time listener...");
+            realtimeListenerUnsubscribe = db.collection('tasks').onSnapshot(async (snapshot) => {
                 // Skip if we're in the middle of a manual operation
                 if (isManualOperation) {
                     console.log("⏭️ Skipping real-time update (manual operation in progress)");
                     return;
                 }
-                
+
                 const changes = snapshot.docChanges();
                 if (changes.length > 0) {
                     console.log("📡 Real-time update detected, reloading tasks...");
                     await loadTasksFromFirebase();
-                    
+
                     // Reload team members if on team page
                     const teamPage = document.getElementById('teamPage');
                     if (teamPage && teamPage.classList.contains('active')) {
@@ -2982,8 +3086,11 @@
             // Update modal title
             document.getElementById('modalTitle').textContent = 'Edit Task';
 
-            // Populate dropdown first
-            populateAssignToDropdown().then(() => {
+            // Populate both dropdowns first, then fill in task data
+            Promise.all([
+                populateAssignToDropdown(),
+                populateTaskProjectDropdown()
+            ]).then(() => {
                 // Populate form with task data
                 document.getElementById('itemName').value = task.name;
                 document.getElementById('itemStatus').value = task.status;
@@ -3004,7 +3111,22 @@
                     }
                 }
 
-                document.getElementById('itemProject').value = task.project || '';
+                // Set the project (project ID) in dropdown
+                if (task.projectId) {
+                    // New format: uses project ID
+                    document.getElementById('itemProject').value = task.projectId;
+                } else if (task.project) {
+                    // Old format: try to find by name
+                    const projectSelect = document.getElementById('itemProject');
+                    const options = projectSelect.options;
+                    for (let i = 0; i < options.length; i++) {
+                        if (options[i].getAttribute('data-project-name') === task.project) {
+                            projectSelect.value = options[i].value;
+                            break;
+                        }
+                    }
+                }
+
                 document.getElementById('itemDate').value = task.date;
                 document.getElementById('itemTimeline').value = task.timeline;
             });
@@ -3064,13 +3186,16 @@
             document.getElementById('modalTitle').textContent = 'Create New Task';
             document.getElementById('taskForm').reset();
 
-            // Populate assign to dropdown
+            // Populate dropdowns
             console.log('📞 Calling populateAssignToDropdown()...');
             populateAssignToDropdown();
 
+            console.log('📞 Calling populateTaskProjectDropdown()...');
+            populateTaskProjectDropdown();
+
             document.getElementById('taskModal').classList.add('active');
             console.log('✅ Modal opened');
-            
+
             // Reset button text
             const submitBtn = document.querySelector('#taskForm button[type="submit"]');
             submitBtn.textContent = 'Create Task';
@@ -3104,13 +3229,20 @@
             const selectedOption = personSelect.options[personSelect.selectedIndex];
             const personName = selectedOption.getAttribute('data-member-name') || selectedOption.textContent;
 
+            // Get project ID and name
+            const projectSelect = document.getElementById('itemProject');
+            const projectId = projectSelect.value;
+            const projectOption = projectSelect.options[projectSelect.selectedIndex];
+            const projectName = projectOption.getAttribute('data-project-name') || projectOption.textContent || '';
+
             const newTask = {
                 name: document.getElementById('itemName').value,
                 status: document.getElementById('itemStatus').value,
                 priority: document.getElementById('itemPriority').value,
                 assignedTo: assignedToId,  // Store member ID
                 person: personName,  // Store name for backwards compatibility
-                project: document.getElementById('itemProject').value,
+                projectId: projectId,  // Store project ID
+                project: projectName,  // Store project name for backwards compatibility and display
                 date: document.getElementById('itemDate').value,
                 timeline: document.getElementById('itemTimeline').value
             };
