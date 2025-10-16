@@ -2076,6 +2076,18 @@
                         </select>
                     </div>
                     <div class="form-group">
+                        <label class="form-label">SDLC Phase</label>
+                        <select class="form-select" id="projectSDLC">
+                            <option value="Requirement">Requirement</option>
+                            <option value="Design">Design</option>
+                            <option value="Development" selected>Development</option>
+                            <option value="Smoke Test">Smoke Test</option>
+                            <option value="SIT">SIT</option>
+                            <option value="UAT">UAT</option>
+                            <option value="Implement">Implement</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">Priority</label>
                         <select class="form-select" id="projectPriority">
                             <option value="low">Low</option>
@@ -3528,7 +3540,10 @@
                     <div class="project-card-header">
                         <div>
                             <div class="project-card-title">${project.name}</div>
-                            <span class="project-status-badge ${project.status}">${formatStatus(project.status)}</span>
+                            <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
+                                <span class="project-status-badge ${project.status}">${formatStatus(project.status)}</span>
+                                ${project.sdlc ? `<span class="project-status-badge" style="background: #0073ea; color: white;">🔄 ${project.sdlc}</span>` : ''}
+                            </div>
                         </div>
                     </div>
                     <div class="project-card-description">${project.description}</div>
@@ -3814,6 +3829,7 @@
             document.getElementById('projectDescription').value = project.description;
             document.getElementById('projectStatus').value = project.status;
             document.getElementById('projectPriority').value = project.priority;
+            document.getElementById('projectSDLC').value = project.sdlc || 'Development';
             document.getElementById('projectStartDate').value = project.startDate;
             document.getElementById('projectEndDate').value = project.endDate;
             document.getElementById('projectProgress').value = project.progress;
@@ -3899,6 +3915,7 @@
                 description: document.getElementById('projectDescription').value,
                 status: document.getElementById('projectStatus').value,
                 priority: document.getElementById('projectPriority').value,
+                sdlc: document.getElementById('projectSDLC').value,
                 startDate: document.getElementById('projectStartDate').value,
                 endDate: document.getElementById('projectEndDate').value,
                 progress: parseInt(document.getElementById('projectProgress').value),
