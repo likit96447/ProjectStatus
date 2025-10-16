@@ -1641,74 +1641,20 @@
 
                     <div class="chart-container">
                         <h3 class="chart-title">Project Progress</h3>
-                        <div class="progress-item">
-                            <div class="progress-header">
-                                <span class="progress-name">Website Redesign</span>
-                                <span class="progress-percentage">75%</span>
-                            </div>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar-fill" style="width: 75%"></div>
-                            </div>
-                        </div>
-                        <div class="progress-item">
-                            <div class="progress-header">
-                                <span class="progress-name">Mobile App Development</span>
-                                <span class="progress-percentage">60%</span>
-                            </div>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar-fill" style="width: 60%"></div>
-                            </div>
-                        </div>
-                        <div class="progress-item">
-                            <div class="progress-header">
-                                <span class="progress-name">Marketing Campaign</span>
-                                <span class="progress-percentage">100%</span>
-                            </div>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar-fill" style="width: 100%; background: #00c875"></div>
-                            </div>
-                        </div>
-                        <div class="progress-item">
-                            <div class="progress-header">
-                                <span class="progress-name">Database Migration</span>
-                                <span class="progress-percentage">30%</span>
-                            </div>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar-fill" style="width: 30%; background: #e44258"></div>
+                        <div id="projectProgressList">
+                            <!-- Projects will be rendered here dynamically -->
+                            <div style="text-align: center; padding: 20px; color: #999;">
+                                Loading projects...
                             </div>
                         </div>
                     </div>
 
                     <div class="chart-container">
                         <h3 class="chart-title">Recent Activity</h3>
-                        <ul class="activity-list">
-                            <li class="activity-item">
-                                <div class="activity-icon">✅</div>
-                                <div class="activity-content">
-                                    <div class="activity-text"><strong>Sarah Lee</strong> completed Website Redesign mockups</div>
-                                    <div class="activity-time">2 hours ago</div>
-                                </div>
-                            </li>
-                            <li class="activity-item">
-                                <div class="activity-icon">📝</div>
-                                <div class="activity-content">
-                                    <div class="activity-text"><strong>Mike Chen</strong> updated Mobile App Development status</div>
-                                    <div class="activity-time">4 hours ago</div>
-                                </div>
-                            </li>
-                            <li class="activity-item">
-                                <div class="activity-icon">💬</div>
-                                <div class="activity-content">
-                                    <div class="activity-text"><strong>Emily Rose</strong> commented on Marketing Campaign</div>
-                                    <div class="activity-time">6 hours ago</div>
-                                </div>
-                            </li>
-                            <li class="activity-item">
-                                <div class="activity-icon">🚨</div>
-                                <div class="activity-content">
-                                    <div class="activity-text"><strong>Alex Kim</strong> marked Database Migration as stuck</div>
-                                    <div class="activity-time">1 day ago</div>
-                                </div>
+                        <ul class="activity-list" id="recentActivityList">
+                            <!-- Recent activity will be rendered here dynamically -->
+                            <li style="text-align: center; padding: 20px; color: #999;">
+                                Loading recent activity...
                             </li>
                         </ul>
                     </div>
@@ -2223,7 +2169,7 @@
                         ✏️
                     </button>
                     <div class="team-avatar-large" style="background: ${gradients[index % gradients.length]};">
-                        ${member.avatar || member.name.split(' ').map(n => n[0]).join('')}
+                        ${member.name.split(' ').map(n => n[0]).join('')}
                     </div>
                     <div class="team-name">${member.name}</div>
                     <div class="team-role">${member.role}</div>
@@ -2957,10 +2903,148 @@
         }
 
         function updateDashboardStats() {
-            document.getElementById('totalItems').textContent = tasks.length;
-            document.getElementById('workingItems').textContent = tasks.filter(t => t.status === 'working').length;
-            document.getElementById('doneItems').textContent = tasks.filter(t => t.status === 'done').length;
-            document.getElementById('stuckItems').textContent = tasks.filter(t => t.status === 'stuck').length;
+            console.log('📊 Updating dashboard with real-time data...');
+
+            // Update task statistics
+            const totalTasks = tasks.length;
+            const workingTasks = tasks.filter(t => t.status === 'working').length;
+            const doneTasks = tasks.filter(t => t.status === 'done').length;
+            const stuckTasks = tasks.filter(t => t.status === 'stuck').length;
+
+            document.getElementById('totalItems').textContent = totalTasks;
+            document.getElementById('workingItems').textContent = workingTasks;
+            document.getElementById('doneItems').textContent = doneTasks;
+            document.getElementById('stuckItems').textContent = stuckTasks;
+
+            console.log(`✅ Task stats: ${totalTasks} total, ${workingTasks} in progress, ${doneTasks} done, ${stuckTasks} stuck`);
+
+            // Update project progress
+            renderProjectProgress();
+
+            // Update recent activity
+            renderRecentActivity();
+        }
+
+        // Render project progress on dashboard
+        function renderProjectProgress() {
+            const progressList = document.getElementById('projectProgressList');
+            if (!progressList) return;
+
+            if (projects.length === 0) {
+                progressList.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No projects found</div>';
+                return;
+            }
+
+            // Sort by progress (incomplete first, then by priority)
+            const sortedProjects = [...projects]
+                .filter(p => p.name && p.progress !== undefined)
+                .sort((a, b) => {
+                    // Show incomplete projects first
+                    if (a.progress < 100 && b.progress >= 100) return -1;
+                    if (a.progress >= 100 && b.progress < 100) return 1;
+                    // Then by progress percentage
+                    return b.progress - a.progress;
+                })
+                .slice(0, 6); // Show top 6 projects
+
+            progressList.innerHTML = sortedProjects.map(project => {
+                const progress = project.progress || 0;
+                let barColor = '#0073ea'; // Default blue
+
+                if (progress === 100) {
+                    barColor = '#00c875'; // Green for complete
+                } else if (progress < 30) {
+                    barColor = '#e44258'; // Red for low progress
+                } else if (progress < 60) {
+                    barColor = '#fdab3d'; // Orange for medium
+                }
+
+                return `
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span class="progress-name">${project.name}</span>
+                            <span class="progress-percentage">${progress}%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" style="width: ${progress}%; background: ${barColor}"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            console.log(`✅ Rendered ${sortedProjects.length} projects on dashboard`);
+        }
+
+        // Render recent activity on dashboard
+        function renderRecentActivity() {
+            const activityList = document.getElementById('recentActivityList');
+            if (!activityList) return;
+
+            // Get recent tasks (sorted by updatedAt or createdAt)
+            const recentTasks = [...tasks]
+                .filter(t => t.name && t.personName)
+                .sort((a, b) => {
+                    const aTime = a.updatedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
+                    const bTime = b.updatedAt?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
+                    return bTime - aTime;
+                })
+                .slice(0, 5); // Show 5 most recent
+
+            if (recentTasks.length === 0) {
+                activityList.innerHTML = '<li style="text-align: center; padding: 20px; color: #999;">No recent activity</li>';
+                return;
+            }
+
+            activityList.innerHTML = recentTasks.map(task => {
+                let icon = '📝';
+                let action = 'updated';
+
+                if (task.status === 'done') {
+                    icon = '✅';
+                    action = 'completed';
+                } else if (task.status === 'stuck') {
+                    icon = '🚨';
+                    action = 'marked as stuck';
+                } else if (task.status === 'working') {
+                    icon = '⚙️';
+                    action = 'is working on';
+                }
+
+                // Calculate time ago
+                const timestamp = task.updatedAt?.toMillis?.() || task.createdAt?.toMillis?.() || Date.now();
+                const timeAgo = getTimeAgo(timestamp);
+
+                const projectText = task.project ? ` in ${task.project}` : '';
+
+                return `
+                    <li class="activity-item">
+                        <div class="activity-icon">${icon}</div>
+                        <div class="activity-content">
+                            <div class="activity-text">
+                                <strong>${task.personName}</strong> ${action} <strong>${task.name}</strong>${projectText}
+                            </div>
+                            <div class="activity-time">${timeAgo}</div>
+                        </div>
+                    </li>
+                `;
+            }).join('');
+
+            console.log(`✅ Rendered ${recentTasks.length} recent activities`);
+        }
+
+        // Helper function to calculate time ago
+        function getTimeAgo(timestamp) {
+            const now = Date.now();
+            const diff = now - timestamp;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) return days === 1 ? '1 day ago' : `${days} days ago`;
+            if (hours > 0) return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+            if (minutes > 0) return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
+            return 'Just now';
         }
 
         function getStatusText(status) {
