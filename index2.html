@@ -2084,7 +2084,7 @@
                             <option value="Smoke Test">Smoke Test</option>
                             <option value="SIT">SIT</option>
                             <option value="UAT">UAT</option>
-                            <option value="Implement">Implement</option>
+                            <option value="Implement">Implemented</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -3069,11 +3069,28 @@
             return statusMap[status] || status;
         }
 
+        // Helper function to format name as "FirstName LastInitial."
+        function formatNameWithInitial(fullName) {
+            if (!fullName || fullName === 'Unknown') return fullName;
+
+            const nameParts = fullName.trim().split(' ');
+            if (nameParts.length === 1) {
+                // Only first name, return as is
+                return nameParts[0];
+            }
+
+            // Get first name and first letter of last name
+            const firstName = nameParts[0];
+            const lastNameInitial = nameParts[nameParts.length - 1][0];
+            return `${firstName} ${lastNameInitial}.`;
+        }
+
         function renderTasks() {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = tasks.map((task, index) => {
-                const displayName = task.personName || task.person || 'Unknown';
-                const avatarText = displayName.split(' ').map(n => n[0]).join('');
+                const fullName = task.personName || task.person || 'Unknown';
+                const displayName = formatNameWithInitial(fullName);
+                const avatarText = fullName.split(' ').map(n => n[0]).join('');
 
                 return `
                 <div class="table-row" data-index="${index}">
@@ -3542,7 +3559,7 @@
                             <div class="project-card-title">${project.name}</div>
                             <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
                                 <span class="project-status-badge ${project.status}">${formatStatus(project.status)}</span>
-                                ${project.sdlc ? `<span class="project-status-badge" style="background: #0073ea; color: white;">🔄 ${project.sdlc}</span>` : ''}
+                                ${project.sdlc ? `<span class="project-status-badge" style="background: #0073ea; color: white;"> ${project.sdlc}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -3582,7 +3599,7 @@
                             <div style="font-size: 12px; font-weight: 700; color: #676879; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Team Members</div>
                             <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                                 ${project.teamMembers.map(member => `
-                                    <span style="background: white; padding: 4px 10px; border-radius: 6px; font-size: 13px; color: #323338; border: 1px solid #e6e9ef;">${member}</span>
+                                    <span style="background: white; padding: 4px 10px; border-radius: 6px; font-size: 13px; color: #323338; border: 1px solid #e6e9ef;">${formatNameWithInitial(member)}</span>
                                 `).join('')}
                             </div>
                         </div>
