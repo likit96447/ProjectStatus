@@ -623,14 +623,21 @@
         .table-container {
             background: white;
             border-radius: 16px;
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: hidden;
             box-shadow: 0 4px 16px rgba(0,0,0,0.08);
             border: 1px solid #e6e9ef;
+            width: 100%;
+        }
+
+        .table-wrapper {
+            min-width: 100%;
+            width: max-content;
         }
 
         .table-header {
             display: grid;
-            grid-template-columns: 60px 1fr 140px 120px 160px 140px 120px 120px 100px;
+            grid-template-columns: 60px minmax(180px, 1.8fr) 140px 120px 180px 150px 130px 130px 120px;
             background: linear-gradient(135deg, #f6f7fb 0%, #e6e9ef 100%);
             border-bottom: 2px solid #e6e9ef;
             font-size: 13px;
@@ -638,11 +645,15 @@
             color: #676879;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            min-width: max-content;
         }
 
         .table-cell {
             padding: 18px 16px;
             border-right: 1px solid #e6e9ef;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .table-cell:last-child {
@@ -651,20 +662,47 @@
 
         .table-row {
             display: grid;
-            grid-template-columns: 60px 1fr 140px 120px 160px 140px 120px 120px 100px;
+            grid-template-columns: 60px minmax(180px, 1.8fr) 140px 120px 180px 150px 130px 130px 120px;
             border-bottom: 1px solid #e6e9ef;
             transition: all 0.3s ease;
+            min-width: max-content;
         }
 
         .table-row:hover {
             background: #f6f7fb;
-            transform: scale(1.01);
+            transform: scale(1.005);
         }
 
         .table-row .table-cell {
             padding: 18px 16px;
             display: flex;
             align-items: center;
+        }
+
+        .table-cell .task-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+
+        /* Custom scrollbar for table container */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-container::-webkit-scrollbar-track {
+            background: #f6f7fb;
+            border-radius: 0 0 16px 16px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+        }
+
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5568d3 0%, #6a4291 100%);
         }
 
         .row-number {
@@ -953,6 +991,179 @@
             letter-spacing: 0.5px;
         }
 
+        /* Projects Grid Styles */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            padding: 24px 0;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #e6e9ef;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .project-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+        }
+
+        .project-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .project-card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #323338;
+            margin-bottom: 8px;
+        }
+
+        .project-card-description {
+            font-size: 14px;
+            color: #676879;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .project-status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .project-status-badge.planned {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .project-status-badge.in-progress {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .project-status-badge.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .project-status-badge.on-hold {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .project-card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e6e9ef;
+        }
+
+        .project-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #676879;
+        }
+
+        .project-meta-icon {
+            font-size: 14px;
+        }
+
+        .project-card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .project-action-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: 2px solid #e6e9ef;
+            background: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .project-action-btn:hover {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .project-action-btn.delete:hover {
+            background: #e44258;
+            border-color: #e44258;
+        }
+
+        .project-progress {
+            margin-top: 12px;
+        }
+
+        .project-progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #676879;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .project-progress-bar {
+            height: 8px;
+            background: #e6e9ef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .project-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 12px;
+        }
+
+        .project-tag {
+            padding: 4px 10px;
+            background: #f5f6f8;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #676879;
+            font-weight: 600;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -1056,10 +1267,61 @@
             background: #c93649;
         }
 
+        /* Tablet responsive design (768px - 1024px) */
+        @media (max-width: 1024px) {
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .table-header,
+            .table-row {
+                grid-template-columns: 50px minmax(150px, 1fr) 120px 100px 140px 110px;
+            }
+
+            /* Hide date and timeline columns on tablet */
+            .table-cell:nth-child(7),
+            .table-cell:nth-child(8) {
+                display: none;
+            }
+
+            .content {
+                padding: 20px;
+            }
+        }
+
+        /* Mobile responsive design (max-width: 768px) */
         @media (max-width: 768px) {
+            .header {
+                padding: 0 16px;
+                height: 60px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+
+            .main-nav {
+                display: none;
+            }
+
+            .search-container {
+                display: none;
+            }
+
+            .header-right {
+                gap: 8px;
+            }
+
+            .icon-btn,
+            .avatar {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+
             .sidebar {
-                width: 80px;
-                padding: 24px 12px;
+                width: 70px;
+                padding: 16px 8px;
             }
 
             .sidebar-title,
@@ -1070,17 +1332,230 @@
 
             .sidebar-item {
                 justify-content: center;
+                padding: 10px;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .board-title {
+                font-size: 24px;
+            }
+
+            .board-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            /* Remove horizontal scroll on mobile */
+            .table-container {
+                overflow-x: visible;
+                overflow-y: visible;
+            }
+
+            /* Hide table header on mobile */
+            .table-header {
+                display: none;
+            }
+
+            /* Convert table rows to card layout */
+            .table-row {
+                display: flex;
+                flex-direction: column;
+                padding: 16px;
+                gap: 12px;
+                border-radius: 12px;
+                margin-bottom: 12px;
+                background: white;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                min-width: auto;
+            }
+
+            .table-row:hover {
+                transform: scale(1);
+            }
+
+            .table-cell {
+                padding: 0 !important;
+                border-right: none !important;
+                display: flex !important;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .table-cell::before {
+                content: attr(data-label);
+                font-weight: 700;
+                color: #676879;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            /* Hide row number on mobile */
+            .table-cell:nth-child(1) {
+                display: none !important;
+            }
+
+            /* Task name - full width, no label */
+            .table-cell:nth-child(2) {
+                flex-direction: column;
+                align-items: flex-start;
+                padding-bottom: 8px !important;
+                border-bottom: 1px solid #e6e9ef;
+            }
+
+            .table-cell:nth-child(2)::before {
+                content: none;
+            }
+
+            .task-name {
+                font-size: 16px;
+                font-weight: 700;
+            }
+
+            /* Show all cells on mobile */
+            .table-cell:nth-child(n) {
+                display: flex !important;
+            }
+
+            .status-badge {
+                font-size: 11px;
+                padding: 6px 12px;
+            }
+
+            .person-cell {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .person-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+
+            .project-badge {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+
+            .action-buttons {
+                gap: 8px;
+            }
+
+            .action-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+
+            .date-cell {
+                font-size: 13px;
+            }
+        }
+
+        /* Extra small mobile (max-width: 480px) */
+        @media (max-width: 480px) {
+            .header {
+                padding: 0 12px;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                z-index: 200;
+                transition: left 0.3s ease;
+                height: calc(100vh - 60px);
+            }
+
+            .sidebar.mobile-open {
+                left: 0;
+            }
+
+            .main-container {
+                margin-left: 0;
+            }
+
+            .content {
+                padding: 12px;
+                width: 100%;
+            }
+
+            .board-title {
+                font-size: 20px;
+            }
+
+            .board-subtitle {
+                font-size: 13px;
+            }
+
+            .table-row {
                 padding: 12px;
             }
 
-            .table-header,
-            .table-row {
-                grid-template-columns: 50px 1fr 100px 80px;
+            .table-cell {
+                font-size: 13px;
             }
 
-            .table-cell:nth-child(n+5) {
-                display: none;
+            .action-buttons {
+                flex-wrap: wrap;
             }
+        }
+
+        /* Loading Spinner */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(4px);
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner-container {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 16px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .spinner-text {
+            color: #323338;
+            font-size: 14px;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -1091,7 +1566,8 @@
                 <div class="logo">ProjectFlow</div>
                 <nav class="main-nav">
                     <button class="nav-tab active" onclick="switchPage('dashboard')">Dashboard</button>
-                    <button class="nav-tab" onclick="switchPage('projects')">Projects</button>
+                    <button class="nav-tab" onclick="switchPage('projectslist')">Projects</button>
+                    <button class="nav-tab" onclick="switchPage('tasks')">Tasks</button>
                     <button class="nav-tab" onclick="switchPage('team')">Team</button>
                     <button class="nav-tab" onclick="switchPage('reports')">Reports</button>
                 </nav>
@@ -1213,88 +1689,34 @@
 
                     <div class="chart-container">
                         <h3 class="chart-title">Project Progress</h3>
-                        <div class="progress-item">
-                            <div class="progress-header">
-                                <span class="progress-name">Website Redesign</span>
-                                <span class="progress-percentage">75%</span>
-                            </div>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar-fill" style="width: 75%"></div>
-                            </div>
-                        </div>
-                        <div class="progress-item">
-                            <div class="progress-header">
-                                <span class="progress-name">Mobile App Development</span>
-                                <span class="progress-percentage">60%</span>
-                            </div>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar-fill" style="width: 60%"></div>
-                            </div>
-                        </div>
-                        <div class="progress-item">
-                            <div class="progress-header">
-                                <span class="progress-name">Marketing Campaign</span>
-                                <span class="progress-percentage">100%</span>
-                            </div>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar-fill" style="width: 100%; background: #00c875"></div>
-                            </div>
-                        </div>
-                        <div class="progress-item">
-                            <div class="progress-header">
-                                <span class="progress-name">Database Migration</span>
-                                <span class="progress-percentage">30%</span>
-                            </div>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar-fill" style="width: 30%; background: #e44258"></div>
+                        <div id="projectProgressList">
+                            <!-- Projects will be rendered here dynamically -->
+                            <div style="text-align: center; padding: 20px; color: #999;">
+                                Loading projects...
                             </div>
                         </div>
                     </div>
 
                     <div class="chart-container">
                         <h3 class="chart-title">Recent Activity</h3>
-                        <ul class="activity-list">
-                            <li class="activity-item">
-                                <div class="activity-icon">✅</div>
-                                <div class="activity-content">
-                                    <div class="activity-text"><strong>Sarah Lee</strong> completed Website Redesign mockups</div>
-                                    <div class="activity-time">2 hours ago</div>
-                                </div>
-                            </li>
-                            <li class="activity-item">
-                                <div class="activity-icon">📝</div>
-                                <div class="activity-content">
-                                    <div class="activity-text"><strong>Mike Chen</strong> updated Mobile App Development status</div>
-                                    <div class="activity-time">4 hours ago</div>
-                                </div>
-                            </li>
-                            <li class="activity-item">
-                                <div class="activity-icon">💬</div>
-                                <div class="activity-content">
-                                    <div class="activity-text"><strong>Emily Rose</strong> commented on Marketing Campaign</div>
-                                    <div class="activity-time">6 hours ago</div>
-                                </div>
-                            </li>
-                            <li class="activity-item">
-                                <div class="activity-icon">🚨</div>
-                                <div class="activity-content">
-                                    <div class="activity-text"><strong>Alex Kim</strong> marked Database Migration as stuck</div>
-                                    <div class="activity-time">1 day ago</div>
-                                </div>
+                        <ul class="activity-list" id="recentActivityList">
+                            <!-- Recent activity will be rendered here dynamically -->
+                            <li style="text-align: center; padding: 20px; color: #999;">
+                                Loading recent activity...
                             </li>
                         </ul>
                     </div>
                 </div>
 
-                <!-- Projects Page -->
-                <div id="projectsPage" class="page-view">
+                <!-- Projects List Page -->
+                <div id="projectslistPage" class="page-view">
                     <div class="board-header">
-                        <h1 class="board-title">Project Management</h1>
-                        <p class="board-subtitle">Manage your team's tasks and deliverables</p>
+                        <h1 class="board-title">Projects</h1>
+                        <p class="board-subtitle">Manage all your projects in one place</p>
                         <div class="board-actions">
-                            <button class="btn btn-primary" onclick="openModal()">
+                            <button class="btn btn-primary" onclick="openProjectModal()">
                                 <span>+</span>
-                                <span>New Task</span>
+                                <span>New Project</span>
                             </button>
                             <button class="btn btn-secondary">
                                 <span>🔍</span>
@@ -1304,6 +1726,78 @@
                                 <span>📤</span>
                                 <span>Export</span>
                             </button>
+                        </div>
+                    </div>
+
+                    <div id="projectsGrid" class="projects-grid">
+                        <!-- Projects will be rendered here dynamically -->
+                    </div>
+                </div>
+
+                <!-- Tasks Page -->
+                <div id="tasksPage" class="page-view">
+                    <div class="board-header">
+                        <h1 class="board-title">Task Management</h1>
+                        <p class="board-subtitle">Manage your team's tasks and deliverables</p>
+                        <div class="board-actions">
+                            <button class="btn btn-primary" onclick="openModal()">
+                                <span>+</span>
+                                <span>New Task</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="toggleFilterPanel()">
+                                <span>🔍</span>
+                                <span>Filter</span>
+                            </button>
+                            <button class="btn btn-secondary">
+                                <span>📤</span>
+                                <span>Export</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Task Filter Panel -->
+                    <div id="taskFilterPanel" style="display: none; background: white; padding: 20px; margin: 16px 0; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #323338;">Filter Tasks</h3>
+                            <button onclick="clearAllTaskFilters()" style="background: transparent; border: none; color: #e44258; cursor: pointer; font-size: 14px; font-weight: 600;">
+                                Clear All
+                            </button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Status</label>
+                                <select id="filterStatus" onchange="applyTaskFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                                    <option value="">All Status</option>
+                                    <option value="working">In Progress</option>
+                                    <option value="done">Done</option>
+                                    <option value="stuck">Stuck</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Priority</label>
+                                <select id="filterPriority" onchange="applyTaskFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                                    <option value="">All Priority</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Assigned To</label>
+                                <select id="filterAssignedTo" onchange="applyTaskFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                                    <option value="">All Members</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Project</label>
+                                <select id="filterProject" onchange="applyTaskFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                                    <option value="">All Projects</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="activeFiltersDisplay" style="margin-top: 12px; display: none;">
+                            <div style="font-size: 12px; font-weight: 600; color: #676879; margin-bottom: 6px;">Active Filters:</div>
+                            <div id="activeFilterTags" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
                         </div>
                     </div>
 
@@ -1650,6 +2144,87 @@
         </div>
     </div>
 
+    <!-- Project Modal -->
+    <div class="modal" id="projectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="projectModalTitle">Create New Project</h2>
+            </div>
+            <form id="projectForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Project Name</label>
+                        <input type="text" class="form-input" id="projectName" placeholder="Enter project name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-input" id="projectDescription" placeholder="Project description" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="projectStatus">
+                            <option value="planned">Planned</option>
+                            <option value="in-progress" selected>In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="on-hold">On Hold</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">SDLC Phase</label>
+                        <select class="form-select" id="projectSDLC">
+                            <option value="Requirement">Requirement</option>
+                            <option value="Design">Design</option>
+                            <option value="Development" selected>Development</option>
+                            <option value="Smoke Test">Smoke Test</option>
+                            <option value="SIT">SIT</option>
+                            <option value="UAT">UAT</option>
+                            <option value="Implement">Implemented</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Priority</label>
+                        <select class="form-select" id="projectPriority">
+                            <option value="low">Low</option>
+                            <option value="medium" selected>Medium</option>
+                            <option value="high">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" class="form-input" id="projectStartDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">End Date</label>
+                        <input type="date" class="form-input" id="projectEndDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Progress (%)</label>
+                        <input type="number" class="form-input" id="projectProgress" min="0" max="100" value="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Budget (฿)</label>
+                        <input type="number" class="form-input" id="projectBudget" placeholder="0" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Team Members <span style="color: #e44258;">*</span></label>
+                        <select class="form-select" id="projectTeamMembers" multiple size="5" required>
+                            <option value="" disabled>Loading team members...</option>
+                        </select>
+                        <small style="color: #676879; font-size: 12px; margin-top: 4px; display: block;">Hold Ctrl/Cmd to select multiple members (at least one required)</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tags (comma separated)</label>
+                        <input type="text" class="form-input" id="projectTags" placeholder="e.g., frontend, urgent">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeProjectModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="projectSubmitBtn">Create Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         // ========================================
         // FIREBASE CONFIGURATION
@@ -1672,6 +2247,25 @@
             console.log("✅ Firebase initialized successfully!");
         } catch (error) {
             console.error("❌ Firebase initialization error:", error);
+        }
+
+        // ========================================
+        // LOADING SPINNER FUNCTIONS
+        // ========================================
+        function showSpinner(text = 'Loading...') {
+            const overlay = document.getElementById('loadingOverlay');
+            const spinnerText = document.getElementById('spinnerText');
+            if (overlay) {
+                if (spinnerText) spinnerText.textContent = text;
+                overlay.classList.add('active');
+            }
+        }
+
+        function hideSpinner() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+            }
         }
 
         // ========================================
@@ -1700,7 +2294,7 @@
                         ✏️
                     </button>
                     <div class="team-avatar-large" style="background: ${gradients[index % gradients.length]};">
-                        ${member.avatar || member.name.split(' ').map(n => n[0]).join('')}
+                        ${member.name.split(' ').map(n => n[0]).join('')}
                     </div>
                     <div class="team-name">${member.name}</div>
                     <div class="team-role">${member.role}</div>
@@ -1709,12 +2303,16 @@
                     </div>
                     <div class="team-stats">
                         <div class="team-stat">
-                            <div class="team-stat-value">${member.tasksCount || 0}</div>
-                            <div class="team-stat-label">Tasks</div>
+                            <div class="team-stat-value">${member.remainingCount || 0}</div>
+                            <div class="team-stat-label">Remain</div>
                         </div>
                         <div class="team-stat">
                             <div class="team-stat-value">${member.doneCount || 0}</div>
                             <div class="team-stat-label">Done</div>
+                        </div>
+                        <div class="team-stat">
+                            <div class="team-stat-value">${member.inProgressProjects ? member.inProgressProjects.length : 0}</div>
+                            <div class="team-stat-label">Project</div>
                         </div>
                     </div>
                 </div>
@@ -1737,20 +2335,23 @@
         async function loadTeamMembersWithStats() {
             if (!db) return;
 
+            showSpinner('Loading team members...');
+
             try {
                 const membersSnapshot = await db.collection('team_members').get();
                 const tasksSnapshot = await db.collection('tasks').get();
-                
+                const projectsSnapshot = await db.collection('projects').get();
+
                 const teamMembers = [];
-                
+
                 for (const memberDoc of membersSnapshot.docs) {
                     const memberData = memberDoc.data();
                     const memberId = memberDoc.id;
-                    
+
                     // Count tasks for this member by ID
                     let totalTasks = 0;
                     let doneTasks = 0;
-                    
+
                     tasksSnapshot.forEach(taskDoc => {
                         const task = taskDoc.data();
                         // Check both assignedTo (ID) and person (name) for backwards compatibility
@@ -1761,21 +2362,44 @@
                             }
                         }
                     });
-                    
+
+                    // Find in-progress projects this member is part of
+                    const inProgressProjects = [];
+                    projectsSnapshot.forEach(projectDoc => {
+                        const project = projectDoc.data();
+                        // Check if member is in teamMemberIds or teamMembers (name-based)
+                        const isMemberInProject =
+                            (project.teamMemberIds && project.teamMemberIds.includes(memberId)) ||
+                            (project.teamMembers && project.teamMembers.includes(memberData.name));
+
+                        // Only include in-progress projects
+                        if (isMemberInProject && project.status === 'in-progress') {
+                            inProgressProjects.push({
+                                id: projectDoc.id,
+                                name: project.name,
+                                progress: project.progress || 0
+                            });
+                        }
+                    });
+
                     teamMembers.push({
                         id: memberDoc.id,
                         ...memberData,
                         tasksCount: totalTasks,
-                        doneCount: doneTasks
+                        doneCount: doneTasks,
+                        remainingCount: totalTasks - doneTasks,  // Calculate remaining tasks
+                        inProgressProjects: inProgressProjects  // Add in-progress projects
                     });
                 }
-                
+
                 currentTeamMembers = teamMembers;
                 renderTeamMembers(teamMembers);
-                console.log(`✅ Loaded ${teamMembers.length} team members with real task counts`);
-                
+                console.log(`✅ Loaded ${teamMembers.length} team members with real task counts and projects`);
+
             } catch (error) {
                 console.error("❌ Error loading team members:", error);
+            } finally {
+                hideSpinner();
             }
         }
 
@@ -1844,14 +2468,23 @@
 
         // Populate assign to dropdown
         async function populateAssignToDropdown() {
+            console.log('🔄 populateAssignToDropdown() called');
+
             const personSelect = document.getElementById('itemPerson');
-            if (!personSelect) return;
+            if (!personSelect) {
+                console.error('❌ itemPerson select element not found!');
+                return;
+            }
+
+            console.log('✅ Found itemPerson select element');
 
             // Show loading state
             personSelect.innerHTML = '<option value="" disabled selected>Loading active members...</option>';
+            console.log('⏳ Loading state set, calling loadActiveTeamMembers()...');
 
             // Get active members with IDs
             const activeMembers = await loadActiveTeamMembers();
+            console.log('📦 Received activeMembers array:', activeMembers);
 
             if (activeMembers.length === 0) {
                 personSelect.innerHTML = '<option value="" disabled selected>No team members found</option>';
@@ -1893,6 +2526,76 @@
             });
 
             console.log(`✅ Populated dropdown with ${activeMembers.length} active members`);
+        }
+
+        // Populate project dropdown for task form
+        async function populateTaskProjectDropdown() {
+            console.log('🔄 populateTaskProjectDropdown() called');
+            const projectSelect = document.getElementById('itemProject');
+
+            if (!projectSelect) {
+                console.error('❌ itemProject select element not found!');
+                return;
+            }
+
+            // Show loading state
+            projectSelect.innerHTML = '<option value="">Loading projects...</option>';
+
+            if (!db) {
+                console.error('❌ Firebase not initialized');
+                projectSelect.innerHTML = '<option value="">No Project</option>';
+                return;
+            }
+
+            try {
+                const snapshot = await db.collection('projects').get();
+                console.log(`📦 Found ${snapshot.size} projects in database`);
+
+                // Clear and add default option
+                projectSelect.innerHTML = '<option value="">No Project</option>';
+
+                if (snapshot.empty) {
+                    console.warn('⚠️ No projects found in database');
+                    return;
+                }
+
+                // Add projects to dropdown
+                let addedCount = 0;
+                snapshot.forEach(doc => {
+                    const project = doc.data();
+                    if (project.name) {
+                        const option = document.createElement('option');
+                        option.value = doc.id;  // Store project ID
+                        option.textContent = project.name;  // Show project name
+                        option.setAttribute('data-project-name', project.name);
+                        projectSelect.appendChild(option);
+                        addedCount++;
+                        console.log(`📁 Added project: ${project.name}`);
+                    }
+                });
+
+                console.log(`✅ Populated project dropdown with ${addedCount} projects`);
+
+            } catch (error) {
+                console.error('❌ Error loading projects for dropdown:', error);
+                projectSelect.innerHTML = '<option value="">No Project</option>';
+            }
+        }
+
+        // Get project name by ID
+        async function getProjectNameById(projectId) {
+            if (!db || !projectId) return '';
+
+            try {
+                const doc = await db.collection('projects').doc(projectId).get();
+                if (doc.exists) {
+                    return doc.data().name;
+                }
+                return '';
+            } catch (error) {
+                console.error('❌ Error getting project name:', error);
+                return '';
+            }
         }
 
         // Initialize ALL sample data (tasks, team members, workspaces, projects)
@@ -2092,6 +2795,9 @@
             }
         }
 
+        // Prevent concurrent loading
+        let isLoadingTasks = false;
+
         // Load all tasks from Firestore
         async function loadTasksFromFirebase() {
             if (!db) {
@@ -2099,33 +2805,79 @@
                 return;
             }
 
+            // Prevent concurrent loading
+            if (isLoadingTasks) {
+                console.log("⏭️ Task loading already in progress, skipping...");
+                return;
+            }
+
+            isLoadingTasks = true;
+            showSpinner('Loading tasks...');
+            console.log("📥 Loading tasks from Firebase...");
+
             try {
-                const snapshot = await db.collection('tasks').orderBy('createdAt', 'desc').get();
-                
+                // Fetch all data in parallel for better performance
+                const [tasksSnapshot, membersSnapshot, projectsSnapshot] = await Promise.all([
+                    db.collection('tasks').orderBy('createdAt', 'desc').get(),
+                    db.collection('team_members').get(),
+                    db.collection('projects').get()
+                ]);
+
+                // Create lookup maps for fast access
+                const membersMap = {};
+                membersSnapshot.forEach(doc => {
+                    membersMap[doc.id] = doc.data().name;
+                });
+
+                const projectsMap = {};
+                projectsSnapshot.forEach(doc => {
+                    projectsMap[doc.id] = doc.data().name;
+                });
+
                 // Clear tasks array to prevent duplicates
                 tasks = [];
-                
-                for (const doc of snapshot.docs) {
+
+                // Process tasks with cached data (no more individual Firebase calls!)
+                tasksSnapshot.forEach(doc => {
                     const taskData = doc.data();
-                    
-                    // Get member name if assignedTo is an ID
+
+                    // Get member name from map (much faster!)
                     let personName = taskData.person;
-                    if (taskData.assignedTo) {
-                        personName = await getMemberNameById(taskData.assignedTo);
+                    if (taskData.assignedTo && membersMap[taskData.assignedTo]) {
+                        personName = membersMap[taskData.assignedTo];
                     }
-                    
+
+                    // Get project name from map (much faster!)
+                    let projectName = taskData.project || '';
+                    if (taskData.projectId && projectsMap[taskData.projectId]) {
+                        projectName = projectsMap[taskData.projectId];
+                    }
+
                     tasks.push({
                         id: doc.id,
                         ...taskData,
-                        personName: personName  // Store display name
+                        personName: personName,      // Store display name
+                        project: projectName         // Store real-time project name
                     });
+                });
+
+                // Check if any filters are active and re-apply them
+                const hasActiveFilters = taskFilters && Object.values(taskFilters).some(v => v !== '');
+
+                if (hasActiveFilters || currentProjectFilter) {
+                    console.log(`🔄 Re-applying active filters`);
+                    applyTaskFilters();
+                } else {
+                    renderTasks();
                 }
-                
-                renderTasks();
+
                 updateDashboardStats();
-                console.log(`✅ Loaded ${tasks.length} tasks from Firebase (cleared duplicates)`);
+                console.log(`✅ Loaded ${tasks.length} tasks from Firebase (optimized batch loading)`);
             } catch (error) {
                 console.error("❌ Error loading tasks:", error);
+            } finally {
+                isLoadingTasks = false;
+                hideSpinner();
             }
         }
 
@@ -2176,21 +2928,30 @@
         }
 
         // Real-time listener for tasks
+        let realtimeListenerUnsubscribe = null;
+
         function setupRealtimeListener() {
             if (!db) return;
 
-            db.collection('tasks').onSnapshot(async (snapshot) => {
+            // Prevent setting up multiple listeners
+            if (realtimeListenerUnsubscribe) {
+                console.log("⏭️ Real-time listener already set up, skipping...");
+                return;
+            }
+
+            console.log("📡 Setting up real-time listener...");
+            realtimeListenerUnsubscribe = db.collection('tasks').onSnapshot(async (snapshot) => {
                 // Skip if we're in the middle of a manual operation
                 if (isManualOperation) {
                     console.log("⏭️ Skipping real-time update (manual operation in progress)");
                     return;
                 }
-                
+
                 const changes = snapshot.docChanges();
                 if (changes.length > 0) {
                     console.log("📡 Real-time update detected, reloading tasks...");
                     await loadTasksFromFirebase();
-                    
+
                     // Reload team members if on team page
                     const teamPage = document.getElementById('teamPage');
                     if (teamPage && teamPage.classList.contains('active')) {
@@ -2215,7 +2976,59 @@
             { name: 'Security Audit', status: 'done', priority: 'high', person: 'Morgan Lee', date: '2025-10-15', timeline: '2 weeks' }
         ];
 
+        let projects = [
+            {
+                name: 'Website Redesign',
+                description: 'Complete overhaul of company website with modern design',
+                status: 'in-progress',
+                priority: 'high',
+                startDate: '2025-10-01',
+                endDate: '2025-12-31',
+                progress: 75,
+                budget: 50000,
+                teamMembers: ['Sarah Lee', 'Mike Chen'],
+                tags: ['design', 'frontend', 'urgent']
+            },
+            {
+                name: 'Mobile App Development',
+                description: 'Build native mobile app for iOS and Android',
+                status: 'in-progress',
+                priority: 'high',
+                startDate: '2025-09-15',
+                endDate: '2025-12-15',
+                progress: 60,
+                budget: 120000,
+                teamMembers: ['Mike Chen', 'Taylor Wong'],
+                tags: ['mobile', 'development']
+            },
+            {
+                name: 'Marketing Campaign Q4',
+                description: 'Q4 marketing initiatives and social media campaigns',
+                status: 'completed',
+                priority: 'medium',
+                startDate: '2025-10-01',
+                endDate: '2025-10-31',
+                progress: 100,
+                budget: 30000,
+                teamMembers: ['Emily Rose'],
+                tags: ['marketing', 'social-media']
+            },
+            {
+                name: 'Database Infrastructure',
+                description: 'Database migration and optimization project',
+                status: 'in-progress',
+                priority: 'high',
+                startDate: '2025-10-15',
+                endDate: '2025-12-15',
+                progress: 30,
+                budget: 80000,
+                teamMembers: ['Alex Kim', 'Taylor Wong'],
+                tags: ['database', 'infrastructure', 'backend']
+            }
+        ];
+
         let editingIndex = -1;
+        let editingProjectIndex = -1;
         let isManualOperation = false;  // Flag to prevent listener conflicts
 
         function toggleSection(sectionName) {
@@ -2238,35 +3051,190 @@
             icon.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
         }
 
-        function switchPage(pageName) {
-            const pages = ['dashboard', 'tasks', 'team', 'reports'];
+        function switchPage(pageName, skipFilterClear = false) {
+            const pages = ['dashboard', 'projectslist', 'tasks', 'team', 'reports'];
             pages.forEach(p => {
                 const page = document.getElementById(p + 'Page');
                 if (page) page.classList.remove('active');
             });
-            
+
             const targetPage = document.getElementById(pageName + 'Page');
             if (targetPage) targetPage.classList.add('active');
 
             const navTabs = document.querySelectorAll('.nav-tab');
             navTabs.forEach(tab => tab.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
 
             // Reload data when switching to specific pages
             if (pageName === 'tasks' && db) {
+                // Clear filter only if not coming from viewProjectTasks
+                if (!skipFilterClear) {
+                    // Hide filter panel and clear all filters when navigating directly to tasks
+                    const panel = document.getElementById('taskFilterPanel');
+                    if (panel) {
+                        panel.style.display = 'none';
+                    }
+                    clearAllTaskFilters();
+                }
                 loadTasksFromFirebase();
             } else if (pageName === 'team' && db) {
                 loadTeamMembersWithStats();
             } else if (pageName === 'dashboard') {
                 updateDashboardStats();
+            } else if (pageName === 'projectslist') {
+                if (db) {
+                    loadProjectsFromFirebase();
+                } else {
+                    renderProjects();
+                }
             }
         }
 
         function updateDashboardStats() {
-            document.getElementById('totalItems').textContent = tasks.length;
-            document.getElementById('workingItems').textContent = tasks.filter(t => t.status === 'working').length;
-            document.getElementById('doneItems').textContent = tasks.filter(t => t.status === 'done').length;
-            document.getElementById('stuckItems').textContent = tasks.filter(t => t.status === 'stuck').length;
+            console.log('📊 Updating dashboard with real-time data...');
+
+            // Update task statistics
+            const totalTasks = tasks.length;
+            const workingTasks = tasks.filter(t => t.status === 'working').length;
+            const doneTasks = tasks.filter(t => t.status === 'done').length;
+            const stuckTasks = tasks.filter(t => t.status === 'stuck').length;
+
+            document.getElementById('totalItems').textContent = totalTasks;
+            document.getElementById('workingItems').textContent = workingTasks;
+            document.getElementById('doneItems').textContent = doneTasks;
+            document.getElementById('stuckItems').textContent = stuckTasks;
+
+            console.log(`✅ Task stats: ${totalTasks} total, ${workingTasks} in progress, ${doneTasks} done, ${stuckTasks} stuck`);
+
+            // Update project progress
+            renderProjectProgress();
+
+            // Update recent activity
+            renderRecentActivity();
+        }
+
+        // Render project progress on dashboard
+        function renderProjectProgress() {
+            const progressList = document.getElementById('projectProgressList');
+            if (!progressList) return;
+
+            if (projects.length === 0) {
+                progressList.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No projects found</div>';
+                return;
+            }
+
+            // Sort by progress (incomplete first, then by priority)
+            const sortedProjects = [...projects]
+                .filter(p => p.name && p.progress !== undefined)
+                .sort((a, b) => {
+                    // Show incomplete projects first
+                    if (a.progress < 100 && b.progress >= 100) return -1;
+                    if (a.progress >= 100 && b.progress < 100) return 1;
+                    // Then by progress percentage
+                    return b.progress - a.progress;
+                })
+                .slice(0, 6); // Show top 6 projects
+
+            progressList.innerHTML = sortedProjects.map(project => {
+                const progress = project.progress || 0;
+                let barColor = '#0073ea'; // Default blue
+
+                if (progress === 100) {
+                    barColor = '#00c875'; // Green for complete
+                } else if (progress < 30) {
+                    barColor = '#e44258'; // Red for low progress
+                } else if (progress < 60) {
+                    barColor = '#fdab3d'; // Orange for medium
+                }
+
+                return `
+                    <div class="progress-item">
+                        <div class="progress-header">
+                            <span class="progress-name">${project.name}</span>
+                            <span class="progress-percentage">${progress}%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" style="width: ${progress}%; background: ${barColor}"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            console.log(`✅ Rendered ${sortedProjects.length} projects on dashboard`);
+        }
+
+        // Render recent activity on dashboard
+        function renderRecentActivity() {
+            const activityList = document.getElementById('recentActivityList');
+            if (!activityList) return;
+
+            // Get recent tasks (sorted by updatedAt or createdAt)
+            const recentTasks = [...tasks]
+                .filter(t => t.name && t.personName)
+                .sort((a, b) => {
+                    const aTime = a.updatedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
+                    const bTime = b.updatedAt?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
+                    return bTime - aTime;
+                })
+                .slice(0, 5); // Show 5 most recent
+
+            if (recentTasks.length === 0) {
+                activityList.innerHTML = '<li style="text-align: center; padding: 20px; color: #999;">No recent activity</li>';
+                return;
+            }
+
+            activityList.innerHTML = recentTasks.map(task => {
+                let icon = '📝';
+                let action = 'updated';
+
+                if (task.status === 'done') {
+                    icon = '✅';
+                    action = 'completed';
+                } else if (task.status === 'stuck') {
+                    icon = '🚨';
+                    action = 'marked as stuck';
+                } else if (task.status === 'working') {
+                    icon = '⚙️';
+                    action = 'is working on';
+                }
+
+                // Calculate time ago
+                const timestamp = task.updatedAt?.toMillis?.() || task.createdAt?.toMillis?.() || Date.now();
+                const timeAgo = getTimeAgo(timestamp);
+
+                const projectText = task.project ? ` in ${task.project}` : '';
+
+                return `
+                    <li class="activity-item">
+                        <div class="activity-icon">${icon}</div>
+                        <div class="activity-content">
+                            <div class="activity-text">
+                                <strong>${task.personName}</strong> ${action} <strong>${task.name}</strong>${projectText}
+                            </div>
+                            <div class="activity-time">${timeAgo}</div>
+                        </div>
+                    </li>
+                `;
+            }).join('');
+
+            console.log(`✅ Rendered ${recentTasks.length} recent activities`);
+        }
+
+        // Helper function to calculate time ago
+        function getTimeAgo(timestamp) {
+            const now = Date.now();
+            const diff = now - timestamp;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) return days === 1 ? '1 day ago' : `${days} days ago`;
+            if (hours > 0) return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+            if (minutes > 0) return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
+            return 'Just now';
         }
 
         function getStatusText(status) {
@@ -2279,50 +3247,70 @@
             return statusMap[status] || status;
         }
 
+        // Helper function to format name as "FirstName LastInitial."
+        function formatNameWithInitial(fullName) {
+            if (!fullName || fullName === 'Unknown') return fullName;
+
+            const nameParts = fullName.trim().split(' ');
+            if (nameParts.length === 1) {
+                // Only first name, return as is
+                return nameParts[0];
+            }
+
+            // Get first name and first letter of last name
+            const firstName = nameParts[0];
+            const lastNameInitial = nameParts[nameParts.length - 1][0];
+            return `${firstName} ${lastNameInitial}.`;
+        }
+
         function renderTasks() {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = tasks.map((task, index) => {
-                const displayName = task.personName || task.person || 'Unknown';
-                const avatarText = displayName.split(' ').map(n => n[0]).join('');
-                
+                const fullName = task.personName || task.person || 'Unknown';
+                const displayName = formatNameWithInitial(fullName);
+                const avatarText = fullName.split(' ').map(n => n[0]).join('');
+
                 return `
                 <div class="table-row" data-index="${index}">
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="#">
                         <span class="row-number">${index + 1}</span>
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Task">
                         <span class="task-name">${task.name}</span>
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Status">
                         <div class="status-badge status-${task.status}">
                             ${getStatusText(task.status)}
                         </div>
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Priority">
                         <div class="priority">
                             <span class="priority-dot priority-${task.priority}"></span>
                             <span>${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
                         </div>
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Assigned To">
                         <div class="person-cell">
                             <div class="person-avatar">${avatarText}</div>
                             <span>${displayName}</span>
                         </div>
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Project">
                         ${task.project ? `<span class="project-badge">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Date">
                         <span class="date-cell">${task.date}</span>
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Timeline">
                         <span class="date-cell">${task.timeline}</span>
                     </div>
-                    <div class="table-cell">
+                    <div class="table-cell" data-label="Actions">
                         <div class="action-buttons">
                             <button class="action-btn edit-btn" data-action="edit" data-index="${index}" title="Edit task">
                                 ✏️
+                            </button>
+                            <button class="action-btn clone-btn" data-action="clone" data-index="${index}" title="Clone task">
+                                📋
                             </button>
                             <button class="action-btn delete-btn" data-action="delete" data-index="${index}" title="Delete task">
                                 🗑️
@@ -2339,9 +3327,11 @@
                     e.stopPropagation();
                     const action = this.getAttribute('data-action');
                     const index = parseInt(this.getAttribute('data-index'));
-                    
+
                     if (action === 'edit') {
                         editTask(index);
+                    } else if (action === 'clone') {
+                        cloneTask(index);
                     } else if (action === 'delete') {
                         deleteTask(index);
                     }
@@ -2383,17 +3373,20 @@
         function editTask(index) {
             editingIndex = index;
             const task = tasks[index];
-            
+
             // Update modal title
             document.getElementById('modalTitle').textContent = 'Edit Task';
-            
-            // Populate dropdown first
-            populateAssignToDropdown().then(() => {
+
+            // Populate both dropdowns first, then fill in task data
+            Promise.all([
+                populateAssignToDropdown(),
+                populateTaskProjectDropdown()
+            ]).then(() => {
                 // Populate form with task data
                 document.getElementById('itemName').value = task.name;
                 document.getElementById('itemStatus').value = task.status;
                 document.getElementById('itemPriority').value = task.priority;
-                
+
                 // Set the assignedTo (member ID) in dropdown
                 if (task.assignedTo) {
                     document.getElementById('itemPerson').value = task.assignedTo;
@@ -2408,30 +3401,92 @@
                         }
                     }
                 }
-                
-                document.getElementById('itemProject').value = task.project || '';
+
+                // Set the project (project ID) in dropdown
+                if (task.projectId) {
+                    // New format: uses project ID
+                    document.getElementById('itemProject').value = task.projectId;
+                } else if (task.project) {
+                    // Old format: try to find by name
+                    const projectSelect = document.getElementById('itemProject');
+                    const options = projectSelect.options;
+                    for (let i = 0; i < options.length; i++) {
+                        if (options[i].getAttribute('data-project-name') === task.project) {
+                            projectSelect.value = options[i].value;
+                            break;
+                        }
+                    }
+                }
+
                 document.getElementById('itemDate').value = task.date;
                 document.getElementById('itemTimeline').value = task.timeline;
             });
-            
+
             // Change button text
             const submitBtn = document.querySelector('#taskForm button[type="submit"]');
             submitBtn.textContent = 'Update Task';
-            
+
             // Open modal
             document.getElementById('taskModal').classList.add('active');
         }
 
+        async function cloneTask(index) {
+            // Set flag to prevent real-time listener interference
+            isManualOperation = true;
+
+            const task = tasks[index];
+
+            // Create a copy of the task with a new name
+            const clonedTask = {
+                name: task.name + ' (Copy)',
+                status: task.status,
+                priority: task.priority,
+                assignedTo: task.assignedTo,
+                person: task.person,
+                project: task.project || '',
+                date: task.date,
+                timeline: task.timeline
+            };
+
+            try {
+                // Add cloned task to Firebase
+                if (db) {
+                    await addTaskToFirebase(clonedTask);
+                    console.log("✅ Task cloned successfully");
+                }
+
+                // Reload tasks from Firebase to prevent duplicates
+                await loadTasksFromFirebase();
+
+                // Re-enable real-time listener after a short delay
+                setTimeout(() => {
+                    isManualOperation = false;
+                    console.log("✅ Real-time listener re-enabled");
+                }, 1000);
+
+            } catch (error) {
+                console.error("❌ Error cloning task:", error);
+                alert('❌ Error cloning task: ' + error.message);
+                isManualOperation = false;  // Reset flag on error
+            }
+        }
+
         function openModal() {
+            console.log('🚪 openModal() called');
             editingIndex = -1;
             document.getElementById('modalTitle').textContent = 'Create New Task';
             document.getElementById('taskForm').reset();
-            
-            // Populate assign to dropdown
+
+            // Populate dropdowns
+            console.log('📞 Calling populateAssignToDropdown()...');
             populateAssignToDropdown();
-            
+
+            console.log('📞 Calling populateTaskProjectDropdown()...');
+            populateTaskProjectDropdown();
+
             document.getElementById('taskModal').classList.add('active');
-            
+            console.log('✅ Modal opened');
+
             // Reset button text
             const submitBtn = document.querySelector('#taskForm button[type="submit"]');
             submitBtn.textContent = 'Create Task';
@@ -2465,13 +3520,20 @@
             const selectedOption = personSelect.options[personSelect.selectedIndex];
             const personName = selectedOption.getAttribute('data-member-name') || selectedOption.textContent;
 
+            // Get project ID and name
+            const projectSelect = document.getElementById('itemProject');
+            const projectId = projectSelect.value;
+            const projectOption = projectSelect.options[projectSelect.selectedIndex];
+            const projectName = projectOption.getAttribute('data-project-name') || projectOption.textContent || '';
+
             const newTask = {
                 name: document.getElementById('itemName').value,
                 status: document.getElementById('itemStatus').value,
                 priority: document.getElementById('itemPriority').value,
                 assignedTo: assignedToId,  // Store member ID
                 person: personName,  // Store name for backwards compatibility
-                project: document.getElementById('itemProject').value,
+                projectId: projectId,  // Store project ID
+                project: projectName,  // Store project name for backwards compatibility and display
                 date: document.getElementById('itemDate').value,
                 timeline: document.getElementById('itemTimeline').value
             };
@@ -2660,18 +3722,877 @@
             }
         });
 
+        // ========================================
+        // PROJECT CRUD FUNCTIONS
+        // ========================================
+
+        function renderProjects() {
+            const projectsGrid = document.getElementById('projectsGrid');
+            if (!projectsGrid) return;
+
+            projectsGrid.innerHTML = projects.map((project, index) => `
+                <div class="project-card">
+                    <div class="project-card-header">
+                        <div>
+                            <div class="project-card-title">${project.name}</div>
+                            <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
+                                <span class="project-status-badge ${project.status}">${formatStatus(project.status)}</span>
+                                ${project.sdlc ? `<span class="project-status-badge" style="background: #0073ea; color: white;"> ${project.sdlc}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="project-card-description">${project.description}</div>
+
+                    <div class="project-progress">
+                        <div class="project-progress-label">
+                            <span>Progress</span>
+                            <span>${project.progress}%</span>
+                        </div>
+                        <div class="project-progress-bar">
+                            <div class="project-progress-fill" style="width: ${project.progress}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="project-card-meta">
+                        <div class="project-meta-item">
+                            <span class="project-meta-icon">📅</span>
+                            <span>${project.startDate} - ${project.endDate}</span>
+                        </div>
+                        <div class="project-meta-item">
+                            <span class="project-meta-icon">💰</span>
+                            <span>฿${project.budget.toLocaleString()}</span>
+                        </div>
+                        <div class="project-meta-item">
+                            <span class="project-meta-icon">👥</span>
+                            <span>${project.teamMembers && project.teamMembers.length > 0 ? project.teamMembers.length + ' members' : 'No members'}</span>
+                        </div>
+                        <div class="project-meta-item">
+                            <span class="project-meta-icon">⚡</span>
+                            <span>${formatPriority(project.priority)}</span>
+                        </div>
+                    </div>
+
+                    ${project.teamMembers && project.teamMembers.length > 0 ? `
+                        <div class="project-team-members" style="margin-top: 12px; padding: 12px; background: #f6f7fb; border-radius: 8px;">
+                            <div style="font-size: 12px; font-weight: 700; color: #676879; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Team Members</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                ${project.teamMembers.map(member => `
+                                    <span style="background: white; padding: 4px 10px; border-radius: 6px; font-size: 13px; color: #323338; border: 1px solid #e6e9ef;">${formatNameWithInitial(member)}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${project.tags && project.tags.length > 0 ? `
+                        <div class="project-tags">
+                            ${project.tags.map(tag => `<span class="project-tag">${tag}</span>`).join('')}
+                        </div>
+                    ` : ''}
+
+                    <div class="project-card-actions">
+                        <button class="project-action-btn" onclick="viewProjectTasks('${project.id}', '${project.name}')">
+                            📋 Tasks
+                        </button>
+                        <button class="project-action-btn" onclick="editProject(${index})">
+                            ✏️ Edit
+                        </button>
+                        <button class="project-action-btn delete" onclick="deleteProject(${index})">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function formatStatus(status) {
+            return status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        }
+
+        function formatPriority(priority) {
+            return priority.charAt(0).toUpperCase() + priority.slice(1);
+        }
+
+        // ========================================
+        // PROJECT FIREBASE FUNCTIONS
+        // ========================================
+
+        // Add project to Firebase
+        async function addProjectToFirebase(projectData) {
+            if (!db) {
+                console.error('❌ Firebase not initialized');
+                return null;
+            }
+
+            try {
+                const docRef = await db.collection('projects').add({
+                    ...projectData,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log('✅ Project added to Firebase with ID:', docRef.id);
+                return docRef.id;
+            } catch (error) {
+                console.error('❌ Error adding project to Firebase:', error);
+                throw error;
+            }
+        }
+
+        // Update project in Firebase
+        async function updateProjectInFirebase(projectId, projectData) {
+            if (!db) {
+                console.error('❌ Firebase not initialized');
+                return;
+            }
+
+            try {
+                await db.collection('projects').doc(projectId).update({
+                    ...projectData,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log('✅ Project updated in Firebase:', projectId);
+            } catch (error) {
+                console.error('❌ Error updating project in Firebase:', error);
+                throw error;
+            }
+        }
+
+        // Delete project from Firebase
+        async function deleteProjectFromFirebase(projectId) {
+            if (!db) {
+                console.error('❌ Firebase not initialized');
+                return;
+            }
+
+            try {
+                await db.collection('projects').doc(projectId).delete();
+                console.log('✅ Project deleted from Firebase:', projectId);
+            } catch (error) {
+                console.error('❌ Error deleting project from Firebase:', error);
+                throw error;
+            }
+        }
+
+        // Load projects from Firebase
+        async function loadProjectsFromFirebase() {
+            if (!db) {
+                console.error('❌ Firebase not initialized');
+                return;
+            }
+
+            showSpinner('Loading projects...');
+
+            try {
+                const snapshot = await db.collection('projects')
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                projects = [];
+                snapshot.forEach(doc => {
+                    projects.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                console.log(`✅ Loaded ${projects.length} projects from Firebase`);
+                renderProjects();
+            } catch (error) {
+                console.error('❌ Error loading projects from Firebase:', error);
+                // If orderBy fails (no index), try without ordering
+                try {
+                    const snapshot = await db.collection('projects').get();
+                    projects = [];
+                    snapshot.forEach(doc => {
+                        projects.push({
+                            id: doc.id,
+                            ...doc.data()
+                        });
+                    });
+                    console.log(`✅ Loaded ${projects.length} projects from Firebase (fallback)`);
+                    renderProjects();
+                } catch (fallbackError) {
+                    console.error('❌ Fallback also failed:', fallbackError);
+                }
+            } finally {
+                hideSpinner();
+            }
+        }
+
+        // Populate team members dropdown for project form
+        async function populateProjectTeamMembersDropdown() {
+            console.log('🔄 populateProjectTeamMembersDropdown() called');
+            const selectElement = document.getElementById('projectTeamMembers');
+
+            if (!db) {
+                console.error('❌ Firebase not initialized');
+                selectElement.innerHTML = '<option value="">Firebase not connected</option>';
+                return;
+            }
+
+            try {
+                // FIXED: Changed from 'teamMembers' to 'team_members' to match the actual collection name
+                console.log('📊 Loading from team_members collection...');
+                const membersSnapshot = await db.collection('team_members').get();
+
+                console.log(`📦 Found ${membersSnapshot.size} team members`);
+
+                if (membersSnapshot.empty) {
+                    console.warn('⚠️ No team members found in database');
+                    selectElement.innerHTML = '<option value="">No team members found</option>';
+
+                    const shouldInit = confirm(
+                        '⚠️ No team members found!\n\n' +
+                        'You need to add team members before creating projects.\n\n' +
+                        'Options:\n' +
+                        '1. Click "OK" to initialize sample data\n' +
+                        '2. Click "Cancel" to add team members manually\n\n' +
+                        'Initialize sample data now?'
+                    );
+
+                    if (shouldInit) {
+                        closeProjectModal();
+                        await initializeAllSampleData();
+                    } else {
+                        closeProjectModal();
+                        navigateTo('team');
+                    }
+                    return;
+                }
+
+                selectElement.innerHTML = '';
+                let loadedCount = 0;
+                membersSnapshot.forEach(doc => {
+                    const member = doc.data();
+
+                    // Only show active members
+                    const isActive = member.active === true ||
+                                   member.status === 'Active' ||
+                                   (member.active === undefined && member.status === undefined);
+
+                    if (isActive && member.name) {
+                        const option = document.createElement('option');
+                        option.value = doc.id;
+                        option.setAttribute('data-member-name', member.name);
+                        option.textContent = `${member.name} - ${member.role || 'Team Member'}`;
+                        selectElement.appendChild(option);
+                        loadedCount++;
+                        console.log(`👤 Added: ${member.name} (${member.role || 'N/A'})`);
+                    }
+                });
+
+                console.log(`✅ Populated project dropdown with ${loadedCount} active team members`);
+
+                if (loadedCount === 0) {
+                    selectElement.innerHTML = '<option value="">No active team members</option>';
+                    console.warn('⚠️ All team members are inactive');
+                }
+
+            } catch (error) {
+                console.error('❌ Error loading team members:', error);
+                selectElement.innerHTML = '<option value="">Error loading members</option>';
+            }
+        }
+
+        function openProjectModal() {
+            console.log('🚪 openProjectModal() called');
+            editingProjectIndex = -1;
+            document.getElementById('projectModalTitle').textContent = 'Create New Project';
+            document.getElementById('projectSubmitBtn').textContent = 'Create Project';
+            document.getElementById('projectForm').reset();
+
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('projectStartDate').value = today;
+
+            // Populate team members dropdown
+            console.log('📞 Calling populateProjectTeamMembersDropdown()...');
+            populateProjectTeamMembersDropdown();
+
+            document.getElementById('projectModal').classList.add('active');
+            console.log('✅ Project modal opened');
+        }
+
+        function closeProjectModal() {
+            document.getElementById('projectModal').classList.remove('active');
+            document.getElementById('projectForm').reset();
+            editingProjectIndex = -1;
+        }
+
+        function editProject(index) {
+            editingProjectIndex = index;
+            const project = projects[index];
+
+            // Update modal title and button
+            document.getElementById('projectModalTitle').textContent = 'Edit Project';
+            document.getElementById('projectSubmitBtn').textContent = 'Update Project';
+
+            // Populate form with project data
+            document.getElementById('projectName').value = project.name;
+            document.getElementById('projectDescription').value = project.description;
+            document.getElementById('projectStatus').value = project.status;
+            document.getElementById('projectPriority').value = project.priority;
+            document.getElementById('projectSDLC').value = project.sdlc || 'Development';
+            document.getElementById('projectStartDate').value = project.startDate;
+            document.getElementById('projectEndDate').value = project.endDate;
+            document.getElementById('projectProgress').value = project.progress;
+            document.getElementById('projectBudget').value = project.budget;
+            document.getElementById('projectTags').value = project.tags ? project.tags.join(', ') : '';
+
+            // Populate team members dropdown and select the correct members
+            populateProjectTeamMembersDropdown().then(() => {
+                const teamMembersSelect = document.getElementById('projectTeamMembers');
+
+                // If project has teamMemberIds, use those. Otherwise try to match by name
+                if (project.teamMemberIds && project.teamMemberIds.length > 0) {
+                    // Select by IDs
+                    Array.from(teamMembersSelect.options).forEach(option => {
+                        if (project.teamMemberIds.includes(option.value)) {
+                            option.selected = true;
+                        }
+                    });
+                } else if (project.teamMembers && project.teamMembers.length > 0) {
+                    // Fallback: try to match by name for old data
+                    Array.from(teamMembersSelect.options).forEach(option => {
+                        const memberName = option.getAttribute('data-member-name');
+                        if (project.teamMembers.includes(memberName)) {
+                            option.selected = true;
+                        }
+                    });
+                }
+            });
+
+            // Open modal
+            document.getElementById('projectModal').classList.add('active');
+        }
+
+        async function deleteProject(index) {
+            const project = projects[index];
+
+            if (confirm(`Are you sure you want to delete "${project.name}"?`)) {
+                try {
+                    // Delete from Firebase if project has an ID
+                    if (project.id && db) {
+                        await deleteProjectFromFirebase(project.id);
+                        console.log('✅ Project deleted from Firebase:', project.id);
+                        alert('✅ Project deleted successfully!');
+
+                        // Reload projects from Firebase
+                        await loadProjectsFromFirebase();
+                    } else {
+                        // Fallback to local deletion if no ID
+                        projects.splice(index, 1);
+                        renderProjects();
+                        alert('✅ Project deleted successfully (locally)!');
+                    }
+                } catch (error) {
+                    console.error('❌ Error deleting project:', error);
+                    alert('❌ Error deleting project: ' + error.message);
+                }
+            }
+        }
+
+        // Global variable to store current project filter
+        let currentProjectFilter = null;
+
+        // View tasks for a specific project
+        function viewProjectTasks(projectId, projectName) {
+            console.log(`📋 Viewing tasks for project: ${projectName} (ID: ${projectId})`);
+
+            // Switch to tasks page (skip filter clearing)
+            switchPage('tasks', true);
+
+            // Open filter panel and set project filter
+            const panel = document.getElementById('taskFilterPanel');
+            panel.style.display = 'block';
+
+            // Populate dropdowns first
+            populateFilterDropdowns().then(() => {
+                // Set the project filter
+                document.getElementById('filterProject').value = projectId;
+                taskFilters.project = projectId;
+
+                // Apply filters
+                applyTaskFilters();
+            });
+
+            // Store for backwards compatibility
+            currentProjectFilter = { id: projectId, name: projectName };
+        }
+
+        // Clear project filter (legacy function - now redirects to clearAllTaskFilters)
+        function clearProjectFilter() {
+            console.log('🔄 Clearing project filter');
+            clearAllTaskFilters();
+        }
+
+        // Filter tasks by project ID
+        function filterTasksByProject(projectId) {
+            const tableBody = document.getElementById('tableBody');
+            const filteredTasks = tasks.filter(task => task.projectId === projectId);
+
+            console.log(`📊 Found ${filteredTasks.length} tasks for project ID: ${projectId}`);
+
+            if (filteredTasks.length === 0) {
+                tableBody.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #676879;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                        <div style="font-size: 16px; font-weight: 600;">No tasks found for this project</div>
+                        <div style="font-size: 14px; margin-top: 8px;">Create a new task and assign it to this project</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Render filtered tasks
+            tableBody.innerHTML = filteredTasks.map((task, displayIndex) => {
+                const index = tasks.indexOf(task); // Get original index
+                const fullName = task.personName || task.person || 'Unknown';
+                const displayName = formatNameWithInitial(fullName);
+                const avatarText = fullName.split(' ').map(n => n[0]).join('');
+
+                return `
+                <div class="table-row" data-index="${index}">
+                    <div class="table-cell" data-label="#">
+                        <span class="row-number">${displayIndex + 1}</span>
+                    </div>
+                    <div class="table-cell" data-label="Task">
+                        <span class="task-name">${task.name}</span>
+                    </div>
+                    <div class="table-cell" data-label="Status">
+                        <div class="status-badge status-${task.status}">
+                            ${getStatusText(task.status)}
+                        </div>
+                    </div>
+                    <div class="table-cell" data-label="Priority">
+                        <div class="priority">
+                            <span class="priority-dot priority-${task.priority}"></span>
+                            <span>${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
+                        </div>
+                    </div>
+                    <div class="table-cell" data-label="Assigned To">
+                        <div class="person-cell">
+                            <div class="person-avatar">${avatarText}</div>
+                            <span>${displayName}</span>
+                        </div>
+                    </div>
+                    <div class="table-cell" data-label="Project">
+                        ${task.project ? `<span class="project-badge">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
+                    </div>
+                    <div class="table-cell" data-label="Date">
+                        <span class="date-cell">${task.date}</span>
+                    </div>
+                    <div class="table-cell" data-label="Timeline">
+                        <span class="date-cell">${task.timeline}</span>
+                    </div>
+                    <div class="table-cell" data-label="Actions">
+                        <div class="action-buttons">
+                            <button class="action-btn edit-btn" data-action="edit" data-index="${index}" title="Edit task">
+                                ✏️
+                            </button>
+                            <button class="action-btn clone-btn" data-action="clone" data-index="${index}" title="Clone task">
+                                📋
+                            </button>
+                            <button class="action-btn delete-btn" data-action="delete" data-index="${index}" title="Delete task">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+            // Re-attach event listeners
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const action = this.getAttribute('data-action');
+                    const index = parseInt(this.getAttribute('data-index'));
+
+                    if (action === 'edit') {
+                        editTask(index);
+                    } else if (action === 'clone') {
+                        cloneTask(index);
+                    } else if (action === 'delete') {
+                        deleteTask(index);
+                    }
+                });
+            });
+        }
+
+        // ========================================
+        // TASK FILTER FUNCTIONS
+        // ========================================
+        let taskFilters = {
+            status: '',
+            priority: '',
+            assignedTo: '',
+            project: ''
+        };
+
+        // Toggle filter panel visibility
+        function toggleFilterPanel() {
+            const panel = document.getElementById('taskFilterPanel');
+            if (panel.style.display === 'none' || panel.style.display === '') {
+                panel.style.display = 'block';
+
+                // Restore all filter values from taskFilters object
+                document.getElementById('filterStatus').value = taskFilters.status || '';
+                document.getElementById('filterPriority').value = taskFilters.priority || '';
+
+                // Populate dynamic dropdowns (they will restore their values internally)
+                populateFilterDropdowns();
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        // Populate filter dropdowns with data
+        async function populateFilterDropdowns() {
+            // Save current values before repopulating
+            const savedAssignedTo = taskFilters.assignedTo;
+            const savedProject = taskFilters.project;
+
+            // Populate Assigned To dropdown
+            const assignedToSelect = document.getElementById('filterAssignedTo');
+            const uniqueMembers = [...new Set(tasks.map(t => t.assignedTo).filter(Boolean))];
+
+            // Get member names
+            const memberOptions = await Promise.all(
+                uniqueMembers.map(async (memberId) => {
+                    const memberName = await getMemberNameById(memberId);
+                    return { id: memberId, name: memberName };
+                })
+            );
+
+            assignedToSelect.innerHTML = '<option value="">All Members</option>' +
+                memberOptions.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+
+            // Restore saved value
+            if (savedAssignedTo) {
+                assignedToSelect.value = savedAssignedTo;
+            }
+
+            // Populate Project dropdown
+            const projectSelect = document.getElementById('filterProject');
+            const uniqueProjects = [...new Set(tasks.map(t => t.projectId).filter(Boolean))];
+
+            const projectOptions = await Promise.all(
+                uniqueProjects.map(async (projectId) => {
+                    const projectName = await getProjectNameById(projectId);
+                    return { id: projectId, name: projectName };
+                })
+            );
+
+            projectSelect.innerHTML = '<option value="">All Projects</option>' +
+                projectOptions.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+
+            // Restore saved value
+            if (savedProject) {
+                projectSelect.value = savedProject;
+            }
+        }
+
+        // Apply task filters
+        function applyTaskFilters() {
+            // Get filter values
+            taskFilters.status = document.getElementById('filterStatus').value;
+            taskFilters.priority = document.getElementById('filterPriority').value;
+            taskFilters.assignedTo = document.getElementById('filterAssignedTo').value;
+            taskFilters.project = document.getElementById('filterProject').value;
+
+            // Check if any filter is active
+            const hasActiveFilters = Object.values(taskFilters).some(v => v !== '');
+
+            // Filter tasks
+            let filteredTasks = tasks;
+
+            if (taskFilters.status) {
+                filteredTasks = filteredTasks.filter(t => t.status === taskFilters.status);
+            }
+
+            if (taskFilters.priority) {
+                filteredTasks = filteredTasks.filter(t => t.priority === taskFilters.priority);
+            }
+
+            if (taskFilters.assignedTo) {
+                filteredTasks = filteredTasks.filter(t => t.assignedTo === taskFilters.assignedTo);
+            }
+
+            if (taskFilters.project) {
+                filteredTasks = filteredTasks.filter(t => t.projectId === taskFilters.project);
+            }
+
+            // Render filtered tasks
+            renderFilteredTasks(filteredTasks);
+
+            // Update active filters display
+            updateActiveFiltersDisplay();
+        }
+
+        // Render filtered tasks
+        function renderFilteredTasks(filteredTasks) {
+            const tableBody = document.getElementById('tableBody');
+
+            if (filteredTasks.length === 0) {
+                tableBody.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #676879;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
+                        <div style="font-size: 16px; font-weight: 600;">No tasks match your filters</div>
+                        <div style="font-size: 14px; margin-top: 8px;">Try adjusting your filter criteria</div>
+                    </div>
+                `;
+                return;
+            }
+
+            tableBody.innerHTML = filteredTasks.map((task, displayIndex) => {
+                const index = tasks.indexOf(task);
+                const fullName = task.personName || task.person || 'Unknown';
+                const displayName = formatNameWithInitial(fullName);
+                const avatarText = fullName.split(' ').map(n => n[0]).join('');
+
+                return `
+                <div class="table-row" data-index="${index}">
+                    <div class="table-cell" data-label="#">
+                        <span class="row-number">${displayIndex + 1}</span>
+                    </div>
+                    <div class="table-cell" data-label="Task">
+                        <span class="task-name">${task.name}</span>
+                    </div>
+                    <div class="table-cell" data-label="Status">
+                        <div class="status-badge status-${task.status}">
+                            ${getStatusText(task.status)}
+                        </div>
+                    </div>
+                    <div class="table-cell" data-label="Priority">
+                        <div class="priority">
+                            <span class="priority-dot priority-${task.priority}"></span>
+                            <span>${task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
+                        </div>
+                    </div>
+                    <div class="table-cell" data-label="Assigned To">
+                        <div class="person-cell">
+                            <div class="person-avatar">${avatarText}</div>
+                            <span>${displayName}</span>
+                        </div>
+                    </div>
+                    <div class="table-cell" data-label="Project">
+                        ${task.project ? `<span class="project-badge">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
+                    </div>
+                    <div class="table-cell" data-label="Date">
+                        <span class="date-cell">${task.date}</span>
+                    </div>
+                    <div class="table-cell" data-label="Timeline">
+                        <span class="date-cell">${task.timeline}</span>
+                    </div>
+                    <div class="table-cell" data-label="Actions">
+                        <div class="action-buttons">
+                            <button class="action-btn edit-btn" data-action="edit" data-index="${index}" title="Edit task">
+                                ✏️
+                            </button>
+                            <button class="action-btn clone-btn" data-action="clone" data-index="${index}" title="Clone task">
+                                📋
+                            </button>
+                            <button class="action-btn delete-btn" data-action="delete" data-index="${index}" title="Delete task">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+
+            // Re-attach event listeners
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const action = this.getAttribute('data-action');
+                    const index = parseInt(this.getAttribute('data-index'));
+
+                    if (action === 'edit') {
+                        editTask(index);
+                    } else if (action === 'clone') {
+                        cloneTask(index);
+                    } else if (action === 'delete') {
+                        deleteTask(index);
+                    }
+                });
+            });
+
+            console.log(`✅ Filtered to ${filteredTasks.length} tasks`);
+        }
+
+        // Update active filters display
+        function updateActiveFiltersDisplay() {
+            const activeFiltersDisplay = document.getElementById('activeFiltersDisplay');
+            const activeFilterTags = document.getElementById('activeFilterTags');
+
+            const activeFilters = [];
+
+            if (taskFilters.status) {
+                activeFilters.push({ type: 'status', label: 'Status', value: getStatusText(taskFilters.status) });
+            }
+            if (taskFilters.priority) {
+                activeFilters.push({ type: 'priority', label: 'Priority', value: taskFilters.priority.charAt(0).toUpperCase() + taskFilters.priority.slice(1) });
+            }
+            if (taskFilters.assignedTo) {
+                const memberName = document.getElementById('filterAssignedTo').selectedOptions[0].text;
+                activeFilters.push({ type: 'assignedTo', label: 'Member', value: memberName });
+            }
+            if (taskFilters.project) {
+                const projectName = document.getElementById('filterProject').selectedOptions[0].text;
+                activeFilters.push({ type: 'project', label: 'Project', value: projectName });
+            }
+
+            if (activeFilters.length > 0) {
+                activeFiltersDisplay.style.display = 'block';
+                activeFilterTags.innerHTML = activeFilters.map(filter => `
+                    <div style="background: #e6f2ff; padding: 6px 12px; border-radius: 20px; font-size: 13px; color: #0073ea; display: flex; align-items: center; gap: 6px;">
+                        <strong>${filter.label}:</strong> ${filter.value}
+                        <button onclick="removeFilter('${filter.type}')" style="background: none; border: none; color: #0073ea; cursor: pointer; font-size: 16px; line-height: 1; padding: 0;">×</button>
+                    </div>
+                `).join('');
+            } else {
+                activeFiltersDisplay.style.display = 'none';
+            }
+        }
+
+        // Remove individual filter
+        function removeFilter(filterType) {
+            document.getElementById('filter' + filterType.charAt(0).toUpperCase() + filterType.slice(1)).value = '';
+            applyTaskFilters();
+        }
+
+        // Clear all task filters
+        function clearAllTaskFilters() {
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterPriority').value = '';
+            document.getElementById('filterAssignedTo').value = '';
+            document.getElementById('filterProject').value = '';
+
+            taskFilters = {
+                status: '',
+                priority: '',
+                assignedTo: '',
+                project: ''
+            };
+
+            // Clear project filter variable
+            currentProjectFilter = null;
+
+            renderTasks();
+            updateActiveFiltersDisplay();
+
+            console.log('✅ All task filters cleared');
+        }
+
+        // Handle project form submission
+        document.getElementById('projectForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // Get selected team member IDs and names
+            const teamMembersSelect = document.getElementById('projectTeamMembers');
+            const selectedOptions = Array.from(teamMembersSelect.selectedOptions);
+
+            const teamMemberIds = selectedOptions.map(opt => opt.value).filter(v => v);
+            const teamMemberNames = selectedOptions.map(opt => opt.getAttribute('data-member-name')).filter(n => n);
+
+            // Validate that at least one team member is selected
+            if (teamMemberIds.length === 0) {
+                alert('⚠️ Please select at least one team member for this project.');
+                teamMembersSelect.focus();
+                return;
+            }
+
+            const tagsInput = document.getElementById('projectTags').value;
+            const tagsArray = tagsInput ? tagsInput.split(',').map(s => s.trim()).filter(s => s) : [];
+
+            const projectData = {
+                name: document.getElementById('projectName').value,
+                description: document.getElementById('projectDescription').value,
+                status: document.getElementById('projectStatus').value,
+                priority: document.getElementById('projectPriority').value,
+                sdlc: document.getElementById('projectSDLC').value,
+                startDate: document.getElementById('projectStartDate').value,
+                endDate: document.getElementById('projectEndDate').value,
+                progress: parseInt(document.getElementById('projectProgress').value),
+                budget: parseInt(document.getElementById('projectBudget').value) || 0,
+                teamMemberIds: teamMemberIds,  // Store IDs
+                teamMembers: teamMemberNames,   // Store names for backwards compatibility and display
+                tags: tagsArray
+            };
+
+            try {
+                if (editingProjectIndex >= 0) {
+                    // Update existing project
+                    const project = projects[editingProjectIndex];
+
+                    // Update in Firebase if project has an ID
+                    if (project.id && db) {
+                        await updateProjectInFirebase(project.id, projectData);
+                        console.log('✅ Project updated in Firebase:', project.id);
+                        alert('✅ Project updated successfully!');
+                    } else {
+                        // Fallback to local storage if no ID
+                        projects[editingProjectIndex] = projectData;
+                        alert('✅ Project updated successfully (locally)!');
+                    }
+                } else {
+                    // Add new project to Firebase
+                    if (db) {
+                        const projectId = await addProjectToFirebase(projectData);
+                        console.log('✅ Project added to Firebase with ID:', projectId);
+                        alert('✅ Project created successfully!');
+                    } else {
+                        // Fallback to local storage if Firebase not available
+                        projects.push(projectData);
+                        alert('✅ Project created successfully (locally)!');
+                    }
+                }
+
+                closeProjectModal();
+
+                // Reload projects from Firebase
+                if (db) {
+                    await loadProjectsFromFirebase();
+                } else {
+                    renderProjects();
+                }
+
+            } catch (error) {
+                console.error('❌ Error saving project:', error);
+                alert('❌ Error saving project: ' + error.message);
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('projectModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProjectModal();
+            }
+        });
+
         // Initialize app
         window.addEventListener('load', async () => {
             // Load from Firebase
             if (db) {
                 await loadTasksFromFirebase();
                 await loadTeamMembersWithStats();
+                await loadProjectsFromFirebase();
                 setupRealtimeListener();
             } else {
                 renderTasks();
+                renderProjects();
                 updateDashboardStats();
             }
         });
     </script>
+
+    <!-- Loading Spinner Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner-container">
+            <div class="spinner"></div>
+            <div class="spinner-text" id="spinnerText">Loading...</div>
+        </div>
+    </div>
 </body>
 </html>
