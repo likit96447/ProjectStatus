@@ -624,7 +624,7 @@
             background: white;
             border-radius: 16px;
             overflow-x: auto;
-            overflow-y: hidden;
+            overflow-y: visible;
             box-shadow: 0 4px 16px rgba(0,0,0,0.08);
             border: 1px solid #e6e9ef;
             width: 100%;
@@ -637,7 +637,7 @@
 
         .table-header {
             display: grid;
-            grid-template-columns: 60px minmax(180px, 1.8fr) 140px 120px 180px 150px 130px 130px 120px;
+            grid-template-columns: 60px minmax(180px, 1.8fr) 160px 120px 180px 200px 130px 130px 150px;
             background: linear-gradient(135deg, #f6f7fb 0%, #e6e9ef 100%);
             border-bottom: 2px solid #e6e9ef;
             font-size: 13px;
@@ -651,7 +651,7 @@
         .table-cell {
             padding: 18px 16px;
             border-right: 1px solid #e6e9ef;
-            overflow: hidden;
+            overflow: visible;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
@@ -660,17 +660,46 @@
             border-right: none;
         }
 
+        .table-cell.sortable:hover {
+            background: rgba(0, 115, 234, 0.1);
+            color: #0073ea;
+        }
+
+        .sort-icon {
+            display: inline-block;
+            margin-left: 4px;
+            font-size: 10px;
+            color: #c5c7d0;
+        }
+
+        .sort-icon.asc::after {
+            content: '▲';
+            color: #0073ea;
+        }
+
+        .sort-icon.desc::after {
+            content: '▼';
+            color: #0073ea;
+        }
+
         .table-row {
             display: grid;
-            grid-template-columns: 60px minmax(180px, 1.8fr) 140px 120px 180px 150px 130px 130px 120px;
+            grid-template-columns: 60px minmax(180px, 1.8fr) 160px 120px 180px 200px 130px 130px 150px;
             border-bottom: 1px solid #e6e9ef;
             transition: all 0.3s ease;
             min-width: max-content;
+            position: relative;
+            z-index: 1;
         }
 
         .table-row:hover {
             background: #f6f7fb;
             transform: scale(1.005);
+            z-index: 10;
+        }
+
+        .table-row:has(.status-popup.active) {
+            z-index: 100;
         }
 
         .table-row .table-cell {
@@ -725,10 +754,89 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            position: relative;
         }
 
         .status-badge:hover {
             transform: scale(1.05);
+        }
+
+        /* Status Popup Dropdown */
+        .status-popup {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 8px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+            border: 1px solid #e6e9ef;
+            padding: 8px;
+            min-width: 180px;
+            z-index: 9999;
+            display: none;
+            animation: fadeInDown 0.2s ease;
+        }
+
+        .status-popup.active {
+            display: block;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .status-popup-option {
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .status-popup-option:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-popup-option:hover {
+            transform: translateX(4px);
+        }
+
+        .status-popup-option.working {
+            background: #fdab3d;
+            color: white;
+        }
+
+        .status-popup-option.done {
+            background: #00c875;
+            color: white;
+        }
+
+        .status-popup-option.stuck {
+            background: #e44258;
+            color: white;
+        }
+
+        .status-popup-option.blank {
+            background: #c4c4c4;
+            color: white;
+        }
+
+        .status-badge-wrapper {
+            position: relative;
+            display: inline-block;
         }
 
         .status-working {
@@ -803,7 +911,7 @@
         }
 
         .project-badge {
-            padding: 6px 12px;
+            padding: 6px 6px;
             border-radius: 8px;
             font-size: 12px;
             font-weight: 600;
@@ -811,6 +919,10 @@
             color: #667eea;
             border: 1px solid #b8daff;
             display: inline-block;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .action-btn {
@@ -989,6 +1101,109 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+        }
+
+        .team-stat.clickable-stat {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            padding: 8px;
+            margin: -8px;
+        }
+
+        .team-stat.clickable-stat:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.05);
+        }
+
+        .team-stat.clickable-stat:hover .team-stat-value {
+            background: linear-gradient(135deg, #5568d3 0%, #6a4291 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Multi-Select Checkbox Dropdown Styles */
+        .multi-select-dropdown {
+            position: relative;
+            width: 100%;
+        }
+
+        .multi-select-display {
+            width: 100%;
+            padding: 8px 32px 8px 12px;
+            border: 1px solid #e6e9ef;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+
+        .multi-select-display:hover {
+            border-color: #667eea;
+        }
+
+        .multi-select-display::after {
+            content: '▼';
+            position: absolute;
+            right: 12px;
+            font-size: 10px;
+            color: #676879;
+            transition: transform 0.2s ease;
+        }
+
+        .multi-select-display.open::after {
+            transform: rotate(180deg);
+        }
+
+        .multi-select-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e6e9ef;
+            border-radius: 6px;
+            margin-top: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: none;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .multi-select-options.open {
+            display: block;
+        }
+
+        .multi-select-option {
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .multi-select-option:hover {
+            background: #f6f7fb;
+        }
+
+        .multi-select-option input[type="checkbox"] {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+
+        .multi-select-option label {
+            cursor: pointer;
+            flex: 1;
+            font-size: 14px;
+            color: #323338;
         }
 
         /* Projects Grid Styles */
@@ -1191,6 +1406,35 @@
             overflow-y: auto;
             animation: slideUp 0.4s ease;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .modal-spinner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            border-radius: 20px;
+        }
+
+        .modal-spinner-overlay.active {
+            display: flex;
+        }
+
+        .modal-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes slideUp {
@@ -1444,7 +1688,7 @@
 
             .project-badge {
                 font-size: 12px;
-                padding: 4px 10px;
+                padding: 2px 2px;
             }
 
             .action-buttons {
@@ -1556,6 +1800,71 @@
             color: #323338;
             font-size: 14px;
             font-weight: 600;
+        }
+
+        /* Custom Date Input Wrapper */
+        .date-input-wrapper {
+            position: relative;
+            display: block;
+            width: 100%;
+        }
+
+        .date-input-wrapper input[type="date"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        /* Style to show dd/mm/yyyy format */
+        .date-display {
+            position: relative;
+            padding: 12px 50px 12px 16px;
+            background: white;
+            border: 2px solid #e6e9ef;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            color: #323338;
+            font-size: 14px;
+            min-height: 48px;
+            cursor: pointer;
+        }
+
+        .date-display.placeholder {
+            color: #a0a0a0;
+        }
+
+        .date-input-wrapper input[type="date"]:focus ~ .date-display {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .date-input-wrapper .calendar-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            z-index: 1;
+            font-size: 16px;
+        }
+
+        /* Hide the default date picker icon */
+        .date-input-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -1766,12 +2075,29 @@
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
                             <div>
                                 <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Status</label>
-                                <select id="filterStatus" onchange="applyTaskFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
-                                    <option value="">All Status</option>
-                                    <option value="working">In Progress</option>
-                                    <option value="done">Done</option>
-                                    <option value="stuck">Stuck</option>
-                                </select>
+                                <div class="multi-select-dropdown" id="statusFilterDropdown">
+                                    <div class="multi-select-display" id="statusFilterDisplay" onclick="toggleStatusDropdown()">
+                                        <span id="statusFilterText">All Status</span>
+                                    </div>
+                                    <div class="multi-select-options" id="statusFilterOptions">
+                                        <div class="multi-select-option" onclick="event.stopPropagation()">
+                                            <input type="checkbox" id="status-blank" value="blank" onchange="updateStatusFilter()">
+                                            <label for="status-blank">Not Started</label>
+                                        </div>
+                                        <div class="multi-select-option" onclick="event.stopPropagation()">
+                                            <input type="checkbox" id="status-working" value="working" onchange="updateStatusFilter()">
+                                            <label for="status-working">Working on it</label>
+                                        </div>
+                                        <div class="multi-select-option" onclick="event.stopPropagation()">
+                                            <input type="checkbox" id="status-stuck" value="stuck" onchange="updateStatusFilter()">
+                                            <label for="status-stuck">Stuck</label>
+                                        </div>
+                                        <div class="multi-select-option" onclick="event.stopPropagation()">
+                                            <input type="checkbox" id="status-done" value="done" onchange="updateStatusFilter()">
+                                            <label for="status-done">Done</label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Priority</label>
@@ -1804,12 +2130,24 @@
                     <div class="table-container">
                         <div class="table-header">
                             <div class="table-cell">#</div>
-                            <div class="table-cell">Task Name</div>
-                            <div class="table-cell">Status</div>
-                            <div class="table-cell">Priority</div>
-                            <div class="table-cell">Assigned To</div>
-                            <div class="table-cell">Project</div>
-                            <div class="table-cell">Due Date</div>
+                            <div class="table-cell sortable" onclick="sortTasks('name')" style="cursor: pointer;">
+                                Task Name <span id="sort-name" class="sort-icon"></span>
+                            </div>
+                            <div class="table-cell sortable" onclick="sortTasks('status')" style="cursor: pointer;">
+                                Status <span id="sort-status" class="sort-icon"></span>
+                            </div>
+                            <div class="table-cell sortable" onclick="sortTasks('priority')" style="cursor: pointer;">
+                                Priority <span id="sort-priority" class="sort-icon"></span>
+                            </div>
+                            <div class="table-cell sortable" onclick="sortTasks('person')" style="cursor: pointer;">
+                                Assigned To <span id="sort-person" class="sort-icon"></span>
+                            </div>
+                            <div class="table-cell sortable" onclick="sortTasks('project')" style="cursor: pointer;">
+                                Project <span id="sort-project" class="sort-icon"></span>
+                            </div>
+                            <div class="table-cell sortable" onclick="sortTasks('date')" style="cursor: pointer;">
+                                Due Date <span id="sort-date" class="sort-icon"></span>
+                            </div>
                             <div class="table-cell">Timeline</div>
                             <div class="table-cell">Actions</div>
                         </div>
@@ -2029,6 +2367,11 @@
     <!-- Modal -->
     <div class="modal" id="taskModal">
         <div class="modal-content">
+            <!-- Modal Spinner Overlay -->
+            <div class="modal-spinner-overlay" id="modalSpinner">
+                <div class="modal-spinner"></div>
+            </div>
+
             <div class="modal-header">
                 <h2 class="modal-title" id="modalTitle">Create New Task</h2>
             </div>
@@ -2072,8 +2415,20 @@
                         </select>
                     </div>
                     <div class="form-group">
+                        <label class="form-label">Start Date</label>
+                        <div class="date-input-wrapper">
+                            <div class="date-display placeholder" id="itemStartDate-display">dd/mm/yyyy</div>
+                            <span class="calendar-icon">📅</span>
+                            <input type="date" class="form-input" id="itemStartDate" required onchange="updateDateDisplay(this)">
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">Due Date</label>
-                        <input type="date" class="form-input" id="itemDate" required>
+                        <div class="date-input-wrapper">
+                            <div class="date-display placeholder" id="itemDate-display">dd/mm/yyyy</div>
+                            <span class="calendar-icon">📅</span>
+                            <input type="date" class="form-input" id="itemDate" required onchange="updateDateDisplay(this)">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Timeline</label>
@@ -2191,11 +2546,19 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Start Date</label>
-                        <input type="date" class="form-input" id="projectStartDate" required>
+                        <div class="date-input-wrapper">
+                            <div class="date-display placeholder" id="projectStartDate-display">dd/mm/yyyy</div>
+                            <span class="calendar-icon">📅</span>
+                            <input type="date" class="form-input" id="projectStartDate" required onchange="updateDateDisplay(this)">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">End Date</label>
-                        <input type="date" class="form-input" id="projectEndDate" required>
+                        <div class="date-input-wrapper">
+                            <div class="date-display placeholder" id="projectEndDate-display">dd/mm/yyyy</div>
+                            <span class="calendar-icon">📅</span>
+                            <input type="date" class="form-input" id="projectEndDate" required onchange="updateDateDisplay(this)">
+                        </div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Progress (%)</label>
@@ -2250,6 +2613,96 @@
         }
 
         // ========================================
+        // DATE CONVERSION HELPER FUNCTIONS
+        // ========================================
+
+        // Update date display to show dd/mm/yyyy format
+        function updateDateDisplay(inputElement) {
+            if (!inputElement || !inputElement.value) return;
+
+            const displayId = inputElement.id + '-display';
+            const displayElement = document.getElementById(displayId);
+
+            if (displayElement) {
+                // Convert yyyy-mm-dd to dd/mm/yyyy for display
+                const [year, month, day] = inputElement.value.split('-');
+                displayElement.textContent = `${day}/${month}/${year}`;
+                displayElement.classList.remove('placeholder');
+            }
+        }
+
+        // Convert any date format to yyyy/mm/dd for display
+        function formatDateForDisplay(dateString) {
+            if (!dateString) return '';
+
+            // Handle slash format (dd/mm/yyyy or yyyy/mm/dd)
+            if (dateString.includes('/')) {
+                const parts = dateString.split('/');
+                if (parts.length !== 3) return dateString;
+
+                // Check if it's already yyyy/mm/dd (year is 4 digits and in first position)
+                if (parts[0].length === 4) {
+                    return dateString; // Already yyyy/mm/dd
+                }
+
+                // Convert from dd/mm/yyyy to yyyy/mm/dd
+                const [day, month, year] = parts;
+                return `${year}/${month.padStart(2, '0')}/${day.padStart(2, '0')}`;
+            }
+
+            // Handle dash format (yyyy-mm-dd)
+            if (dateString.includes('-')) {
+                const [year, month, day] = dateString.split('-');
+                return `${year}/${month}/${day}`;
+            }
+
+            return dateString;
+        }
+
+        // Set date input value (input uses yyyy-mm-dd format from HTML5 date picker)
+        function setDateInputValue(inputElement, dateString) {
+            if (!inputElement || !dateString) return;
+
+            if (dateString.includes('/')) {
+                const parts = dateString.split('/');
+                // Check if yyyy/mm/dd format
+                if (parts[0].length === 4) {
+                    // Convert yyyy/mm/dd to yyyy-mm-dd for date input
+                    const [year, month, day] = parts;
+                    inputElement.value = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                } else {
+                    // Convert dd/mm/yyyy to yyyy-mm-dd
+                    const [day, month, year] = parts;
+                    inputElement.value = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                }
+            } else if (dateString.includes('-')) {
+                // Already yyyy-mm-dd
+                inputElement.value = dateString;
+            } else {
+                inputElement.value = dateString;
+            }
+
+            // Update the display element
+            updateDateDisplay(inputElement);
+        }
+
+        // Get date from input (yyyy-mm-dd from date picker) and convert to yyyy/mm/dd for storage
+        function getDateInputValue(inputElement) {
+            if (!inputElement || !inputElement.value) return '';
+
+            const value = inputElement.value.trim();
+            if (!value) return '';
+
+            // Date picker returns yyyy-mm-dd, convert to yyyy/mm/dd for storage
+            if (value.includes('-')) {
+                const [year, month, day] = value.split('-');
+                return `${year}/${month}/${day}`;
+            }
+
+            return value;
+        }
+
+        // ========================================
         // LOADING SPINNER FUNCTIONS
         // ========================================
         function showSpinner(text = 'Loading...') {
@@ -2265,6 +2718,21 @@
             const overlay = document.getElementById('loadingOverlay');
             if (overlay) {
                 overlay.classList.remove('active');
+            }
+        }
+
+        // Modal spinner functions
+        function showModalSpinner() {
+            const modalSpinner = document.getElementById('modalSpinner');
+            if (modalSpinner) {
+                modalSpinner.classList.add('active');
+            }
+        }
+
+        function hideModalSpinner() {
+            const modalSpinner = document.getElementById('modalSpinner');
+            if (modalSpinner) {
+                modalSpinner.classList.remove('active');
             }
         }
 
@@ -2302,7 +2770,7 @@
                         ${member.status || 'Active'}
                     </div>
                     <div class="team-stats">
-                        <div class="team-stat">
+                        <div class="team-stat clickable-stat" data-action="filter-remaining" data-member-id="${member.id}" data-member-name="${member.name}">
                             <div class="team-stat-value">${member.remainingCount || 0}</div>
                             <div class="team-stat-label">Remain</div>
                         </div>
@@ -2317,13 +2785,23 @@
                     </div>
                 </div>
             `).join('');
-            
+
             // Add event listeners to edit buttons
             document.querySelectorAll('[data-action="edit-member"]').forEach(btn => {
                 btn.addEventListener('click', function(e) {
                     e.stopPropagation();
                     const index = parseInt(this.getAttribute('data-member-index'));
                     editMember(members[index], index);
+                });
+            });
+
+            // Add event listeners to "Remain" stat
+            document.querySelectorAll('[data-action="filter-remaining"]').forEach(stat => {
+                stat.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const memberId = this.getAttribute('data-member-id');
+                    const memberName = this.getAttribute('data-member-name');
+                    filterRemainingTasksByMember(memberId, memberName);
                 });
             });
         }
@@ -3279,8 +3757,24 @@
                         <span class="task-name">${task.name}</span>
                     </div>
                     <div class="table-cell" data-label="Status">
-                        <div class="status-badge status-${task.status}">
-                            ${getStatusText(task.status)}
+                        <div class="status-badge-wrapper">
+                            <div class="status-badge status-${task.status}" onclick="toggleStatusPopup(event, ${index})">
+                                ${getStatusText(task.status)}
+                            </div>
+                            <div class="status-popup" id="status-popup-${index}">
+                                <div class="status-popup-option blank" onclick="changeTaskStatus(${index}, 'blank')">
+                                    Not Started
+                                </div>
+                                <div class="status-popup-option working" onclick="changeTaskStatus(${index}, 'working')">
+                                    Working on it
+                                </div>
+                                <div class="status-popup-option stuck" onclick="changeTaskStatus(${index}, 'stuck')">
+                                    Stuck
+                                </div>
+                                <div class="status-popup-option done" onclick="changeTaskStatus(${index}, 'done')">
+                                    Done
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="table-cell" data-label="Priority">
@@ -3296,10 +3790,10 @@
                         </div>
                     </div>
                     <div class="table-cell" data-label="Project">
-                        ${task.project ? `<span class="project-badge">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
+                        ${task.project ? `<span class="project-badge" title="${task.project}">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
                     </div>
                     <div class="table-cell" data-label="Date">
-                        <span class="date-cell">${task.date}</span>
+                        <span class="date-cell">${formatDateForDisplay(task.date)}</span>
                     </div>
                     <div class="table-cell" data-label="Timeline">
                         <span class="date-cell">${task.timeline}</span>
@@ -3339,34 +3833,152 @@
             });
         }
 
-        async function deleteTask(index) {
-            if (confirm('Are you sure you want to delete this task?')) {
-                // Set flag to prevent real-time listener interference
-                isManualOperation = true;
-                
-                const task = tasks[index];
-                
-                try {
-                    // Delete from Firebase if task has an ID
-                    if (task.id && db) {
-                        await deleteTaskFromFirebase(task.id);
-                        console.log("✅ Task deleted from Firebase:", task.id);
-                    }
-                    
-                    // Reload tasks from Firebase to prevent duplicates
-                    await loadTasksFromFirebase();
-                    
-                    // Re-enable real-time listener after a short delay
-                    setTimeout(() => {
-                        isManualOperation = false;
-                        console.log("✅ Real-time listener re-enabled");
-                    }, 1000);
-                    
-                } catch (error) {
-                    console.error("❌ Error deleting task:", error);
-                    alert('❌ Error deleting task: ' + error.message);
-                    isManualOperation = false;  // Reset flag on error
+        // ========================================
+        // TASK SORTING FUNCTIONALITY
+        // ========================================
+        let currentSortColumn = null;
+        let currentSortDirection = 'asc';
+
+        function sortTasks(column) {
+            // Toggle direction if clicking same column, otherwise default to ascending
+            if (currentSortColumn === column) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumn = column;
+                currentSortDirection = 'asc';
+            }
+
+            // Clear all sort icons
+            document.querySelectorAll('.sort-icon').forEach(icon => {
+                icon.className = 'sort-icon';
+            });
+
+            // Set active sort icon
+            const sortIcon = document.getElementById(`sort-${column}`);
+            if (sortIcon) {
+                sortIcon.className = `sort-icon ${currentSortDirection}`;
+            }
+
+            // Sort the tasks array
+            tasks.sort((a, b) => {
+                let valueA, valueB;
+
+                switch (column) {
+                    case 'name':
+                        valueA = (a.name || '').toLowerCase();
+                        valueB = (b.name || '').toLowerCase();
+                        break;
+
+                    case 'status':
+                        // Custom order: blank, working, stuck, done
+                        const statusOrder = { 'blank': 0, 'working': 1, 'stuck': 2, 'done': 3 };
+                        valueA = statusOrder[a.status] ?? 999;
+                        valueB = statusOrder[b.status] ?? 999;
+                        break;
+
+                    case 'priority':
+                        // Custom order: high, medium, low
+                        const priorityOrder = { 'high': 0, 'medium': 1, 'low': 2 };
+                        valueA = priorityOrder[a.priority] ?? 999;
+                        valueB = priorityOrder[b.priority] ?? 999;
+                        break;
+
+                    case 'person':
+                        valueA = (a.personName || a.person || '').toLowerCase();
+                        valueB = (b.personName || b.person || '').toLowerCase();
+                        break;
+
+                    case 'project':
+                        valueA = (a.project || '').toLowerCase();
+                        valueB = (b.project || '').toLowerCase();
+                        break;
+
+                    case 'date':
+                        // Convert dd/mm/yyyy to comparable format
+                        valueA = convertDateForSort(a.date);
+                        valueB = convertDateForSort(b.date);
+                        break;
+
+                    default:
+                        return 0;
                 }
+
+                // Compare values
+                if (valueA < valueB) return currentSortDirection === 'asc' ? -1 : 1;
+                if (valueA > valueB) return currentSortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            // Check if any filters are active
+            const hasActiveFilters = taskFilters && Object.values(taskFilters).some(v => v !== '');
+
+            // Re-render the sorted tasks with filters if active
+            if (hasActiveFilters) {
+                applyTaskFilters();
+            } else {
+                renderTasks();
+            }
+        }
+
+        // Helper function to convert date for sorting
+        function convertDateForSort(dateString) {
+            if (!dateString) return '';
+
+            // Handle yyyy/mm/dd format (display format)
+            if (dateString.includes('/')) {
+                const parts = dateString.split('/');
+                if (parts.length !== 3) return dateString;
+
+                // Check if it's yyyy/mm/dd (year is 4 digits and in first position)
+                if (parts[0].length === 4) {
+                    // Already yyyy/mm/dd, just remove slashes for sorting
+                    return parts.join('');
+                }
+
+                // It's dd/mm/yyyy, convert for sorting
+                const [day, month, year] = parts;
+                return `${year}${month.padStart(2, '0')}${day.padStart(2, '0')}`;
+            }
+
+            // Handle yyyy-mm-dd format
+            if (dateString.includes('-')) {
+                return dateString.replace(/-/g, '');
+            }
+
+            return dateString;
+        }
+
+        async function deleteTask(index) {
+            const task = tasks[index];
+
+            // Show confirmation dialog with task name
+            if (!confirm(`Are you sure you want to delete the task "${task.name}"?\n\nThis action cannot be undone.`)) {
+                return; // User cancelled
+            }
+
+            // Set flag to prevent real-time listener interference
+            isManualOperation = true;
+
+            try {
+                // Delete from Firebase if task has an ID
+                if (task.id && db) {
+                    await deleteTaskFromFirebase(task.id);
+                    console.log("✅ Task deleted from Firebase:", task.id);
+                }
+
+                // Reload tasks from Firebase to prevent duplicates
+                await loadTasksFromFirebase();
+
+                // Re-enable real-time listener after a short delay
+                setTimeout(() => {
+                    isManualOperation = false;
+                    console.log("✅ Real-time listener re-enabled");
+                }, 1000);
+
+            } catch (error) {
+                console.error("❌ Error deleting task:", error);
+                alert('❌ Error deleting task: ' + error.message);
+                isManualOperation = false;  // Reset flag on error
             }
         }
 
@@ -3376,6 +3988,12 @@
 
             // Update modal title
             document.getElementById('modalTitle').textContent = 'Edit Task';
+
+            // Open modal first
+            document.getElementById('taskModal').classList.add('active');
+
+            // Show modal spinner
+            showModalSpinner();
 
             // Populate both dropdowns first, then fill in task data
             Promise.all([
@@ -3418,23 +4036,112 @@
                     }
                 }
 
-                document.getElementById('itemDate').value = task.date;
+                // Set dates using helper function (converts dd/mm/yyyy to yyyy-mm-dd for input)
+                setDateInputValue(document.getElementById('itemStartDate'), task.startDate);
+                setDateInputValue(document.getElementById('itemDate'), task.date);
                 document.getElementById('itemTimeline').value = task.timeline;
+
+                // Hide modal spinner after data is loaded
+                hideModalSpinner();
+            }).catch(error => {
+                console.error('Error loading task data:', error);
+                hideModalSpinner();
             });
 
             // Change button text
             const submitBtn = document.querySelector('#taskForm button[type="submit"]');
             submitBtn.textContent = 'Update Task';
-
-            // Open modal
-            document.getElementById('taskModal').classList.add('active');
         }
 
-        async function cloneTask(index) {
+        // ========================================
+        // STATUS POPUP FUNCTIONALITY
+        // ========================================
+        let activeStatusPopup = null;
+
+        function toggleStatusPopup(event, index) {
+            event.stopPropagation();
+
+            const popupId = `status-popup-${index}`;
+            const popup = document.getElementById(popupId);
+
+            if (!popup) return;
+
+            // Close any other open popup
+            if (activeStatusPopup && activeStatusPopup !== popup) {
+                activeStatusPopup.classList.remove('active');
+            }
+
+            // Toggle current popup
+            popup.classList.toggle('active');
+            activeStatusPopup = popup.classList.contains('active') ? popup : null;
+        }
+
+        async function changeTaskStatus(index, newStatus) {
+            const task = tasks[index];
+
+            if (!task || !task.id) {
+                console.error('Task not found or missing ID');
+                return;
+            }
+
+            // Close popup
+            if (activeStatusPopup) {
+                activeStatusPopup.classList.remove('active');
+                activeStatusPopup = null;
+            }
+
             // Set flag to prevent real-time listener interference
             isManualOperation = true;
 
+            try {
+                // Update in Firebase
+                await db.collection('tasks').doc(task.id).update({
+                    status: newStatus
+                });
+
+                console.log(`✅ Task status updated to ${newStatus}`);
+
+                // Update local array
+                task.status = newStatus;
+
+                // Re-render tasks (will apply filters if active)
+                const hasActiveFilters = taskFilters && Object.values(taskFilters).some(v => v !== '');
+                if (hasActiveFilters) {
+                    applyTaskFilters();
+                } else {
+                    renderTasks();
+                }
+
+                // Re-enable real-time listener after a short delay
+                setTimeout(() => {
+                    isManualOperation = false;
+                }, 500);
+
+            } catch (error) {
+                console.error('❌ Error updating task status:', error);
+                alert('Error updating task status: ' + error.message);
+                isManualOperation = false;
+            }
+        }
+
+        // Close popup when clicking outside
+        document.addEventListener('click', function(event) {
+            if (activeStatusPopup && !event.target.closest('.status-badge-wrapper')) {
+                activeStatusPopup.classList.remove('active');
+                activeStatusPopup = null;
+            }
+        });
+
+        async function cloneTask(index) {
             const task = tasks[index];
+
+            // Show confirmation dialog
+            if (!confirm(`Are you sure you want to duplicate the task "${task.name}"?`)) {
+                return; // User cancelled
+            }
+
+            // Set flag to prevent real-time listener interference
+            isManualOperation = true;
 
             // Create a copy of the task with a new name
             const clonedTask = {
@@ -3443,9 +4150,13 @@
                 priority: task.priority,
                 assignedTo: task.assignedTo,
                 person: task.person,
+                personName: task.personName,
                 project: task.project || '',
+                projectId: task.projectId,
                 date: task.date,
-                timeline: task.timeline
+                startDate: task.startDate,
+                timeline: task.timeline,
+                createdAt: new Date()
             };
 
             try {
@@ -3534,7 +4245,8 @@
                 person: personName,  // Store name for backwards compatibility
                 projectId: projectId,  // Store project ID
                 project: projectName,  // Store project name for backwards compatibility and display
-                date: document.getElementById('itemDate').value,
+                startDate: getDateInputValue(document.getElementById('itemStartDate')),  // Convert to dd/mm/yyyy
+                date: getDateInputValue(document.getElementById('itemDate')),  // Convert to dd/mm/yyyy
                 timeline: document.getElementById('itemTimeline').value
             };
 
@@ -3756,7 +4468,7 @@
                     <div class="project-card-meta">
                         <div class="project-meta-item">
                             <span class="project-meta-icon">📅</span>
-                            <span>${project.startDate} - ${project.endDate}</span>
+                            <span>${formatDateForDisplay(project.startDate)} - ${formatDateForDisplay(project.endDate)}</span>
                         </div>
                         <div class="project-meta-item">
                             <span class="project-meta-icon">💰</span>
@@ -4032,8 +4744,10 @@
             document.getElementById('projectStatus').value = project.status;
             document.getElementById('projectPriority').value = project.priority;
             document.getElementById('projectSDLC').value = project.sdlc || 'Development';
-            document.getElementById('projectStartDate').value = project.startDate;
-            document.getElementById('projectEndDate').value = project.endDate;
+
+            // Set dates using helper function (converts dd/mm/yyyy to yyyy-mm-dd for input)
+            setDateInputValue(document.getElementById('projectStartDate'), project.startDate);
+            setDateInputValue(document.getElementById('projectEndDate'), project.endDate);
             document.getElementById('projectProgress').value = project.progress;
             document.getElementById('projectBudget').value = project.budget;
             document.getElementById('projectTags').value = project.tags ? project.tags.join(', ') : '';
@@ -4125,6 +4839,92 @@
             clearAllTaskFilters();
         }
 
+        // Filter remaining tasks by team member (all non-done tasks)
+        function filterRemainingTasksByMember(memberId, memberName) {
+            // Switch to tasks page without clearing filters
+            switchPage('tasks', true);
+
+            // Wait for page to load and tasks to be fetched from Firebase
+            setTimeout(async () => {
+                console.log(`🔍 Starting filter for member: ${memberName} (${memberId})`);
+                console.log(`📋 Total tasks available: ${tasks.length}`);
+
+                // Open filter panel and populate dropdowns
+                const filterPanel = document.getElementById('taskFilterPanel');
+                if (filterPanel) {
+                    // Make sure it's visible
+                    filterPanel.style.display = 'block';
+
+                    // Populate filter dropdowns first
+                    await populateFilterDropdowns();
+                    console.log(`✅ Dropdowns populated`);
+                }
+
+                // Set filter values - filter by assigned member
+                const assignedToSelect = document.getElementById('filterAssignedTo');
+                if (assignedToSelect) {
+                    assignedToSelect.value = memberId;
+                    console.log(`✅ Set assignedTo dropdown to: ${memberId}`);
+                    console.log(`📋 Dropdown options count: ${assignedToSelect.options.length}`);
+                }
+
+                // Check status checkboxes for all non-done statuses (blank, working, stuck)
+                const statusCheckboxes = document.querySelectorAll('#statusFilterOptions input[type="checkbox"]');
+                console.log(`📦 Found ${statusCheckboxes.length} status checkboxes`);
+
+                statusCheckboxes.forEach(checkbox => {
+                    // Check all except "done"
+                    if (checkbox.value !== 'done') {
+                        checkbox.checked = true;
+                        console.log(`✅ Checked checkbox: ${checkbox.value}`);
+                    } else {
+                        checkbox.checked = false;
+                        console.log(`❌ Unchecked checkbox: ${checkbox.value}`);
+                    }
+                });
+
+                // Clear other filters
+                document.getElementById('filterPriority').value = '';
+                document.getElementById('filterProject').value = '';
+
+                // Update task filters object with the non-done statuses
+                taskFilters.assignedTo = memberId;
+                taskFilters.status = ['blank', 'working', 'stuck'];
+                taskFilters.priority = '';
+                taskFilters.project = '';
+
+                console.log(`🎯 Filter object:`, taskFilters);
+
+                // Update status filter display to show the selected statuses
+                updateStatusFilterDisplay();
+
+                // Manually filter tasks with proper logic
+                let filteredTasks = tasks.filter(task => {
+                    // Check if task is assigned to this member (by ID or name for backward compatibility)
+                    const isMember = task.assignedTo === memberId || task.person === memberName;
+
+                    // Check if task status is in the selected statuses (not done)
+                    const isNotDone = taskFilters.status.includes(task.status);
+
+                    const matches = isMember && isNotDone;
+
+                    if (isMember) {
+                        console.log(`  Task "${task.name}": isMember=true, status=${task.status}, isNotDone=${isNotDone}`);
+                    }
+
+                    return matches;
+                });
+
+                console.log(`📊 Filtered ${filteredTasks.length} remaining tasks (excluding done) for member: ${memberName}`);
+
+                // Render filtered tasks
+                renderFilteredTasks(filteredTasks);
+
+                // Update active filters display
+                updateActiveFiltersDisplay();
+            }, 500);
+        }
+
         // Filter tasks by project ID
         function filterTasksByProject(projectId) {
             const tableBody = document.getElementById('tableBody');
@@ -4176,7 +4976,7 @@
                         </div>
                     </div>
                     <div class="table-cell" data-label="Project">
-                        ${task.project ? `<span class="project-badge">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
+                        ${task.project ? `<span class="project-badge" title="${task.project}">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
                     </div>
                     <div class="table-cell" data-label="Date">
                         <span class="date-cell">${task.date}</span>
@@ -4223,11 +5023,80 @@
         // TASK FILTER FUNCTIONS
         // ========================================
         let taskFilters = {
-            status: '',
+            status: [],  // Changed to array for multiple selections
             priority: '',
             assignedTo: '',
             project: ''
         };
+
+        // ========================================
+        // MULTI-SELECT STATUS DROPDOWN FUNCTIONS
+        // ========================================
+
+        // Toggle status dropdown
+        function toggleStatusDropdown() {
+            const display = document.getElementById('statusFilterDisplay');
+            const options = document.getElementById('statusFilterOptions');
+
+            display.classList.toggle('open');
+            options.classList.toggle('open');
+        }
+
+        // Close status dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('statusFilterDropdown');
+            const display = document.getElementById('statusFilterDisplay');
+            const options = document.getElementById('statusFilterOptions');
+
+            if (dropdown && !dropdown.contains(event.target)) {
+                display.classList.remove('open');
+                options.classList.remove('open');
+            }
+        });
+
+        // Update status filter when checkboxes change
+        function updateStatusFilter() {
+            const checkboxes = document.querySelectorAll('#statusFilterOptions input[type="checkbox"]');
+            const selectedStatuses = [];
+
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedStatuses.push(checkbox.value);
+                }
+            });
+
+            // Update taskFilters object
+            taskFilters.status = selectedStatuses;
+
+            // Update display text
+            updateStatusFilterDisplay();
+
+            // Apply filters immediately
+            applyTaskFilters();
+        }
+
+        // Update the display text based on selected statuses
+        function updateStatusFilterDisplay() {
+            const displayText = document.getElementById('statusFilterText');
+            const selectedStatuses = taskFilters.status;
+
+            if (selectedStatuses.length === 0) {
+                displayText.textContent = 'All Status';
+            } else if (selectedStatuses.length === 1) {
+                // Show single status name
+                const statusNames = {
+                    'blank': 'Not Started',
+                    'working': 'Working on it',
+                    'stuck': 'Stuck',
+                    'done': 'Done'
+                };
+                displayText.textContent = statusNames[selectedStatuses[0]];
+            } else if (selectedStatuses.length === 4) {
+                displayText.textContent = 'All Status';
+            } else {
+                displayText.textContent = `${selectedStatuses.length} statuses selected`;
+            }
+        }
 
         // Toggle filter panel visibility
         function toggleFilterPanel() {
@@ -4294,20 +5163,23 @@
 
         // Apply task filters
         function applyTaskFilters() {
-            // Get filter values
-            taskFilters.status = document.getElementById('filterStatus').value;
+            // Get filter values (status is already in taskFilters.status as array)
             taskFilters.priority = document.getElementById('filterPriority').value;
             taskFilters.assignedTo = document.getElementById('filterAssignedTo').value;
             taskFilters.project = document.getElementById('filterProject').value;
 
             // Check if any filter is active
-            const hasActiveFilters = Object.values(taskFilters).some(v => v !== '');
+            const hasActiveFilters = taskFilters.status.length > 0 ||
+                                      taskFilters.priority !== '' ||
+                                      taskFilters.assignedTo !== '' ||
+                                      taskFilters.project !== '';
 
             // Filter tasks
             let filteredTasks = tasks;
 
-            if (taskFilters.status) {
-                filteredTasks = filteredTasks.filter(t => t.status === taskFilters.status);
+            // Filter by multiple statuses (OR logic)
+            if (taskFilters.status && taskFilters.status.length > 0) {
+                filteredTasks = filteredTasks.filter(t => taskFilters.status.includes(t.status));
             }
 
             if (taskFilters.priority) {
@@ -4315,7 +5187,12 @@
             }
 
             if (taskFilters.assignedTo) {
-                filteredTasks = filteredTasks.filter(t => t.assignedTo === taskFilters.assignedTo);
+                filteredTasks = filteredTasks.filter(t => {
+                    // Check both assignedTo (ID) and person (name) for backward compatibility
+                    return t.assignedTo === taskFilters.assignedTo ||
+                           (t.person && document.getElementById('filterAssignedTo').selectedOptions[0] &&
+                            t.person === document.getElementById('filterAssignedTo').selectedOptions[0].text);
+                });
             }
 
             if (taskFilters.project) {
@@ -4359,8 +5236,24 @@
                         <span class="task-name">${task.name}</span>
                     </div>
                     <div class="table-cell" data-label="Status">
-                        <div class="status-badge status-${task.status}">
-                            ${getStatusText(task.status)}
+                        <div class="status-badge-wrapper">
+                            <div class="status-badge status-${task.status}" onclick="toggleStatusPopup(event, ${index})">
+                                ${getStatusText(task.status)}
+                            </div>
+                            <div class="status-popup" id="status-popup-${index}">
+                                <div class="status-popup-option blank" onclick="changeTaskStatus(${index}, 'blank')">
+                                    Not Started
+                                </div>
+                                <div class="status-popup-option working" onclick="changeTaskStatus(${index}, 'working')">
+                                    Working on it
+                                </div>
+                                <div class="status-popup-option stuck" onclick="changeTaskStatus(${index}, 'stuck')">
+                                    Stuck
+                                </div>
+                                <div class="status-popup-option done" onclick="changeTaskStatus(${index}, 'done')">
+                                    Done
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="table-cell" data-label="Priority">
@@ -4376,7 +5269,7 @@
                         </div>
                     </div>
                     <div class="table-cell" data-label="Project">
-                        ${task.project ? `<span class="project-badge">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
+                        ${task.project ? `<span class="project-badge" title="${task.project}">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
                     </div>
                     <div class="table-cell" data-label="Date">
                         <span class="date-cell">${task.date}</span>
@@ -4428,8 +5321,16 @@
 
             const activeFilters = [];
 
-            if (taskFilters.status) {
-                activeFilters.push({ type: 'status', label: 'Status', value: getStatusText(taskFilters.status) });
+            // Handle multiple status selections
+            if (taskFilters.status && taskFilters.status.length > 0) {
+                const statusNames = {
+                    'blank': 'Not Started',
+                    'working': 'Working on it',
+                    'stuck': 'Stuck',
+                    'done': 'Done'
+                };
+                const statusValues = taskFilters.status.map(s => statusNames[s] || s).join(', ');
+                activeFilters.push({ type: 'status', label: 'Status', value: statusValues });
             }
             if (taskFilters.priority) {
                 activeFilters.push({ type: 'priority', label: 'Priority', value: taskFilters.priority.charAt(0).toUpperCase() + taskFilters.priority.slice(1) });
@@ -4458,23 +5359,37 @@
 
         // Remove individual filter
         function removeFilter(filterType) {
-            document.getElementById('filter' + filterType.charAt(0).toUpperCase() + filterType.slice(1)).value = '';
+            if (filterType === 'status') {
+                // Uncheck all status checkboxes
+                const checkboxes = document.querySelectorAll('#statusFilterOptions input[type="checkbox"]');
+                checkboxes.forEach(checkbox => checkbox.checked = false);
+                taskFilters.status = [];
+                updateStatusFilterDisplay();
+            } else {
+                document.getElementById('filter' + filterType.charAt(0).toUpperCase() + filterType.slice(1)).value = '';
+            }
             applyTaskFilters();
         }
 
         // Clear all task filters
         function clearAllTaskFilters() {
-            document.getElementById('filterStatus').value = '';
+            // Clear status checkboxes
+            const statusCheckboxes = document.querySelectorAll('#statusFilterOptions input[type="checkbox"]');
+            statusCheckboxes.forEach(checkbox => checkbox.checked = false);
+
             document.getElementById('filterPriority').value = '';
             document.getElementById('filterAssignedTo').value = '';
             document.getElementById('filterProject').value = '';
 
             taskFilters = {
-                status: '',
+                status: [],  // Changed to empty array
                 priority: '',
                 assignedTo: '',
                 project: ''
             };
+
+            // Update status filter display
+            updateStatusFilterDisplay();
 
             // Clear project filter variable
             currentProjectFilter = null;
@@ -4512,8 +5427,8 @@
                 status: document.getElementById('projectStatus').value,
                 priority: document.getElementById('projectPriority').value,
                 sdlc: document.getElementById('projectSDLC').value,
-                startDate: document.getElementById('projectStartDate').value,
-                endDate: document.getElementById('projectEndDate').value,
+                startDate: getDateInputValue(document.getElementById('projectStartDate')),  // Convert to dd/mm/yyyy
+                endDate: getDateInputValue(document.getElementById('projectEndDate')),  // Convert to dd/mm/yyyy
                 progress: parseInt(document.getElementById('projectProgress').value),
                 budget: parseInt(document.getElementById('projectBudget').value) || 0,
                 teamMemberIds: teamMemberIds,  // Store IDs
