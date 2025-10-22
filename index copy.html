@@ -152,37 +152,6 @@
             position: relative;
         }
 
-        .logout-btn {
-            background: #fee;
-            color: #c33;
-            padding: 8px 16px;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            margin-right: 10px;
-        }
-
-        .logout-btn:hover {
-            background: #fdd;
-            transform: translateY(-2px);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-right: 10px;
-        }
-
-        .user-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: #323338;
-        }
-
         .icon-btn:hover {
             background: #e6e9ef;
             transform: translateY(-2px);
@@ -510,17 +479,6 @@
             border-color: #667eea;
             color: #667eea;
             transform: translateY(-2px);
-        }
-
-        .btn-secondary.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-color: #667eea;
-        }
-
-        .btn-secondary.active:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
         }
 
         .dashboard-grid {
@@ -1070,29 +1028,6 @@
             transform: scale(1.1);
         }
 
-        .change-password-btn {
-            width: 100%;
-            margin-top: 16px;
-            padding: 10px 16px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .change-password-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
-        }
-
         .team-avatar-large {
             width: 90px;
             height: 90px;
@@ -1559,44 +1494,6 @@
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
         }
 
-        .readonly-input {
-            background: #f6f7fb;
-            cursor: not-allowed;
-            color: #676879;
-        }
-
-        .password-error-message {
-            display: none;
-            background: #fee;
-            color: #c33;
-            padding: 12px 16px;
-            border-radius: 8px;
-            border-left: 4px solid #c33;
-            margin-bottom: 20px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .password-error-message.show {
-            display: block;
-        }
-
-        .password-success-message {
-            display: none;
-            background: #efe;
-            color: #363;
-            padding: 12px 16px;
-            border-radius: 8px;
-            border-left: 4px solid #2e7d32;
-            margin-bottom: 20px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .password-success-message.show {
-            display: block;
-        }
-
         .modal-footer {
             padding: 20px 28px;
             border-top: 2px solid #e6e9ef;
@@ -1995,11 +1892,7 @@
                 </button>
                 <button class="icon-btn">⚙️</button>
                 <button class="icon-btn">❓</button>
-                <div class="user-info">
-                    <span class="user-name" id="currentUserName">User</span>
-                    <div class="avatar" id="currentUserAvatar">JD</div>
-                </div>
-                <button class="logout-btn" onclick="logout()">Logout</button>
+                <div class="avatar">JD</div>
             </div>
         </header>
 
@@ -2159,10 +2052,6 @@
                             <button class="btn btn-primary" onclick="openModal()">
                                 <span>+</span>
                                 <span>New Task</span>
-                            </button>
-                            <button class="btn btn-secondary" id="myTasksBtn" onclick="toggleMyTasks()">
-                                <span>👤</span>
-                                <span>My Tasks</span>
                             </button>
                             <button class="btn btn-secondary" onclick="toggleFilterPanel()">
                                 <span>🔍</span>
@@ -2699,48 +2588,6 @@
         </div>
     </div>
 
-    <!-- Change Password Modal -->
-    <div class="modal" id="changePasswordModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Change Password</h2>
-            </div>
-            <form id="changePasswordForm" onsubmit="changePassword(event)">
-                <div class="modal-body">
-                    <div id="passwordError" class="password-error-message"></div>
-                    <div id="passwordSuccess" class="password-success-message"></div>
-
-                    <div class="form-group">
-                        <label class="form-label">Team Member</label>
-                        <input type="text" id="passwordMemberName" class="form-input readonly-input" readonly>
-                        <input type="hidden" id="passwordMemberId">
-                        <input type="hidden" id="passwordMemberHasPassword">
-                    </div>
-
-                    <div class="form-group" id="currentPasswordGroup">
-                        <label class="form-label">Current Password</label>
-                        <input type="password" id="currentPassword" class="form-input" placeholder="Enter current password">
-                        <small style="color: #676879; font-size: 12px; margin-top: 4px; display: block;">Required to change your existing password</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">New Password</label>
-                        <input type="password" id="newPassword" class="form-input" placeholder="Enter new password (min 4 characters)" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Re-confirm New Password</label>
-                        <input type="password" id="confirmPassword" class="form-input" placeholder="Re-enter new password" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeChangePasswordModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="changePasswordBtn">Change Password</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script>
         // ========================================
         // FIREBASE CONFIGURATION
@@ -2810,25 +2657,6 @@
             // Will redirect to login if session is invalid
         }
 
-        // Parse user data and display in header
-        const loggedInUser = sessionStorage.getItem('loggedInUser');
-        let currentUser = null;
-        try {
-            currentUser = JSON.parse(loggedInUser);
-            // Update user display in header
-            const userNameEl = document.getElementById('currentUserName');
-            const userAvatarEl = document.getElementById('currentUserAvatar');
-            if (userNameEl && currentUser.name) {
-                userNameEl.textContent = currentUser.name;
-            }
-            if (userAvatarEl && currentUser.name) {
-                const initials = currentUser.name.split(' ').map(n => n[0]).join('');
-                userAvatarEl.textContent = initials;
-            }
-        } catch (error) {
-            console.error("Error parsing user data:", error);
-        }
-
         // Track user activity - update timestamp on any interaction
         const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
         activityEvents.forEach(event => {
@@ -2839,12 +2667,6 @@
         setInterval(() => {
             checkSession();
         }, 60000); // Check every 60 seconds
-
-        // Logout function
-        function logout() {
-            sessionStorage.removeItem('loggedInUser');
-            window.location.href = 'login.html';
-        }
 
         // Initialize Firebase
         let db;
@@ -2981,186 +2803,6 @@
         }
 
         // ========================================
-        // PASSWORD CHANGE FUNCTIONS
-        // ========================================
-
-        // Base64 encode function
-        function encodePassword(password) {
-            return btoa(password);
-        }
-
-        // Base64 decode function
-        function decodePassword(encodedPassword) {
-            try {
-                return atob(encodedPassword);
-            } catch (e) {
-                return encodedPassword; // Return as-is if not base64
-            }
-        }
-
-        // Open password change modal
-        async function openChangePasswordModal(memberId, memberName) {
-            const modal = document.getElementById('changePasswordModal');
-            document.getElementById('passwordMemberId').value = memberId;
-            document.getElementById('passwordMemberName').value = memberName;
-            document.getElementById('currentPassword').value = '';
-            document.getElementById('newPassword').value = '';
-            document.getElementById('confirmPassword').value = '';
-
-            // Hide messages using class
-            const errorDiv = document.getElementById('passwordError');
-            const successDiv = document.getElementById('passwordSuccess');
-            errorDiv.classList.remove('show');
-            successDiv.classList.remove('show');
-
-            // Check if member has a password
-            try {
-                const memberDoc = await db.collection('team_members').doc(memberId).get();
-                const memberData = memberDoc.data();
-                const hasPassword = memberData && memberData.password && memberData.password !== '';
-
-                document.getElementById('passwordMemberHasPassword').value = hasPassword ? 'true' : 'false';
-
-                // Show/hide current password field based on whether they have a password
-                const currentPasswordGroup = document.getElementById('currentPasswordGroup');
-                if (hasPassword) {
-                    currentPasswordGroup.style.display = 'block';
-                } else {
-                    currentPasswordGroup.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error checking password:', error);
-                // Default to showing the field
-                document.getElementById('currentPasswordGroup').style.display = 'block';
-            }
-
-            modal.classList.add('active');
-        }
-
-        // Close password change modal
-        function closeChangePasswordModal() {
-            const modal = document.getElementById('changePasswordModal');
-            modal.classList.remove('active');
-        }
-
-        // Change password
-        async function changePassword(event) {
-            if (event) event.preventDefault();
-            const memberId = document.getElementById('passwordMemberId').value;
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const errorDiv = document.getElementById('passwordError');
-            const successDiv = document.getElementById('passwordSuccess');
-            const btn = document.getElementById('changePasswordBtn');
-
-            // Hide messages using classes
-            errorDiv.classList.remove('show');
-            successDiv.classList.remove('show');
-
-            // Disable button
-            btn.disabled = true;
-            btn.textContent = 'Changing...';
-
-            try {
-                // Get member document first to check if password exists
-                const memberDoc = await db.collection('team_members').doc(memberId).get();
-
-                if (!memberDoc.exists) {
-                    errorDiv.textContent = 'Team member not found';
-                    errorDiv.classList.add('show');
-                    btn.disabled = false;
-                    btn.textContent = 'Change Password';
-                    return;
-                }
-
-                const memberData = memberDoc.data();
-                const hasPassword = memberData.password && memberData.password !== '';
-
-                // If member has a password, current password is required
-                if (hasPassword) {
-                    if (!currentPassword) {
-                        errorDiv.textContent = 'Current password is required';
-                        errorDiv.classList.add('show');
-                        btn.disabled = false;
-                        btn.textContent = 'Change Password';
-                        return;
-                    }
-
-                    let storedPassword = memberData.password;
-                    // Decode if it's base64
-                    storedPassword = decodePassword(storedPassword);
-
-                    // Verify current password
-                    if (currentPassword !== storedPassword) {
-                        errorDiv.textContent = 'Current password is incorrect';
-                        errorDiv.classList.add('show');
-                        btn.disabled = false;
-                        btn.textContent = 'Change Password';
-                        return;
-                    }
-                }
-
-                // Validate new password
-                if (!newPassword || !confirmPassword) {
-                    errorDiv.textContent = 'New password and confirmation are required';
-                    errorDiv.classList.add('show');
-                    btn.disabled = false;
-                    btn.textContent = 'Change Password';
-                    return;
-                }
-
-                if (newPassword !== confirmPassword) {
-                    errorDiv.textContent = 'New password and confirmation do not match';
-                    errorDiv.classList.add('show');
-                    btn.disabled = false;
-                    btn.textContent = 'Change Password';
-                    return;
-                }
-
-                if (newPassword.length < 4) {
-                    errorDiv.textContent = 'Password must be at least 4 characters long';
-                    errorDiv.classList.add('show');
-                    btn.disabled = false;
-                    btn.textContent = 'Change Password';
-                    return;
-                }
-
-                // Encode new password with base64
-                const encodedNewPassword = encodePassword(newPassword);
-
-                // Update password in Firestore
-                await db.collection('team_members').doc(memberId).update({
-                    password: encodedNewPassword,
-                    passwordUpdatedAt: new Date().toISOString()
-                });
-
-                // Success
-                successDiv.textContent = 'Password changed successfully!';
-                successDiv.classList.add('show');
-                btn.disabled = false;
-                btn.textContent = 'Change Password';
-
-                // Clear form
-                document.getElementById('currentPassword').value = '';
-                document.getElementById('newPassword').value = '';
-                document.getElementById('confirmPassword').value = '';
-
-                // Close modal after 2 seconds
-                setTimeout(() => {
-                    closeChangePasswordModal();
-                }, 2000);
-
-            } catch (error) {
-                console.error('Error changing password:', error);
-                errorDiv.textContent = 'Failed to change password: ' + error.message;
-                errorDiv.classList.add('show');
-                btn.disabled = false;
-                btn.textContent = 'Change Password';
-            }
-        }
-
-        // ========================================
         // FIRESTORE FUNCTIONS
         // ========================================
 
@@ -3207,9 +2849,6 @@
                             <div class="team-stat-label">Project</div>
                         </div>
                     </div>
-                    <button class="change-password-btn" onclick="openChangePasswordModal('${member.id}', '${member.name}')" title="Change Password">
-                        🔐 Change Password
-                    </button>
                 </div>
             `).join('');
 
@@ -3767,18 +3406,11 @@
                 });
 
                 // Check if any filters are active and re-apply them
-                // Reset allTasks when loading fresh data
-                allTasks = [];
-
                 const hasActiveFilters = taskFilters && Object.values(taskFilters).some(v => v !== '');
 
                 if (hasActiveFilters || currentProjectFilter) {
                     console.log(`🔄 Re-applying active filters`);
                     applyTaskFilters();
-                } else if (isMyTasksActive) {
-                    console.log(`🔄 Re-applying My Tasks filter`);
-                    toggleMyTasks();
-                    toggleMyTasks(); // Toggle twice to refresh with new data
                 } else {
                     renderTasks();
                 }
@@ -4265,61 +3897,6 @@
                     }
                 });
             });
-        }
-
-        // ========================================
-        // MY TASKS FILTER FUNCTIONALITY
-        // ========================================
-        let isMyTasksActive = false;
-        let allTasks = []; // Store original tasks
-
-        function toggleMyTasks() {
-            const myTasksBtn = document.getElementById('myTasksBtn');
-            isMyTasksActive = !isMyTasksActive;
-
-            if (isMyTasksActive) {
-                // Activate My Tasks filter
-                myTasksBtn.classList.add('active');
-
-                // Store all tasks if not already stored
-                if (allTasks.length === 0) {
-                    allTasks = [...tasks];
-                }
-
-                // Get current logged-in user
-                const loggedInUserData = sessionStorage.getItem('loggedInUser');
-                if (!loggedInUserData) {
-                    console.error('No logged in user found');
-                    isMyTasksActive = false;
-                    myTasksBtn.classList.remove('active');
-                    return;
-                }
-
-                const currentUser = JSON.parse(loggedInUserData);
-                const currentUserName = currentUser.name;
-
-                // Filter tasks for current user
-                tasks = allTasks.filter(task => {
-                    const taskPerson = task.personName || task.person || '';
-                    return taskPerson.toLowerCase() === currentUserName.toLowerCase();
-                });
-
-                console.log(`Filtered to ${tasks.length} tasks for ${currentUserName}`);
-            } else {
-                // Deactivate My Tasks filter - show all tasks
-                myTasksBtn.classList.remove('active');
-
-                // Restore all tasks
-                if (allTasks.length > 0) {
-                    tasks = [...allTasks];
-                }
-
-                console.log(`Showing all ${tasks.length} tasks`);
-            }
-
-            // Re-render tasks
-            renderTasks();
-            updateTaskStats();
         }
 
         // ========================================

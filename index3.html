@@ -1664,6 +1664,72 @@
             measurementId: "G-61Z0HS88LR"
         };
 
+        // Session timeout configuration (1 hour = 3600000 milliseconds)
+        const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour in milliseconds
+
+        // Check authentication and session timeout
+        function checkSession() {
+            const loggedInUser = sessionStorage.getItem('loggedInUser');
+
+            if (!loggedInUser) {
+                window.location.href = 'login.html';
+                return false;
+            }
+
+            try {
+                const currentUser = JSON.parse(loggedInUser);
+                const now = Date.now();
+                const lastActivity = currentUser.lastActivity || now;
+                const timeSinceActivity = now - lastActivity;
+
+                // Check if session has expired (no activity for 1 hour)
+                if (timeSinceActivity > SESSION_TIMEOUT) {
+                    console.log('Session expired due to inactivity');
+                    sessionStorage.removeItem('loggedInUser');
+                    alert('Your session has expired due to inactivity. Please login again.');
+                    window.location.href = 'login.html';
+                    return false;
+                }
+
+                return true;
+            } catch (error) {
+                console.error("Error checking session:", error);
+                sessionStorage.removeItem('loggedInUser');
+                window.location.href = 'login.html';
+                return false;
+            }
+        }
+
+        // Update last activity time
+        function updateActivity() {
+            const loggedInUser = sessionStorage.getItem('loggedInUser');
+            if (loggedInUser) {
+                try {
+                    const currentUser = JSON.parse(loggedInUser);
+                    currentUser.lastActivity = Date.now();
+                    sessionStorage.setItem('loggedInUser', JSON.stringify(currentUser));
+                } catch (error) {
+                    console.error("Error updating activity:", error);
+                }
+            }
+        }
+
+        // Check session on page load
+        if (!checkSession()) {
+            // Will redirect to login if session is invalid
+        }
+
+        // Track user activity - update timestamp on any interaction
+        const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+        activityEvents.forEach(event => {
+            document.addEventListener(event, updateActivity, { passive: true });
+        });
+
+        // Check session every minute
+        setInterval(() => {
+            checkSession();
+        }, 60000); // Check every 60 seconds
+
         // Initialize Firebase
         let db;
         try {
