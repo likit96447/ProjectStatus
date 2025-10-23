@@ -1346,89 +1346,6 @@
             color: #721c24;
         }
 
-        /* Make status and SDLC badges clickable */
-        .project-status-badge.clickable {
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .project-status-badge.clickable:hover {
-            opacity: 0.8;
-            transform: scale(1.05);
-        }
-
-        /* Project status/SDLC popup */
-        .project-status-popup-wrapper {
-            position: relative;
-            display: inline-block;
-        }
-
-        .project-status-popup {
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-top: 8px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-            border: 1px solid #e6e9ef;
-            padding: 8px;
-            min-width: 200px;
-            z-index: 9999;
-            display: none;
-            animation: fadeInDown 0.2s ease;
-        }
-
-        .project-status-popup.active {
-            display: block;
-        }
-
-        .project-status-popup-option {
-            padding: 12px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: #323338;
-        }
-
-        .project-status-popup-option:last-child {
-            margin-bottom: 0;
-        }
-
-        .project-status-popup-option:hover {
-            background: #f6f7fb;
-            transform: translateX(4px);
-        }
-
-        .project-status-popup-option.planned {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-
-        .project-status-popup-option.in-progress {
-            background: #fff3e0;
-            color: #f57c00;
-        }
-
-        .project-status-popup-option.completed {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .project-status-popup-option.on-hold {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .project-status-popup-option.sdlc {
-            background: #e6f2ff;
-            color: #0073ea;
-        }
-
         .project-card-meta {
             display: flex;
             flex-wrap: wrap;
@@ -2052,230 +1969,6 @@
             opacity: 0;
             cursor: pointer;
         }
-
-        /* Subtask Styles */
-        .subtask-row {
-            background: #f8f9fb;
-            border-left: 3px solid #0073ea;
-            cursor: move;
-        }
-
-        .subtask-row:hover {
-            background: #f0f2f5;
-        }
-
-        .subtask-row.dragging {
-            opacity: 0.5;
-            background: #e6f2ff;
-        }
-
-        .subtask-indent {
-            color: #0073ea;
-            font-weight: bold;
-            margin-right: 8px;
-        }
-
-        .subtask-name {
-            font-style: italic;
-            color: #676879;
-        }
-
-        .subtask-btn {
-            background: #e6f2ff;
-            color: #0073ea;
-        }
-
-        .subtask-btn:hover {
-            background: #0073ea;
-            color: white;
-        }
-
-        /* Inline Add Subtask Row */
-        .inline-add-subtask-row {
-            background: #f8f9fb;
-            border-left: 3px solid #0073ea;
-            padding: 8px 0;
-        }
-
-        .inline-add-subtask-row .table-cell {
-            padding: 4px 12px;
-        }
-
-        .inline-add-subtask-row input,
-        .inline-add-subtask-row select {
-            width: 100%;
-            padding: 6px 8px;
-            border: 1px solid #d0d4e4;
-            border-radius: 4px;
-            font-size: 13px;
-            font-family: inherit;
-        }
-
-        .inline-add-subtask-row input:focus,
-        .inline-add-subtask-row select:focus {
-            outline: none;
-            border-color: #0073ea;
-            box-shadow: 0 0 0 2px rgba(0, 115, 234, 0.1);
-        }
-
-        .inline-add-subtask-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .inline-add-subtask-actions button {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            font-size: 13px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .inline-add-subtask-save {
-            background: #0073ea;
-            color: white;
-        }
-
-        .inline-add-subtask-save:hover {
-            background: #0060c0;
-        }
-
-        .inline-add-subtask-cancel {
-            background: #e6e9ef;
-            color: #676879;
-        }
-
-        .inline-add-subtask-cancel:hover {
-            background: #d0d4e4;
-        }
-
-        /* Drag and Drop Styles */
-        .table-row.drag-over {
-            background: #e6f7ff;
-            border: 2px dashed #0073ea;
-        }
-
-        .table-row.drop-target {
-            box-shadow: 0 2px 8px rgba(0, 115, 234, 0.3);
-        }
-
-        /* Overdue Task Styles */
-        .table-row.overdue {
-            background: rgba(255, 0, 0, 0.08) !important;
-            border-left: 4px solid #e44258;
-        }
-
-        .subtask-row.overdue {
-            background: rgba(255, 0, 0, 0.08) !important;
-            border-left: 4px solid #e44258;
-        }
-
-        /* Multiple Assignees Styles */
-        .person-avatars-group {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-
-        .person-avatar-small {
-            width: 24px;
-            height: 24px;
-            font-size: 10px;
-        }
-
-        /* Inline Editing Styles */
-        .editable-field {
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 4px;
-            transition: background 0.2s;
-            min-height: 20px;
-            display: inline-block;
-            min-width: 100px;
-        }
-
-        .editable-field:hover {
-            background: #f0f2f5;
-            outline: 1px solid #d0d4e4;
-        }
-
-        .inline-edit-input {
-            width: 100%;
-            padding: 4px 8px;
-            border: 2px solid #0073ea;
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: inherit;
-            outline: none;
-        }
-
-        .inline-edit-select {
-            width: 100%;
-            padding: 4px 8px;
-            border: 2px solid #0073ea;
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: inherit;
-            outline: none;
-            min-height: 100px;
-        }
-
-        .inline-edit-actions {
-            display: flex;
-            gap: 4px;
-            margin-top: 4px;
-            position: absolute;
-            right: 4px;
-            top: 4px;
-            z-index: 1000;
-        }
-
-        .inline-edit-btn {
-            padding: 2px 8px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            line-height: 1;
-            min-width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 1001;
-        }
-
-        .inline-edit-save {
-            background: #00c875;
-            color: white;
-            display: none;
-        }
-
-        .inline-edit-save:hover {
-            background: #00a164;
-        }
-
-        .inline-edit-cancel {
-            background: #e6e9ef;
-            color: #676879;
-        }
-
-        .inline-edit-cancel:hover {
-            background: #d0d4e4;
-        }
-
-        .editing-mode {
-            background: #e6f2ff !important;
-            position: relative;
-        }
-
-        .inline-edit-wrapper {
-            position: relative;
-            width: 100%;
-        }
     </style>
 </head>
 <body>
@@ -2563,12 +2256,10 @@
                             <div class="table-cell sortable" onclick="sortTasks('project')" style="cursor: pointer;">
                                 Project <span id="sort-project" class="sort-icon"></span>
                             </div>
-                            <div class="table-cell sortable" onclick="sortTasks('startDate')" style="cursor: pointer;">
-                                Start Date <span id="sort-startDate" class="sort-icon"></span>
-                            </div>
                             <div class="table-cell sortable" onclick="sortTasks('date')" style="cursor: pointer;">
                                 Due Date <span id="sort-date" class="sort-icon"></span>
                             </div>
+                            <div class="table-cell">Timeline</div>
                             <div class="table-cell">Actions</div>
                         </div>
                         <div id="tableBody"></div>
@@ -2820,10 +2511,9 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Assign To <span style="color: #e44258;">*</span></label>
-                        <select class="form-select" id="itemPerson" multiple size="5" required>
-                            <option value="" disabled>Loading team members...</option>
+                        <select class="form-select" id="itemPerson" required>
+                            <option value="" disabled selected>Select team member...</option>
                         </select>
-                        <small style="color: #676879; font-size: 12px; margin-top: 4px; display: block;">Hold Ctrl/Cmd to select multiple members (at least one required)</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Project</label>
@@ -2851,73 +2541,14 @@
                             <input type="date" class="form-input" id="itemDate" required onchange="updateDateDisplay(this)">
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">Timeline</label>
+                        <input type="text" class="form-input" id="itemTimeline" placeholder="e.g., 2 weeks" required>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
                     <button type="submit" class="btn btn-primary">Create Task</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Subtask Modal -->
-    <div class="modal" id="subtaskModal">
-        <div class="modal-content">
-            <!-- Modal Spinner Overlay -->
-            <div class="modal-spinner-overlay" id="subtaskModalSpinner">
-                <div class="modal-spinner"></div>
-            </div>
-
-            <div class="modal-header">
-                <h2 class="modal-title" id="subtaskModalTitle">Create New Subtask</h2>
-            </div>
-            <form id="subtaskForm">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label class="form-label">Subtask Name</label>
-                        <input type="text" class="form-input" id="subtaskName" placeholder="Enter subtask name" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Status</label>
-                        <select class="form-select" id="subtaskStatus">
-                            <option value="blank">Not Started</option>
-                            <option value="working">Working on it</option>
-                            <option value="stuck">Stuck</option>
-                            <option value="done">Done</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Assign To <span style="color: #e44258;">*</span></label>
-                        <select class="form-select" id="subtaskPerson" required>
-                            <option value="">Select team member...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Project</label>
-                        <select class="form-select" id="subtaskProject">
-                            <option value="">No Project</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Start Date</label>
-                        <div class="date-input-wrapper">
-                            <div class="date-display placeholder" id="subtaskStartDate-display">dd/mm/yyyy</div>
-                            <span class="calendar-icon">📅</span>
-                            <input type="date" class="form-input" id="subtaskStartDate" required onchange="updateDateDisplay(this)">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Due Date</label>
-                        <div class="date-input-wrapper">
-                            <div class="date-display placeholder" id="subtaskDate-display">dd/mm/yyyy</div>
-                            <span class="calendar-icon">📅</span>
-                            <input type="date" class="form-input" id="subtaskDate" required onchange="updateDateDisplay(this)">
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeSubtaskModal()">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Create Subtask</button>
                 </div>
             </form>
         </div>
@@ -2994,16 +2625,6 @@
                     <div class="form-group">
                         <label class="form-label">Description</label>
                         <textarea class="form-input" id="projectDescription" placeholder="Project description" rows="3" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Project Type</label>
-                        <select class="form-select" id="projectType">
-                            <option value="Project">Project</option>
-                            <option value="BAU">BAU</option>
-                            <option value="Parameter">Parameter</option>
-                            <option value="Support">Support</option>
-                            <option value="Incident">Incident</option>
-                        </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Status</label>
@@ -3769,7 +3390,7 @@
             console.log('✅ Found itemPerson select element');
 
             // Show loading state
-            personSelect.innerHTML = '<option value="" disabled>Loading active members...</option>';
+            personSelect.innerHTML = '<option value="" disabled selected>Loading active members...</option>';
             console.log('⏳ Loading state set, calling loadActiveTeamMembers()...');
 
             // Get active members with IDs
@@ -3777,7 +3398,7 @@
             console.log('📦 Received activeMembers array:', activeMembers);
 
             if (activeMembers.length === 0) {
-                personSelect.innerHTML = '<option value="" disabled>No team members found</option>';
+                personSelect.innerHTML = '<option value="" disabled selected>No team members found</option>';
                 console.warn("⚠️ No active team members found in database");
 
                 // Provide helpful guidance
@@ -3803,8 +3424,8 @@
                 return;
             }
 
-            // Clear current options (no placeholder needed for multi-select)
-            personSelect.innerHTML = '';
+            // Clear current options and add placeholder
+            personSelect.innerHTML = '<option value="" disabled selected>Select team member...</option>';
 
             // Add active members with ID as value
             activeMembers.forEach(member => {
@@ -4248,7 +3869,6 @@
                 if (changes.length > 0) {
                     console.log("📡 Real-time update detected, reloading tasks...");
                     await loadTasksFromFirebase();
-                    await loadSubtasksFromFirebase();
 
                     // Reload team members if on team page
                     const teamPage = document.getElementById('teamPage');
@@ -4564,54 +4184,17 @@
         function renderTasks() {
             const tableBody = document.getElementById('tableBody');
             tableBody.innerHTML = tasks.map((task, index) => {
-                // Handle multiple assignees
-                let assignedToHTML = '';
-                if (task.assignedToNames && task.assignedToNames.length > 0) {
-                    // Multiple assignees
-                    const displayNames = task.assignedToNames.map(name => formatNameWithInitial(name));
-                    if (task.assignedToNames.length === 1) {
-                        const fullName = task.assignedToNames[0];
-                        const displayName = displayNames[0];
-                        const avatarText = fullName.split(' ').map(n => n[0]).join('');
-                        assignedToHTML = `
-                            <div class="person-cell">
-                                <div class="person-avatar">${avatarText}</div>
-                                <span>${displayName}</span>
-                            </div>`;
-                    } else {
-                        // Multiple members - show avatars stacked
-                        const avatars = task.assignedToNames.map(name => {
-                            const avatarText = name.split(' ').map(n => n[0]).join('');
-                            return `<div class="person-avatar person-avatar-small" title="${name}">${avatarText}</div>`;
-                        }).join('');
-                        assignedToHTML = `
-                            <div class="person-cell">
-                                <div class="person-avatars-group">${avatars}</div>
-                            </div>`;
-                    }
-                } else {
-                    // Fallback to old single assignee format
-                    const fullName = task.personName || task.person || 'Unknown';
-                    const displayName = formatNameWithInitial(fullName);
-                    const avatarText = fullName.split(' ').map(n => n[0]).join('');
-                    assignedToHTML = `
-                        <div class="person-cell">
-                            <div class="person-avatar">${avatarText}</div>
-                            <span>${displayName}</span>
-                        </div>`;
-                }
-
-                // Check if task is overdue (past due date and not done)
-                const isOverdue = task.date && new Date(task.date) < new Date(new Date().setHours(0, 0, 0, 0)) && task.status !== 'done';
-                const overdueClass = isOverdue ? ' overdue' : '';
+                const fullName = task.personName || task.person || 'Unknown';
+                const displayName = formatNameWithInitial(fullName);
+                const avatarText = fullName.split(' ').map(n => n[0]).join('');
 
                 return `
-                <div class="table-row${overdueClass}" data-index="${index}" data-task-id="${task.id}">
+                <div class="table-row" data-index="${index}">
                     <div class="table-cell" data-label="#">
                         <span class="row-number">${index + 1}</span>
                     </div>
                     <div class="table-cell" data-label="Task">
-                        <span class="task-name editable-field" onclick="startInlineEdit(${index}, 'name', this)" title="Click to edit">${task.name}</span>
+                        <span class="task-name">${task.name}</span>
                     </div>
                     <div class="table-cell" data-label="Status">
                         <div class="status-badge-wrapper">
@@ -4641,24 +4224,22 @@
                         </div>
                     </div>
                     <div class="table-cell" data-label="Assigned To">
-                        <div class="editable-field" onclick="startInlineEdit(${index}, 'assignedTo', this)" title="Click to edit">
-                            ${assignedToHTML}
+                        <div class="person-cell">
+                            <div class="person-avatar">${avatarText}</div>
+                            <span>${displayName}</span>
                         </div>
                     </div>
                     <div class="table-cell" data-label="Project">
                         ${task.project ? `<span class="project-badge" title="${task.project}">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
                     </div>
-                    <div class="table-cell" data-label="Start Date">
-                        <span class="date-cell editable-field" onclick="startInlineEdit(${index}, 'startDate', this)" title="Click to edit">${formatDateForDisplay(task.startDate)}</span>
+                    <div class="table-cell" data-label="Date">
+                        <span class="date-cell">${formatDateForDisplay(task.date)}</span>
                     </div>
-                    <div class="table-cell" data-label="Due Date">
-                        <span class="date-cell editable-field" onclick="startInlineEdit(${index}, 'date', this)" title="Click to edit">${formatDateForDisplay(task.date)}</span>
+                    <div class="table-cell" data-label="Timeline">
+                        <span class="date-cell">${task.timeline}</span>
                     </div>
                     <div class="table-cell" data-label="Actions">
                         <div class="action-buttons">
-                            <button class="action-btn subtask-btn" data-action="subtask" data-index="${index}" title="Add subtask">
-                                ➕
-                            </button>
                             <button class="action-btn edit-btn" data-action="edit" data-index="${index}" title="Edit task">
                                 ✏️
                             </button>
@@ -4673,13 +4254,7 @@
                 </div>
             `;
             }).join('');
-
-            // Render subtasks after tasks
-            renderSubtasks();
-
-            // Setup drag and drop for tasks (as drop targets)
-            setupTaskDropTargets();
-
+            
             // Add event listeners to action buttons
             document.querySelectorAll('.action-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
@@ -4687,9 +4262,7 @@
                     const action = this.getAttribute('data-action');
                     const index = parseInt(this.getAttribute('data-index'));
 
-                    if (action === 'subtask') {
-                        showInlineAddSubtask(index);
-                    } else if (action === 'edit') {
+                    if (action === 'edit') {
                         editTask(index);
                     } else if (action === 'clone') {
                         cloneTask(index);
@@ -4698,787 +4271,6 @@
                     }
                 });
             });
-        }
-
-        // ========================================
-        // INLINE EDITING FUNCTIONALITY
-        // ========================================
-        let currentlyEditing = null;
-
-        async function startInlineEdit(taskIndex, field, element) {
-            // Prevent multiple edits at once
-            if (currentlyEditing) {
-                cancelInlineEdit();
-            }
-
-            const task = tasks[taskIndex];
-            const cell = element.closest('.table-cell');
-            currentlyEditing = { taskIndex, field, element, cell, originalValue: element.innerHTML };
-
-            // Mark as editing
-            cell.classList.add('editing-mode');
-
-            if (field === 'name') {
-                // Edit task name
-                const currentValue = task.name.replace(/"/g, '&quot;');
-                cell.innerHTML = `
-                    <div class="inline-edit-wrapper">
-                        <input type="text" class="inline-edit-input" value="${currentValue}" id="inline-edit-input-${taskIndex}">
-                        <div class="inline-edit-actions">
-                            <button class="inline-edit-btn inline-edit-cancel" id="cancel-btn-${taskIndex}" title="Cancel">✕</button>
-                        </div>
-                    </div>
-                `;
-                const input = document.getElementById(`inline-edit-input-${taskIndex}`);
-                const cancelBtn = document.getElementById(`cancel-btn-${taskIndex}`);
-
-                console.log('Cancel button element:', cancelBtn);
-
-                input.focus();
-                input.select();
-
-                // Add button handlers (use mousedown to prevent blur from firing)
-                cancelBtn.addEventListener('mousedown', (e) => {
-                    console.log('Cancel mousedown triggered');
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelInlineEdit();
-                });
-
-                cancelBtn.addEventListener('click', (e) => {
-                    console.log('Cancel click triggered');
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelInlineEdit();
-                });
-
-                // Auto-save on blur (focus loss)
-                input.addEventListener('blur', (e) => {
-                    // Check if still editing (cancel might have been clicked)
-                    setTimeout(() => {
-                        if (currentlyEditing && currentlyEditing.taskIndex === taskIndex) {
-                            saveInlineEdit(taskIndex, field);
-                        }
-                    }, 100);
-                });
-
-                // Save on Enter, cancel on Escape
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        saveInlineEdit(taskIndex, field);
-                    } else if (e.key === 'Escape') {
-                        cancelInlineEdit();
-                    }
-                });
-
-            } else if (field === 'date') {
-                // Edit due date
-                const currentValue = task.date || '';
-                cell.innerHTML = `
-                    <div class="inline-edit-wrapper">
-                        <input type="date" class="inline-edit-input" value="${currentValue}" id="inline-edit-input-${taskIndex}">
-                        <div class="inline-edit-actions">
-                            <button class="inline-edit-btn inline-edit-cancel" id="cancel-btn-${taskIndex}" title="Cancel">✕</button>
-                        </div>
-                    </div>
-                `;
-                const input = document.getElementById(`inline-edit-input-${taskIndex}`);
-                const cancelBtn = document.getElementById(`cancel-btn-${taskIndex}`);
-
-                // Store original value to restore on cancel
-                const originalValue = currentValue;
-
-                // Focus and open calendar picker
-                input.focus();
-
-                // Try to open the date picker automatically
-                try {
-                    input.showPicker();
-                } catch (e) {
-                    // showPicker() not supported, fallback to click
-                    input.click();
-                }
-
-                // Add button handlers (use mousedown to prevent blur from firing)
-                cancelBtn.addEventListener('mousedown', (e) => {
-                    console.log('Cancel mousedown triggered (date)');
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelInlineEdit();
-                });
-
-                cancelBtn.addEventListener('click', (e) => {
-                    console.log('Cancel click triggered (date)');
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelInlineEdit();
-                });
-
-                // Auto-save on blur ONLY if value changed
-                input.addEventListener('blur', (e) => {
-                    // Check if still editing (cancel might have been clicked)
-                    setTimeout(() => {
-                        if (currentlyEditing && currentlyEditing.taskIndex === taskIndex) {
-                            // Only save if value actually changed
-                            if (input.value !== originalValue) {
-                                saveInlineEdit(taskIndex, field);
-                            } else {
-                                // Value didn't change, just cancel
-                                cancelInlineEdit();
-                            }
-                        }
-                    }, 100);
-                });
-
-                // Save immediately on change (date selected)
-                input.addEventListener('change', (e) => {
-                    // Only save if value actually changed
-                    if (input.value !== originalValue) {
-                        saveInlineEdit(taskIndex, field);
-                    }
-                });
-
-                // Save on Enter, cancel on Escape
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        saveInlineEdit(taskIndex, field);
-                    } else if (e.key === 'Escape') {
-                        cancelInlineEdit();
-                    }
-                });
-
-            } else if (field === 'startDate') {
-                // Edit start date
-                const currentValue = task.startDate || '';
-                cell.innerHTML = `
-                    <div class="inline-edit-wrapper">
-                        <input type="date" class="inline-edit-input" value="${currentValue}" id="inline-edit-input-${taskIndex}">
-                        <div class="inline-edit-actions">
-                            <button class="inline-edit-btn inline-edit-cancel" id="cancel-btn-${taskIndex}" title="Cancel">✕</button>
-                        </div>
-                    </div>
-                `;
-                const input = document.getElementById(`inline-edit-input-${taskIndex}`);
-                const cancelBtn = document.getElementById(`cancel-btn-${taskIndex}`);
-
-                // Store original value to restore on cancel
-                const originalValue = currentValue;
-
-                // Focus and open calendar picker
-                input.focus();
-
-                // Try to open the date picker automatically
-                try {
-                    input.showPicker();
-                } catch (e) {
-                    // showPicker() not supported, fallback to click
-                    input.click();
-                }
-
-                // Add button handlers (use mousedown to prevent blur from firing)
-                cancelBtn.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelInlineEdit();
-                });
-
-                cancelBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelInlineEdit();
-                });
-
-                // Auto-save on blur ONLY if value changed
-                input.addEventListener('blur', (e) => {
-                    setTimeout(() => {
-                        if (currentlyEditing && currentlyEditing.taskIndex === taskIndex) {
-                            // Only save if value actually changed
-                            if (input.value !== originalValue) {
-                                saveInlineEdit(taskIndex, field);
-                            } else {
-                                // Value didn't change, just cancel
-                                cancelInlineEdit();
-                            }
-                        }
-                    }, 100);
-                });
-
-                // Save immediately on change (date selected)
-                input.addEventListener('change', (e) => {
-                    // Only save if value actually changed
-                    if (input.value !== originalValue) {
-                        saveInlineEdit(taskIndex, field);
-                    }
-                });
-
-                // Save on Enter, cancel on Escape
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        saveInlineEdit(taskIndex, field);
-                    } else if (e.key === 'Escape') {
-                        cancelInlineEdit();
-                    }
-                });
-
-            } else if (field === 'assignedTo') {
-                // Edit assigned to (multi-select)
-                const activeMembers = await loadActiveTeamMembers();
-                const currentAssignedIds = task.assignedToIds || (task.assignedTo ? [task.assignedTo] : []);
-
-                const options = activeMembers.map(member => {
-                    const selected = currentAssignedIds.includes(member.id) ? 'selected' : '';
-                    return `<option value="${member.id}" ${selected}>${member.name}</option>`;
-                }).join('');
-
-                cell.innerHTML = `
-                    <div class="inline-edit-wrapper">
-                        <select multiple class="inline-edit-select" id="inline-edit-input-${taskIndex}">
-                            ${options}
-                        </select>
-                        <div class="inline-edit-actions">
-                            <button class="inline-edit-btn inline-edit-cancel" id="cancel-btn-${taskIndex}" title="Cancel">✕</button>
-                        </div>
-                    </div>
-                `;
-                const select = document.getElementById(`inline-edit-input-${taskIndex}`);
-                const cancelBtn = document.getElementById(`cancel-btn-${taskIndex}`);
-
-                select.focus();
-
-                // Add button handlers (use mousedown to prevent blur from firing)
-                cancelBtn.addEventListener('mousedown', (e) => {
-                    console.log('Cancel mousedown triggered (assignedTo)');
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelInlineEdit();
-                });
-
-                cancelBtn.addEventListener('click', (e) => {
-                    console.log('Cancel click triggered (assignedTo)');
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelInlineEdit();
-                });
-
-                // Auto-save on blur (focus loss)
-                select.addEventListener('blur', (e) => {
-                    // Check if still editing (cancel might have been clicked)
-                    setTimeout(() => {
-                        if (currentlyEditing && currentlyEditing.taskIndex === taskIndex) {
-                            saveInlineEdit(taskIndex, field);
-                        }
-                    }, 100);
-                });
-
-                // Auto-save on change (selection changed)
-                select.addEventListener('change', (e) => {
-                    // Small delay to allow multiple selections
-                    clearTimeout(select.saveTimeout);
-                    select.saveTimeout = setTimeout(() => {
-                        if (currentlyEditing && currentlyEditing.taskIndex === taskIndex) {
-                            saveInlineEdit(taskIndex, field);
-                        }
-                    }, 800);
-                });
-            }
-        }
-
-        async function saveInlineEdit(taskIndex, field) {
-            if (!currentlyEditing) return;
-
-            const input = document.getElementById(`inline-edit-input-${taskIndex}`);
-            const task = tasks[taskIndex];
-
-            try {
-                isManualOperation = true;
-
-                if (field === 'name') {
-                    const newValue = input.value.trim();
-                    if (!newValue) {
-                        alert('Task name cannot be empty');
-                        return;
-                    }
-
-                    // Update in Firebase
-                    if (task.id && db) {
-                        await db.collection('tasks').doc(task.id).update({
-                            name: newValue,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-
-                    // Update local array
-                    task.name = newValue;
-
-                } else if (field === 'date') {
-                    const newValue = input.value;
-
-                    // Update in Firebase
-                    if (task.id && db) {
-                        await db.collection('tasks').doc(task.id).update({
-                            date: newValue,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-
-                    // Update local array
-                    task.date = newValue;
-
-                } else if (field === 'startDate') {
-                    const newValue = input.value;
-
-                    // Update in Firebase
-                    if (task.id && db) {
-                        await db.collection('tasks').doc(task.id).update({
-                            startDate: newValue,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-
-                    // Update local array
-                    task.startDate = newValue;
-
-                } else if (field === 'assignedTo') {
-                    const selectedOptions = Array.from(input.selectedOptions);
-                    if (selectedOptions.length === 0) {
-                        alert('Please select at least one team member');
-                        return;
-                    }
-
-                    const assignedToIds = selectedOptions.map(opt => opt.value);
-                    const assignedToNames = selectedOptions.map(opt => opt.textContent);
-
-                    // Update in Firebase
-                    if (task.id && db) {
-                        await db.collection('tasks').doc(task.id).update({
-                            assignedTo: assignedToIds[0],
-                            assignedToIds: assignedToIds,
-                            person: assignedToNames[0],
-                            assignedToNames: assignedToNames,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-
-                    // Update local array
-                    task.assignedTo = assignedToIds[0];
-                    task.assignedToIds = assignedToIds;
-                    task.person = assignedToNames[0];
-                    task.assignedToNames = assignedToNames;
-                }
-
-                // Clear editing state
-                currentlyEditing = null;
-
-                // Re-render tasks
-                const hasActiveFilters = taskFilters && Object.values(taskFilters).some(v => v !== '' && (Array.isArray(v) ? v.length > 0 : true));
-                if (hasActiveFilters) {
-                    applyTaskFilters();
-                } else {
-                    renderTasks();
-                }
-
-                // Re-enable real-time listener
-                setTimeout(() => {
-                    isManualOperation = false;
-                }, 500);
-
-            } catch (error) {
-                console.error('Error saving inline edit:', error);
-                alert('Error saving changes: ' + error.message);
-                isManualOperation = false;
-            }
-        }
-
-        function cancelInlineEdit() {
-            if (!currentlyEditing) return;
-
-            console.log('Cancelling inline edit');
-
-            // Clear editing state first
-            currentlyEditing.cell.classList.remove('editing-mode');
-            currentlyEditing = null;
-
-            // Re-render tasks to restore original view
-            const hasActiveFilters = taskFilters && Object.values(taskFilters).some(v => v !== '' && (Array.isArray(v) ? v.length > 0 : true));
-            if (hasActiveFilters) {
-                applyTaskFilters();
-            } else {
-                renderTasks();
-            }
-        }
-
-        // ========================================
-        // SUBTASK INLINE EDITING FUNCTIONALITY
-        // ========================================
-        let currentlyEditingSubtask = null;
-
-        async function startSubtaskInlineEdit(subtaskId, field, element) {
-            // Prevent multiple edits at once
-            if (currentlyEditingSubtask) {
-                cancelSubtaskInlineEdit();
-            }
-
-            const subtask = subtasks.find(st => st.id === subtaskId);
-            if (!subtask) return;
-
-            const cell = element.closest('.table-cell');
-            currentlyEditingSubtask = { subtaskId, field, element, cell, originalValue: element.innerHTML };
-
-            // Mark as editing
-            cell.classList.add('editing-mode');
-
-            if (field === 'name') {
-                // Edit subtask name
-                const currentValue = subtask.name.replace(/"/g, '&quot;');
-                cell.innerHTML = `
-                    <div class="inline-edit-wrapper">
-                        <input type="text" class="inline-edit-input" value="${currentValue}" id="inline-edit-subtask-input-${subtaskId}">
-                        <div class="inline-edit-actions">
-                            <button class="inline-edit-btn inline-edit-cancel" id="cancel-subtask-btn-${subtaskId}" title="Cancel">✕</button>
-                        </div>
-                    </div>
-                `;
-                const input = document.getElementById(`inline-edit-subtask-input-${subtaskId}`);
-                const cancelBtn = document.getElementById(`cancel-subtask-btn-${subtaskId}`);
-
-                input.focus();
-                input.select();
-
-                // Add button handlers
-                cancelBtn.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelSubtaskInlineEdit();
-                });
-
-                cancelBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelSubtaskInlineEdit();
-                });
-
-                // Auto-save on blur
-                input.addEventListener('blur', (e) => {
-                    setTimeout(() => {
-                        if (currentlyEditingSubtask && currentlyEditingSubtask.subtaskId === subtaskId) {
-                            saveSubtaskInlineEdit(subtaskId, field);
-                        }
-                    }, 100);
-                });
-
-                // Save on Enter, cancel on Escape
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        saveSubtaskInlineEdit(subtaskId, field);
-                    } else if (e.key === 'Escape') {
-                        cancelSubtaskInlineEdit();
-                    }
-                });
-
-            } else if (field === 'date') {
-                // Edit due date
-                const currentValue = subtask.date || '';
-                cell.innerHTML = `
-                    <div class="inline-edit-wrapper">
-                        <input type="date" class="inline-edit-input" value="${currentValue}" id="inline-edit-subtask-input-${subtaskId}">
-                        <div class="inline-edit-actions">
-                            <button class="inline-edit-btn inline-edit-cancel" id="cancel-subtask-btn-${subtaskId}" title="Cancel">✕</button>
-                        </div>
-                    </div>
-                `;
-                const input = document.getElementById(`inline-edit-subtask-input-${subtaskId}`);
-                const cancelBtn = document.getElementById(`cancel-subtask-btn-${subtaskId}`);
-                const originalValue = currentValue;
-
-                input.focus();
-
-                // Try to open the date picker automatically
-                try {
-                    input.showPicker();
-                } catch (e) {
-                    input.click();
-                }
-
-                // Add button handlers
-                cancelBtn.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelSubtaskInlineEdit();
-                });
-
-                cancelBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelSubtaskInlineEdit();
-                });
-
-                // Auto-save on blur ONLY if value changed
-                input.addEventListener('blur', (e) => {
-                    setTimeout(() => {
-                        if (currentlyEditingSubtask && currentlyEditingSubtask.subtaskId === subtaskId) {
-                            if (input.value !== originalValue) {
-                                saveSubtaskInlineEdit(subtaskId, field);
-                            } else {
-                                cancelSubtaskInlineEdit();
-                            }
-                        }
-                    }, 100);
-                });
-
-                // Save immediately on change
-                input.addEventListener('change', (e) => {
-                    if (input.value !== originalValue) {
-                        saveSubtaskInlineEdit(subtaskId, field);
-                    }
-                });
-
-                // Save on Enter, cancel on Escape
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        saveSubtaskInlineEdit(subtaskId, field);
-                    } else if (e.key === 'Escape') {
-                        cancelSubtaskInlineEdit();
-                    }
-                });
-
-            } else if (field === 'startDate') {
-                // Edit start date
-                const currentValue = subtask.startDate || '';
-                cell.innerHTML = `
-                    <div class="inline-edit-wrapper">
-                        <input type="date" class="inline-edit-input" value="${currentValue}" id="inline-edit-subtask-input-${subtaskId}">
-                        <div class="inline-edit-actions">
-                            <button class="inline-edit-btn inline-edit-cancel" id="cancel-subtask-btn-${subtaskId}" title="Cancel">✕</button>
-                        </div>
-                    </div>
-                `;
-                const input = document.getElementById(`inline-edit-subtask-input-${subtaskId}`);
-                const cancelBtn = document.getElementById(`cancel-subtask-btn-${subtaskId}`);
-                const originalValue = currentValue;
-
-                input.focus();
-
-                // Try to open the date picker automatically
-                try {
-                    input.showPicker();
-                } catch (e) {
-                    input.click();
-                }
-
-                // Add button handlers
-                cancelBtn.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelSubtaskInlineEdit();
-                });
-
-                cancelBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelSubtaskInlineEdit();
-                });
-
-                // Auto-save on blur ONLY if value changed
-                input.addEventListener('blur', (e) => {
-                    setTimeout(() => {
-                        if (currentlyEditingSubtask && currentlyEditingSubtask.subtaskId === subtaskId) {
-                            if (input.value !== originalValue) {
-                                saveSubtaskInlineEdit(subtaskId, field);
-                            } else {
-                                cancelSubtaskInlineEdit();
-                            }
-                        }
-                    }, 100);
-                });
-
-                // Save immediately on change
-                input.addEventListener('change', (e) => {
-                    if (input.value !== originalValue) {
-                        saveSubtaskInlineEdit(subtaskId, field);
-                    }
-                });
-
-                // Save on Enter, cancel on Escape
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        saveSubtaskInlineEdit(subtaskId, field);
-                    } else if (e.key === 'Escape') {
-                        cancelSubtaskInlineEdit();
-                    }
-                });
-
-            } else if (field === 'assignedTo') {
-                // Edit assigned to (single select for subtask)
-                const activeMembers = await loadActiveTeamMembers();
-                const currentAssignedId = subtask.assignedTo || '';
-
-                const options = activeMembers.map(member => {
-                    const selected = currentAssignedId === member.id ? 'selected' : '';
-                    return `<option value="${member.id}" ${selected}>${member.name}</option>`;
-                }).join('');
-
-                cell.innerHTML = `
-                    <div class="inline-edit-wrapper">
-                        <select class="inline-edit-select" id="inline-edit-subtask-input-${subtaskId}" style="min-height: auto;">
-                            ${options}
-                        </select>
-                        <div class="inline-edit-actions">
-                            <button class="inline-edit-btn inline-edit-cancel" id="cancel-subtask-btn-${subtaskId}" title="Cancel">✕</button>
-                        </div>
-                    </div>
-                `;
-                const select = document.getElementById(`inline-edit-subtask-input-${subtaskId}`);
-                const cancelBtn = document.getElementById(`cancel-subtask-btn-${subtaskId}`);
-
-                select.focus();
-
-                // Add button handlers
-                cancelBtn.addEventListener('mousedown', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelSubtaskInlineEdit();
-                });
-
-                cancelBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    cancelSubtaskInlineEdit();
-                });
-
-                // Auto-save on blur
-                select.addEventListener('blur', (e) => {
-                    setTimeout(() => {
-                        if (currentlyEditingSubtask && currentlyEditingSubtask.subtaskId === subtaskId) {
-                            saveSubtaskInlineEdit(subtaskId, field);
-                        }
-                    }, 100);
-                });
-
-                // Auto-save on change
-                select.addEventListener('change', (e) => {
-                    saveSubtaskInlineEdit(subtaskId, field);
-                });
-            }
-        }
-
-        async function saveSubtaskInlineEdit(subtaskId, field) {
-            if (!currentlyEditingSubtask) return;
-
-            const input = document.getElementById(`inline-edit-subtask-input-${subtaskId}`);
-            const subtask = subtasks.find(st => st.id === subtaskId);
-            if (!subtask) return;
-
-            try {
-                if (field === 'name') {
-                    const newValue = input.value.trim();
-                    if (!newValue) {
-                        alert('Subtask name cannot be empty');
-                        return;
-                    }
-
-                    // Update in Firebase
-                    if (db) {
-                        await db.collection('subtasks').doc(subtaskId).update({
-                            name: newValue,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-
-                    // Update local array
-                    subtask.name = newValue;
-
-                } else if (field === 'date') {
-                    const newValue = input.value;
-
-                    // Update in Firebase
-                    if (db) {
-                        await db.collection('subtasks').doc(subtaskId).update({
-                            date: newValue,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-
-                    // Update local array
-                    subtask.date = newValue;
-
-                } else if (field === 'startDate') {
-                    const newValue = input.value;
-
-                    // Update in Firebase
-                    if (db) {
-                        await db.collection('subtasks').doc(subtaskId).update({
-                            startDate: newValue,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-
-                    // Update local array
-                    subtask.startDate = newValue;
-
-                } else if (field === 'assignedTo') {
-                    const newMemberId = input.value;
-                    if (!newMemberId) {
-                        alert('Please select a team member');
-                        return;
-                    }
-
-                    const memberName = await getMemberNameById(newMemberId);
-
-                    // Update in Firebase
-                    if (db) {
-                        await db.collection('subtasks').doc(subtaskId).update({
-                            assignedTo: newMemberId,
-                            personName: memberName,
-                            person: memberName,
-                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    }
-
-                    // Update local array
-                    subtask.assignedTo = newMemberId;
-                    subtask.personName = memberName;
-                    subtask.person = memberName;
-                }
-
-                // Clear editing state
-                currentlyEditingSubtask = null;
-
-                // Re-render tasks
-                const hasActiveFilters = taskFilters && Object.values(taskFilters).some(v => v !== '' && (Array.isArray(v) ? v.length > 0 : true));
-                if (hasActiveFilters) {
-                    applyTaskFilters();
-                } else {
-                    renderTasks();
-                }
-
-            } catch (error) {
-                console.error('Error saving subtask inline edit:', error);
-                alert('Error saving changes: ' + error.message);
-            }
-        }
-
-        function cancelSubtaskInlineEdit() {
-            if (!currentlyEditingSubtask) return;
-
-            console.log('Cancelling subtask inline edit');
-
-            // Clear editing state first
-            currentlyEditingSubtask.cell.classList.remove('editing-mode');
-            currentlyEditingSubtask = null;
-
-            // Re-render tasks to restore original view
-            const hasActiveFilters = taskFilters && Object.values(taskFilters).some(v => v !== '' && (Array.isArray(v) ? v.length > 0 : true));
-            if (hasActiveFilters) {
-                applyTaskFilters();
-            } else {
-                renderTasks();
-            }
         }
 
         // ========================================
@@ -5547,795 +4339,9 @@
                 // Update active filters display to remove the filter tag
                 updateActiveFiltersDisplay();
             }
+
+            updateTaskStats();
         }
-
-        // ========================================
-        // SUBTASK FUNCTIONALITY
-        // ========================================
-        let subtasks = []; // Store all subtasks
-        let currentParentTaskId = null;
-        let editingSubtaskIndex = -1;
-
-        // Load subtasks from Firestore
-        async function loadSubtasksFromFirebase() {
-            if (!db) return;
-
-            try {
-                const snapshot = await db.collection('subtasks').orderBy('createdAt', 'desc').get();
-                subtasks = [];
-
-                // Process each subtask and fetch member/project names
-                for (const doc of snapshot.docs) {
-                    const subtaskData = doc.data();
-
-                    // Get person name from member ID
-                    let personName = 'Unknown';
-                    if (subtaskData.assignedTo) {
-                        personName = await getMemberNameById(subtaskData.assignedTo);
-                    }
-
-                    // Get project name from project ID
-                    let projectName = '';
-                    if (subtaskData.projectId) {
-                        projectName = await getProjectNameById(subtaskData.projectId);
-                    }
-
-                    subtasks.push({
-                        id: doc.id,
-                        ...subtaskData,
-                        personName: personName,
-                        project: projectName
-                    });
-                }
-
-                console.log(`✅ Loaded ${subtasks.length} subtasks from Firestore`);
-            } catch (error) {
-                console.error('❌ Error loading subtasks:', error);
-            }
-        }
-
-        // Render subtasks under their parent tasks
-        function renderSubtasks() {
-            const tableBody = document.getElementById('tableBody');
-
-            tasks.forEach((task, taskIndex) => {
-                // Find subtasks for this task
-                const taskSubtasks = subtasks.filter(st => st.parentTaskId === task.id);
-
-                if (taskSubtasks.length > 0) {
-                    // Find the task row by task ID instead of by index
-                    const taskRow = Array.from(tableBody.children).find(row => row.dataset.taskId === task.id);
-
-                    if (!taskRow) {
-                        console.warn(`Task row not found for task ID: ${task.id}`);
-                        return;
-                    }
-
-                    taskSubtasks.forEach((subtask, subtaskIndex) => {
-                        const fullName = subtask.personName || subtask.person || 'Unknown';
-                        const displayName = formatNameWithInitial(fullName);
-                        const avatarText = fullName.split(' ').map(n => n[0]).join('');
-
-                        // Check if subtask is overdue (past due date and not done)
-                        const isSubtaskOverdue = subtask.date && new Date(subtask.date) < new Date(new Date().setHours(0, 0, 0, 0)) && subtask.status !== 'done';
-                        const subtaskOverdueClass = isSubtaskOverdue ? ' overdue' : '';
-
-                        const subtaskRow = document.createElement('div');
-                        subtaskRow.className = `table-row subtask-row${subtaskOverdueClass}`;
-                        subtaskRow.dataset.parentIndex = taskIndex;
-                        subtaskRow.dataset.subtaskId = subtask.id;
-                        subtaskRow.draggable = true;
-
-                        subtaskRow.innerHTML = `
-                            <div class="table-cell" data-label="#">
-                                <span class="subtask-indent">└─</span>
-                            </div>
-                            <div class="table-cell" data-label="Task">
-                                <span class="task-name subtask-name editable-field subtask-editable-name" data-subtask-id="${subtask.id}" data-field="name" title="Click to edit">${subtask.name}</span>
-                            </div>
-                            <div class="table-cell" data-label="Status">
-                                <div class="status-badge-wrapper">
-                                    <div class="status-badge status-${subtask.status}" onclick="toggleSubtaskStatusPopup(event, '${subtask.id}')">
-                                        ${getStatusText(subtask.status)}
-                                    </div>
-                                    <div class="status-popup" id="subtask-status-popup-${subtask.id}">
-                                        <div class="status-popup-option blank" onclick="changeSubtaskStatus('${subtask.id}', 'blank')">
-                                            Not Started
-                                        </div>
-                                        <div class="status-popup-option working" onclick="changeSubtaskStatus('${subtask.id}', 'working')">
-                                            Working on it
-                                        </div>
-                                        <div class="status-popup-option stuck" onclick="changeSubtaskStatus('${subtask.id}', 'stuck')">
-                                            Stuck
-                                        </div>
-                                        <div class="status-popup-option done" onclick="changeSubtaskStatus('${subtask.id}', 'done')">
-                                            Done
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="table-cell" data-label="Priority">
-                                <span style="color: #c5c7d0;">—</span>
-                            </div>
-                            <div class="table-cell" data-label="Assigned To">
-                                <div class="editable-field subtask-editable-assigned" data-subtask-id="${subtask.id}" data-field="assignedTo" title="Click to edit">
-                                    <div class="person-cell">
-                                        <div class="person-avatar">${avatarText}</div>
-                                        <span>${displayName}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="table-cell" data-label="Project">
-                                ${subtask.project ? `<span class="project-badge" title="${subtask.project}">${subtask.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
-                            </div>
-                            <div class="table-cell" data-label="Start Date">
-                                <span class="date-cell editable-field subtask-editable-date" data-subtask-id="${subtask.id}" data-field="startDate" title="Click to edit">${formatDateForDisplay(subtask.startDate)}</span>
-                            </div>
-                            <div class="table-cell" data-label="Due Date">
-                                <span class="date-cell editable-field subtask-editable-date" data-subtask-id="${subtask.id}" data-field="date" title="Click to edit">${formatDateForDisplay(subtask.date)}</span>
-                            </div>
-                            <div class="table-cell" data-label="Actions">
-                                <div class="action-buttons">
-                                    <button class="action-btn edit-btn" onclick="editSubtask('${subtask.id}')" title="Edit subtask">
-                                        ✏️
-                                    </button>
-                                    <button class="action-btn delete-btn" onclick="deleteSubtask('${subtask.id}')" title="Delete subtask">
-                                        🗑️
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-
-                        // Add drag and drop event handlers
-                        subtaskRow.addEventListener('dragstart', handleSubtaskDragStart);
-                        subtaskRow.addEventListener('dragend', handleSubtaskDragEnd);
-
-                        // Insert after parent task
-                        taskRow.insertAdjacentElement('afterend', subtaskRow);
-                    });
-                }
-            });
-
-            // Add event delegation for subtask inline editing
-            setupSubtaskInlineEditListeners();
-        }
-
-        // Setup event delegation for subtask inline editing
-        function setupSubtaskInlineEditListeners() {
-            const tableBody = document.getElementById('tableBody');
-
-            // Remove old listeners first
-            const oldHandler = tableBody._subtaskEditHandler;
-            if (oldHandler) {
-                tableBody.removeEventListener('click', oldHandler);
-            }
-
-            // Create new handler
-            const handler = function(e) {
-                // Check if clicked on subtask editable field
-                const target = e.target.closest('.subtask-editable-name, .subtask-editable-date, .subtask-editable-assigned');
-
-                if (target) {
-                    e.stopPropagation();
-                    const subtaskId = target.getAttribute('data-subtask-id');
-                    const field = target.getAttribute('data-field');
-
-                    console.log('Subtask inline edit clicked:', subtaskId, field);
-                    startSubtaskInlineEdit(subtaskId, field, target);
-                }
-            };
-
-            // Store handler reference and attach
-            tableBody._subtaskEditHandler = handler;
-            tableBody.addEventListener('click', handler);
-        }
-
-        // ========================================
-        // SUBTASK DRAG AND DROP FUNCTIONALITY
-        // ========================================
-        let draggedSubtask = null;
-
-        function handleSubtaskDragStart(e) {
-            draggedSubtask = {
-                element: e.currentTarget,
-                subtaskId: e.currentTarget.dataset.subtaskId,
-                oldParentIndex: e.currentTarget.dataset.parentIndex
-            };
-
-            e.currentTarget.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/html', e.currentTarget.innerHTML);
-
-            console.log('Dragging subtask:', draggedSubtask.subtaskId);
-        }
-
-        function handleSubtaskDragEnd(e) {
-            e.currentTarget.classList.remove('dragging');
-
-            // Remove all drop target highlights
-            document.querySelectorAll('.table-row').forEach(row => {
-                row.classList.remove('drag-over', 'drop-target');
-            });
-
-            draggedSubtask = null;
-        }
-
-        function setupTaskDropTargets() {
-            const tableBody = document.getElementById('tableBody');
-
-            // Get all task rows (not subtask rows)
-            tableBody.querySelectorAll('.table-row:not(.subtask-row)').forEach(taskRow => {
-                taskRow.addEventListener('dragover', handleTaskDragOver);
-                taskRow.addEventListener('dragenter', handleTaskDragEnter);
-                taskRow.addEventListener('dragleave', handleTaskDragLeave);
-                taskRow.addEventListener('drop', handleTaskDrop);
-            });
-        }
-
-        function handleTaskDragOver(e) {
-            if (!draggedSubtask) return;
-
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            return false;
-        }
-
-        function handleTaskDragEnter(e) {
-            if (!draggedSubtask) return;
-
-            e.currentTarget.classList.add('drag-over');
-        }
-
-        function handleTaskDragLeave(e) {
-            if (!draggedSubtask) return;
-
-            e.currentTarget.classList.remove('drag-over');
-        }
-
-        async function handleTaskDrop(e) {
-            if (!draggedSubtask) return;
-
-            e.stopPropagation();
-            e.preventDefault();
-
-            const dropTargetRow = e.currentTarget;
-            dropTargetRow.classList.remove('drag-over');
-
-            // Get the task ID from the row (use data-task-id instead of data-index)
-            const newParentTaskId = dropTargetRow.dataset.taskId;
-
-            if (!newParentTaskId) {
-                console.error('Could not find target task ID');
-                return;
-            }
-
-            // Find the actual task by ID
-            const newParentTask = tasks.find(t => t.id === newParentTaskId);
-
-            if (!newParentTask) {
-                console.error('Could not find target task');
-                return;
-            }
-
-            console.log('Dropping subtask on task:', newParentTask.name);
-
-            // Show spinner while moving subtask
-            showSpinner('Moving subtask...');
-
-            // Update subtask's parent in Firebase
-            try {
-                await db.collection('subtasks').doc(draggedSubtask.subtaskId).update({
-                    parentTaskId: newParentTask.id,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                console.log('✅ Subtask parent updated');
-
-                // Reload subtasks and re-render
-                await loadSubtasksFromFirebase();
-
-                // Maintain active filters if any (including My Tasks toggle)
-                const hasActiveFilters = (taskFilters && Object.values(taskFilters).some(v => v !== '' && (Array.isArray(v) ? v.length > 0 : true))) || isMyTasksActive;
-                if (hasActiveFilters) {
-                    applyTaskFilters();
-                } else {
-                    renderTasks();
-                }
-
-                // Hide spinner after everything is complete
-                hideSpinner();
-
-            } catch (error) {
-                console.error('❌ Error updating subtask parent:', error);
-                hideSpinner();
-                alert('Error moving subtask: ' + error.message);
-            }
-        }
-
-        // ========================================
-        // INLINE ADD SUBTASK FUNCTIONALITY
-        // ========================================
-        let currentInlineAddSubtask = null;
-
-        async function showInlineAddSubtask(taskIndex) {
-            // Close any existing inline add row
-            if (currentInlineAddSubtask) {
-                cancelInlineAddSubtask();
-            }
-
-            const task = tasks[taskIndex];
-            const tableBody = document.getElementById('tableBody');
-            const taskRow = tableBody.children[taskIndex];
-
-            if (!taskRow) return;
-
-            // Load active team members for dropdown
-            const activeMembers = await loadActiveTeamMembers();
-
-            // Create member options
-            const memberOptions = activeMembers.map(member =>
-                `<option value="${member.id}">${member.name}</option>`
-            ).join('');
-
-            // Load projects for dropdown
-            let projectOptions = '<option value="">No Project</option>';
-            try {
-                const projectsSnapshot = await db.collection('projects').get();
-                projectOptions += projectsSnapshot.docs.map(doc => {
-                    const project = doc.data();
-                    return `<option value="${doc.id}" ${doc.id === task.projectId ? 'selected' : ''}>${project.name}</option>`;
-                }).join('');
-            } catch (error) {
-                console.error('Error loading projects:', error);
-            }
-
-            // Create inline add subtask row
-            const addRow = document.createElement('div');
-            addRow.className = 'table-row inline-add-subtask-row';
-            addRow.id = `inline-add-subtask-${taskIndex}`;
-
-            addRow.innerHTML = `
-                <div class="table-cell" data-label="#">
-                    <span class="subtask-indent">└─</span>
-                </div>
-                <div class="table-cell" data-label="Task">
-                    <input type="text" placeholder="Subtask name" id="inline-subtask-name-${taskIndex}" autocomplete="off">
-                </div>
-                <div class="table-cell" data-label="Status">
-                    <select id="inline-subtask-status-${taskIndex}">
-                        <option value="blank">Not Started</option>
-                        <option value="working">Working on it</option>
-                        <option value="stuck">Stuck</option>
-                        <option value="done">Done</option>
-                    </select>
-                </div>
-                <div class="table-cell" data-label="Priority">
-                    <span style="color: #c5c7d0;">—</span>
-                </div>
-                <div class="table-cell" data-label="Assigned To">
-                    <select id="inline-subtask-person-${taskIndex}">
-                        <option value="">Select member...</option>
-                        ${memberOptions}
-                    </select>
-                </div>
-                <div class="table-cell" data-label="Project">
-                    <select id="inline-subtask-project-${taskIndex}">
-                        ${projectOptions}
-                    </select>
-                </div>
-                <div class="table-cell" data-label="Start Date">
-                    <input type="date" id="inline-subtask-startdate-${taskIndex}">
-                </div>
-                <div class="table-cell" data-label="Due Date">
-                    <input type="date" id="inline-subtask-date-${taskIndex}">
-                </div>
-                <div class="table-cell" data-label="Actions">
-                    <div class="inline-add-subtask-actions">
-                        <button class="inline-add-subtask-save" id="inline-subtask-save-${taskIndex}">Save</button>
-                        <button class="inline-add-subtask-cancel" id="inline-subtask-cancel-${taskIndex}">Cancel</button>
-                    </div>
-                </div>
-            `;
-
-            // Insert after task row
-            taskRow.insertAdjacentElement('afterend', addRow);
-
-            // Store reference
-            currentInlineAddSubtask = {
-                taskIndex,
-                taskId: task.id,
-                row: addRow
-            };
-
-            // Focus on name input
-            const nameInput = document.getElementById(`inline-subtask-name-${taskIndex}`);
-            if (nameInput) nameInput.focus();
-
-            // Add event listeners
-            const saveBtn = document.getElementById(`inline-subtask-save-${taskIndex}`);
-            const cancelBtn = document.getElementById(`inline-subtask-cancel-${taskIndex}`);
-
-            saveBtn.addEventListener('click', () => saveInlineAddSubtask(taskIndex));
-            cancelBtn.addEventListener('click', cancelInlineAddSubtask);
-
-            // Save on Enter key in name input
-            nameInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    saveInlineAddSubtask(taskIndex);
-                } else if (e.key === 'Escape') {
-                    cancelInlineAddSubtask();
-                }
-            });
-        }
-
-        async function saveInlineAddSubtask(taskIndex) {
-            if (!currentInlineAddSubtask) return;
-
-            const name = document.getElementById(`inline-subtask-name-${taskIndex}`).value.trim();
-            const status = document.getElementById(`inline-subtask-status-${taskIndex}`).value;
-            const assignedTo = document.getElementById(`inline-subtask-person-${taskIndex}`).value;
-            const projectId = document.getElementById(`inline-subtask-project-${taskIndex}`).value;
-            const startDate = document.getElementById(`inline-subtask-startdate-${taskIndex}`).value;
-            const date = document.getElementById(`inline-subtask-date-${taskIndex}`).value;
-
-            // Validate
-            if (!name) {
-                alert('⚠️ Please enter a subtask name');
-                return;
-            }
-
-            if (!assignedTo) {
-                alert('⚠️ Please select a team member');
-                return;
-            }
-
-            // Show spinner
-            showSpinner('Creating subtask...');
-
-            try {
-                // Get member name
-                const memberName = await getMemberNameById(assignedTo);
-
-                // Create subtask data
-                const subtaskData = {
-                    name: name,
-                    status: status,
-                    assignedTo: assignedTo,
-                    personName: memberName,
-                    person: memberName,
-                    projectId: projectId || null,
-                    startDate: startDate,
-                    date: date,
-                    parentTaskId: currentInlineAddSubtask.taskId,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-
-                // Get project name if project is selected
-                if (projectId) {
-                    const projectDoc = await db.collection('projects').doc(projectId).get();
-                    if (projectDoc.exists) {
-                        subtaskData.project = projectDoc.data().name;
-                    }
-                }
-
-                // Add to Firebase
-                await db.collection('subtasks').add(subtaskData);
-
-                console.log('✅ Subtask created');
-
-                // Reload subtasks
-                await loadSubtasksFromFirebase();
-
-                // Remove inline add row
-                cancelInlineAddSubtask();
-
-                // Re-render with filters maintained
-                const hasActiveFilters = (taskFilters && Object.values(taskFilters).some(v => v !== '' && (Array.isArray(v) ? v.length > 0 : true))) || isMyTasksActive;
-                if (hasActiveFilters) {
-                    applyTaskFilters();
-                } else {
-                    renderTasks();
-                }
-
-                hideSpinner();
-
-            } catch (error) {
-                console.error('❌ Error creating subtask:', error);
-                hideSpinner();
-                alert('Error creating subtask: ' + error.message);
-            }
-        }
-
-        function cancelInlineAddSubtask() {
-            if (!currentInlineAddSubtask) return;
-
-            // Remove the inline add row
-            if (currentInlineAddSubtask.row && currentInlineAddSubtask.row.parentNode) {
-                currentInlineAddSubtask.row.remove();
-            }
-
-            currentInlineAddSubtask = null;
-        }
-
-        // Open subtask modal
-        async function openSubtaskModal(taskIndex) {
-            const task = tasks[taskIndex];
-            currentParentTaskId = task.id;
-            editingSubtaskIndex = -1;
-
-            // Update modal title
-            document.getElementById('subtaskModalTitle').textContent = 'Create New Subtask';
-
-            // Open modal first
-            document.getElementById('subtaskModal').classList.add('active');
-
-            // Populate dropdowns
-            await populateSubtaskAssignToDropdown();
-            await populateSubtaskProjectDropdown();
-
-            // Reset form after populating dropdowns
-            document.getElementById('subtaskName').value = '';
-            document.getElementById('subtaskStatus').value = 'blank';
-            document.getElementById('subtaskDate').value = '';
-            document.getElementById('subtaskStartDate').value = '';
-
-            // Reset date displays
-            document.getElementById('subtaskDate-display').textContent = 'dd/mm/yyyy';
-            document.getElementById('subtaskDate-display').classList.add('placeholder');
-            document.getElementById('subtaskStartDate-display').textContent = 'dd/mm/yyyy';
-            document.getElementById('subtaskStartDate-display').classList.add('placeholder');
-
-            // Set default values from parent task
-            document.getElementById('subtaskProject').value = task.projectId || '';
-            document.getElementById('subtaskPerson').value = task.assignedTo || '';
-
-            // Reset button text
-            const submitBtn = document.querySelector('#subtaskForm button[type="submit"]');
-            submitBtn.textContent = 'Create Subtask';
-        }
-
-        // Close subtask modal
-        function closeSubtaskModal() {
-            document.getElementById('subtaskModal').classList.remove('active');
-            document.getElementById('subtaskForm').reset();
-            currentParentTaskId = null;
-            editingSubtaskIndex = -1;
-
-            // Reset button text
-            const submitBtn = document.querySelector('#subtaskForm button[type="submit"]');
-            submitBtn.textContent = 'Create Subtask';
-        }
-
-        // Populate assign to dropdown for subtask
-        async function populateSubtaskAssignToDropdown() {
-            console.log('🔄 populateSubtaskAssignToDropdown() called');
-
-            const select = document.getElementById('subtaskPerson');
-            if (!select) {
-                console.error('❌ subtaskPerson select element not found!');
-                return;
-            }
-
-            console.log('✅ Found subtaskPerson select element');
-
-            // Show loading state
-            select.innerHTML = '<option value="" disabled selected>Loading active members...</option>';
-            console.log('⏳ Loading state set, calling loadActiveTeamMembers()...');
-
-            // Get active members with IDs (using the same function as main task modal)
-            const activeMembers = await loadActiveTeamMembers();
-            console.log('📦 Received activeMembers array:', activeMembers);
-
-            if (activeMembers.length === 0) {
-                select.innerHTML = '<option value="" disabled selected>No team members found</option>';
-                console.warn("⚠️ No active team members found in database");
-                return;
-            }
-
-            // Clear current options and add placeholder
-            select.innerHTML = '<option value="" disabled selected>Select team member...</option>';
-
-            // Add active members with ID as value
-            activeMembers.forEach(member => {
-                const option = document.createElement('option');
-                option.value = member.id;  // Store member ID
-                option.textContent = member.name;  // Show member name
-                option.setAttribute('data-member-name', member.name);
-                select.appendChild(option);
-            });
-
-            console.log(`✅ Populated subtask dropdown with ${activeMembers.length} active members`);
-        }
-
-        // Populate project dropdown for subtask
-        async function populateSubtaskProjectDropdown() {
-            console.log('🔄 populateSubtaskProjectDropdown() called');
-            const select = document.getElementById('subtaskProject');
-
-            if (!select) {
-                console.error('❌ subtaskProject select element not found!');
-                return;
-            }
-
-            // Show loading state
-            select.innerHTML = '<option value="">Loading projects...</option>';
-
-            if (!db) {
-                console.error('❌ Firebase not initialized');
-                select.innerHTML = '<option value="">No Project</option>';
-                return;
-            }
-
-            try {
-                const snapshot = await db.collection('projects').get();
-                console.log(`📦 Found ${snapshot.size} projects in database`);
-
-                // Clear and add default option
-                select.innerHTML = '<option value="">No Project</option>';
-
-                if (snapshot.empty) {
-                    console.warn('⚠️ No projects found in database');
-                    return;
-                }
-
-                // Add projects to dropdown
-                let addedCount = 0;
-                snapshot.forEach(doc => {
-                    const project = doc.data();
-                    if (project.name) {
-                        const option = document.createElement('option');
-                        option.value = doc.id;  // Store project ID
-                        option.textContent = project.name;  // Show project name
-                        option.setAttribute('data-project-name', project.name);
-                        select.appendChild(option);
-                        addedCount++;
-                    }
-                });
-
-                console.log(`✅ Populated subtask project dropdown with ${addedCount} projects`);
-            } catch (error) {
-                console.error('❌ Error loading projects:', error);
-            }
-        }
-
-        // Handle subtask form submission
-        document.getElementById('subtaskForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const subtaskData = {
-                name: document.getElementById('subtaskName').value,
-                status: document.getElementById('subtaskStatus').value,
-                assignedTo: document.getElementById('subtaskPerson').value,
-                projectId: document.getElementById('subtaskProject').value || null,
-                date: document.getElementById('subtaskDate').value,
-                startDate: document.getElementById('subtaskStartDate').value,
-                parentTaskId: currentParentTaskId,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-
-            try {
-                if (editingSubtaskIndex !== -1) {
-                    // Update existing subtask
-                    const subtaskId = subtasks[editingSubtaskIndex].id;
-                    await db.collection('subtasks').doc(subtaskId).update({
-                        ...subtaskData,
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    console.log('✅ Subtask updated');
-                } else {
-                    // Create new subtask
-                    await db.collection('subtasks').add(subtaskData);
-                    console.log('✅ Subtask created');
-                }
-
-                closeSubtaskModal();
-                await loadSubtasksFromFirebase();
-                renderTasks();
-            } catch (error) {
-                console.error('❌ Error saving subtask:', error);
-                alert('Error saving subtask: ' + error.message);
-            }
-        });
-
-        // Edit subtask
-        async function editSubtask(subtaskId) {
-            const subtaskIndex = subtasks.findIndex(st => st.id === subtaskId);
-            if (subtaskIndex === -1) return;
-
-            const subtask = subtasks[subtaskIndex];
-            editingSubtaskIndex = subtaskIndex;
-            currentParentTaskId = subtask.parentTaskId;
-
-            // Update modal title
-            document.getElementById('subtaskModalTitle').textContent = 'Edit Subtask';
-
-            // Populate dropdowns first
-            await populateSubtaskAssignToDropdown();
-            await populateSubtaskProjectDropdown();
-
-            // Fill form with subtask data
-            document.getElementById('subtaskName').value = subtask.name;
-            document.getElementById('subtaskStatus').value = subtask.status;
-            document.getElementById('subtaskPerson').value = subtask.assignedTo;
-            document.getElementById('subtaskProject').value = subtask.projectId || '';
-            document.getElementById('subtaskDate').value = subtask.date;
-            document.getElementById('subtaskStartDate').value = subtask.startDate || '';
-
-            // Update date displays
-            updateDateDisplay(document.getElementById('subtaskDate'));
-            updateDateDisplay(document.getElementById('subtaskStartDate'));
-
-            // Open modal
-            document.getElementById('subtaskModal').classList.add('active');
-
-            // Update button text
-            const submitBtn = document.querySelector('#subtaskForm button[type="submit"]');
-            submitBtn.textContent = 'Update Subtask';
-        }
-
-        // Delete subtask
-        async function deleteSubtask(subtaskId) {
-            if (!confirm('Are you sure you want to delete this subtask?')) {
-                return;
-            }
-
-            try {
-                await db.collection('subtasks').doc(subtaskId).delete();
-                console.log('✅ Subtask deleted');
-
-                await loadSubtasksFromFirebase();
-                renderTasks();
-            } catch (error) {
-                console.error('❌ Error deleting subtask:', error);
-                alert('Error deleting subtask: ' + error.message);
-            }
-        }
-
-        // Toggle subtask status popup
-        function toggleSubtaskStatusPopup(event, subtaskId) {
-            event.stopPropagation();
-            const popup = document.getElementById(`subtask-status-popup-${subtaskId}`);
-
-            // Close all other popups
-            document.querySelectorAll('.status-popup').forEach(p => {
-                if (p !== popup) p.classList.remove('active');
-            });
-
-            popup.classList.toggle('active');
-        }
-
-        // Change subtask status
-        async function changeSubtaskStatus(subtaskId, newStatus) {
-            try {
-                await db.collection('subtasks').doc(subtaskId).update({
-                    status: newStatus,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                console.log(`✅ Subtask status updated to ${newStatus}`);
-
-                // Update local array
-                const subtask = subtasks.find(st => st.id === subtaskId);
-                if (subtask) {
-                    subtask.status = newStatus;
-                }
-
-                // Re-render
-                renderTasks();
-            } catch (error) {
-                console.error('❌ Error updating subtask status:', error);
-            }
-        }
-
-        // Close subtask modal when clicking outside
-        document.getElementById('subtaskModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeSubtaskModal();
-            }
-        });
 
         // ========================================
         // TASK SORTING FUNCTIONALITY
@@ -6395,12 +4401,6 @@
                     case 'project':
                         valueA = (a.project || '').toLowerCase();
                         valueB = (b.project || '').toLowerCase();
-                        break;
-
-                    case 'startDate':
-                        // Convert dd/mm/yyyy to comparable format
-                        valueA = convertDateForSort(a.startDate);
-                        valueB = convertDateForSort(b.startDate);
                         break;
 
                     case 'date':
@@ -6472,20 +4472,12 @@
             try {
                 // Delete from Firebase if task has an ID
                 if (task.id && db) {
-                    // First, delete all subtasks of this task
-                    const taskSubtasks = subtasks.filter(st => st.parentTaskId === task.id);
-                    for (const subtask of taskSubtasks) {
-                        await db.collection('subtasks').doc(subtask.id).delete();
-                        console.log("✅ Subtask deleted:", subtask.id);
-                    }
-
                     await deleteTaskFromFirebase(task.id);
                     console.log("✅ Task deleted from Firebase:", task.id);
                 }
 
-                // Reload tasks and subtasks from Firebase to prevent duplicates
+                // Reload tasks from Firebase to prevent duplicates
                 await loadTasksFromFirebase();
-                await loadSubtasksFromFirebase();
 
                 // Re-enable real-time listener after a short delay
                 setTimeout(() => {
@@ -6523,35 +4515,19 @@
                 document.getElementById('itemStatus').value = task.status;
                 document.getElementById('itemPriority').value = task.priority;
 
-                // Set the assignedTo (multi-select support)
-                const personSelect = document.getElementById('itemPerson');
-
-                // Clear all selections first
-                Array.from(personSelect.options).forEach(opt => opt.selected = false);
-
-                if (task.assignedToIds && task.assignedToIds.length > 0) {
-                    // Use the new assignedToIds array
-                    task.assignedToIds.forEach(memberId => {
-                        Array.from(personSelect.options).forEach(option => {
-                            if (option.value === memberId) {
-                                option.selected = true;
-                            }
-                        });
-                    });
-                } else if (task.assignedTo) {
-                    // Fallback for single assignee (backwards compatibility)
-                    Array.from(personSelect.options).forEach(option => {
-                        if (option.value === task.assignedTo) {
-                            option.selected = true;
-                        }
-                    });
+                // Set the assignedTo (member ID) in dropdown
+                if (task.assignedTo) {
+                    document.getElementById('itemPerson').value = task.assignedTo;
                 } else if (task.person) {
-                    // Fallback for very old data - try to find by name
-                    Array.from(personSelect.options).forEach(option => {
-                        if (option.getAttribute('data-member-name') === task.person) {
-                            option.selected = true;
+                    // Fallback for old data - try to find by name
+                    const personSelect = document.getElementById('itemPerson');
+                    const options = personSelect.options;
+                    for (let i = 0; i < options.length; i++) {
+                        if (options[i].getAttribute('data-member-name') === task.person) {
+                            personSelect.value = options[i].value;
+                            break;
                         }
-                    });
+                    }
                 }
 
                 // Set the project (project ID) in dropdown
@@ -6573,6 +4549,7 @@
                 // Set dates using helper function (converts dd/mm/yyyy to yyyy-mm-dd for input)
                 setDateInputValue(document.getElementById('itemStartDate'), task.startDate);
                 setDateInputValue(document.getElementById('itemDate'), task.date);
+                document.getElementById('itemTimeline').value = task.timeline;
 
                 // Hide modal spinner after data is loaded
                 hideModalSpinner();
@@ -6749,13 +4726,10 @@
         document.getElementById('taskForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            // Get selected team members (multi-select)
-            const personSelect = document.getElementById('itemPerson');
-            const selectedOptions = Array.from(personSelect.selectedOptions);
-
-            // Validate that at least one team member is selected
-            if (selectedOptions.length === 0) {
-                alert('⚠️ Please select at least one team member to assign this task to.');
+            // Validate that a team member is selected
+            const assignedToId = document.getElementById('itemPerson').value;
+            if (!assignedToId || assignedToId.trim() === '') {
+                alert('⚠️ Please select a team member to assign this task to.');
                 document.getElementById('itemPerson').focus();
                 return;
             }
@@ -6763,13 +4737,9 @@
             // Set flag to prevent real-time listener interference
             isManualOperation = true;
 
-            // Get assigned member IDs and names
-            const assignedToIds = selectedOptions.map(opt => opt.value).filter(v => v);
-            const assignedToNames = selectedOptions.map(opt => opt.getAttribute('data-member-name') || opt.textContent).filter(n => n);
-
-            // For backwards compatibility, store first member as primary
-            const primaryMemberId = assignedToIds[0];
-            const primaryMemberName = assignedToNames[0];
+            const personSelect = document.getElementById('itemPerson');
+            const selectedOption = personSelect.options[personSelect.selectedIndex];
+            const personName = selectedOption.getAttribute('data-member-name') || selectedOption.textContent;
 
             // Get project ID and name
             const projectSelect = document.getElementById('itemProject');
@@ -6781,14 +4751,13 @@
                 name: document.getElementById('itemName').value,
                 status: document.getElementById('itemStatus').value,
                 priority: document.getElementById('itemPriority').value,
-                assignedTo: primaryMemberId,  // Store primary member ID (backwards compatibility)
-                assignedToIds: assignedToIds,  // Store all assigned member IDs
-                person: primaryMemberName,  // Store primary name for backwards compatibility
-                assignedToNames: assignedToNames,  // Store all assigned names
+                assignedTo: assignedToId,  // Store member ID
+                person: personName,  // Store name for backwards compatibility
                 projectId: projectId,  // Store project ID
                 project: projectName,  // Store project name for backwards compatibility and display
                 startDate: getDateInputValue(document.getElementById('itemStartDate')),  // Convert to dd/mm/yyyy
-                date: getDateInputValue(document.getElementById('itemDate'))  // Convert to dd/mm/yyyy
+                date: getDateInputValue(document.getElementById('itemDate')),  // Convert to dd/mm/yyyy
+                timeline: document.getElementById('itemTimeline').value
             };
 
             try {
@@ -6989,59 +4958,8 @@
                         <div>
                             <div class="project-card-title">${project.name}</div>
                             <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
-                                <div class="project-status-popup-wrapper">
-                                    <span class="project-status-badge clickable ${project.status}"
-                                          onclick="toggleProjectStatusPopup(event, '${project.id}', ${index})"
-                                          title="Click to change status">
-                                        ${formatStatus(project.status)}
-                                    </span>
-                                    <div class="project-status-popup" id="project-status-popup-${project.id}">
-                                        <div class="project-status-popup-option planned" onclick="changeProjectStatus('${project.id}', ${index}, 'planned')">
-                                            Planned
-                                        </div>
-                                        <div class="project-status-popup-option in-progress" onclick="changeProjectStatus('${project.id}', ${index}, 'in-progress')">
-                                            In Progress
-                                        </div>
-                                        <div class="project-status-popup-option completed" onclick="changeProjectStatus('${project.id}', ${index}, 'completed')">
-                                            Completed
-                                        </div>
-                                        <div class="project-status-popup-option on-hold" onclick="changeProjectStatus('${project.id}', ${index}, 'on-hold')">
-                                            On Hold
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="project-status-popup-wrapper">
-                                    <span class="project-status-badge clickable"
-                                          style="background: #0073ea; color: white;"
-                                          onclick="toggleProjectSDLCPopup(event, '${project.id}', ${index})"
-                                          title="Click to change SDLC phase">
-                                        ${project.sdlc || 'No Phase'}
-                                    </span>
-                                    <div class="project-status-popup" id="project-sdlc-popup-${project.id}">
-                                        <div class="project-status-popup-option sdlc" onclick="changeProjectSDLC('${project.id}', ${index}, 'Requirement')">
-                                            Requirement
-                                        </div>
-                                        <div class="project-status-popup-option sdlc" onclick="changeProjectSDLC('${project.id}', ${index}, 'Design')">
-                                            Design
-                                        </div>
-                                        <div class="project-status-popup-option sdlc" onclick="changeProjectSDLC('${project.id}', ${index}, 'Development')">
-                                            Development
-                                        </div>
-                                        <div class="project-status-popup-option sdlc" onclick="changeProjectSDLC('${project.id}', ${index}, 'Smoke Test')">
-                                            Smoke Test
-                                        </div>
-                                        <div class="project-status-popup-option sdlc" onclick="changeProjectSDLC('${project.id}', ${index}, 'SIT')">
-                                            SIT
-                                        </div>
-                                        <div class="project-status-popup-option sdlc" onclick="changeProjectSDLC('${project.id}', ${index}, 'UAT')">
-                                            UAT
-                                        </div>
-                                        <div class="project-status-popup-option sdlc" onclick="changeProjectSDLC('${project.id}', ${index}, 'Implemented')">
-                                            Implemented
-                                        </div>
-                                    </div>
-                                </div>
-                                ${project.projectType ? `<span class="project-status-badge" style="background: #9b59b6; color: white;">${project.projectType}</span>` : ''}
+                                <span class="project-status-badge ${project.status}">${formatStatus(project.status)}</span>
+                                ${project.sdlc ? `<span class="project-status-badge" style="background: #0073ea; color: white;"> ${project.sdlc}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -7115,123 +5033,6 @@
         function formatPriority(priority) {
             return priority.charAt(0).toUpperCase() + priority.slice(1);
         }
-
-        // ========================================
-        // PROJECT STATUS/SDLC POPUP FUNCTIONS
-        // ========================================
-
-        function toggleProjectStatusPopup(event, projectId, projectIndex) {
-            event.stopPropagation();
-
-            // Close all other popups
-            document.querySelectorAll('.project-status-popup').forEach(popup => {
-                if (popup.id !== `project-status-popup-${projectId}`) {
-                    popup.classList.remove('active');
-                }
-            });
-
-            // Toggle this popup
-            const popup = document.getElementById(`project-status-popup-${projectId}`);
-            popup.classList.toggle('active');
-        }
-
-        function toggleProjectSDLCPopup(event, projectId, projectIndex) {
-            event.stopPropagation();
-
-            // Close all other popups
-            document.querySelectorAll('.project-status-popup').forEach(popup => {
-                if (popup.id !== `project-sdlc-popup-${projectId}`) {
-                    popup.classList.remove('active');
-                }
-            });
-
-            // Toggle this popup
-            const popup = document.getElementById(`project-sdlc-popup-${projectId}`);
-            popup.classList.toggle('active');
-        }
-
-        async function changeProjectStatus(projectId, projectIndex, newStatus) {
-            // Close popup
-            document.getElementById(`project-status-popup-${projectId}`).classList.remove('active');
-
-            // Check if status changed
-            if (projects[projectIndex].status === newStatus) {
-                return;
-            }
-
-            // Show spinner
-            showSpinner('Updating status...');
-
-            try {
-                // Update in Firebase
-                await db.collection('projects').doc(projectId).update({
-                    status: newStatus,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                console.log('✅ Project status updated');
-
-                // Update local array
-                projects[projectIndex].status = newStatus;
-
-                // Re-render projects
-                renderProjects();
-
-                // Hide spinner
-                hideSpinner();
-
-            } catch (error) {
-                console.error('❌ Error updating project status:', error);
-                hideSpinner();
-                alert('Error updating status: ' + error.message);
-            }
-        }
-
-        async function changeProjectSDLC(projectId, projectIndex, newSDLC) {
-            // Close popup
-            document.getElementById(`project-sdlc-popup-${projectId}`).classList.remove('active');
-
-            // Check if SDLC changed
-            if (projects[projectIndex].sdlc === newSDLC) {
-                return;
-            }
-
-            // Show spinner
-            showSpinner('Updating SDLC phase...');
-
-            try {
-                // Update in Firebase
-                await db.collection('projects').doc(projectId).update({
-                    sdlc: newSDLC,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                console.log('✅ Project SDLC updated');
-
-                // Update local array
-                projects[projectIndex].sdlc = newSDLC;
-
-                // Re-render projects
-                renderProjects();
-
-                // Hide spinner
-                hideSpinner();
-
-            } catch (error) {
-                console.error('❌ Error updating project SDLC:', error);
-                hideSpinner();
-                alert('Error updating SDLC: ' + error.message);
-            }
-        }
-
-        // Close popups when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.project-status-popup-wrapper')) {
-                document.querySelectorAll('.project-status-popup').forEach(popup => {
-                    popup.classList.remove('active');
-                });
-            }
-        });
 
         // ========================================
         // PROJECT FIREBASE FUNCTIONS
@@ -7450,7 +5251,6 @@
             // Populate form with project data
             document.getElementById('projectName').value = project.name;
             document.getElementById('projectDescription').value = project.description;
-            document.getElementById('projectType').value = project.projectType || 'Project';
             document.getElementById('projectStatus').value = project.status;
             document.getElementById('projectPriority').value = project.priority;
             document.getElementById('projectSDLC').value = project.sdlc || 'Development';
@@ -7660,12 +5460,8 @@
                 const displayName = formatNameWithInitial(fullName);
                 const avatarText = fullName.split(' ').map(n => n[0]).join('');
 
-                // Check if task is overdue (past due date and not done)
-                const isOverdue = task.date && new Date(task.date) < new Date(new Date().setHours(0, 0, 0, 0)) && task.status !== 'done';
-                const overdueClass = isOverdue ? ' overdue' : '';
-
                 return `
-                <div class="table-row${overdueClass}" data-index="${index}" data-task-id="${task.id}">
+                <div class="table-row" data-index="${index}">
                     <div class="table-cell" data-label="#">
                         <span class="row-number">${displayIndex + 1}</span>
                     </div>
@@ -7684,24 +5480,22 @@
                         </div>
                     </div>
                     <div class="table-cell" data-label="Assigned To">
-                        <div class="editable-field" onclick="startInlineEdit(${index}, 'assignedTo', this)" title="Click to edit">
-                            ${assignedToHTML}
+                        <div class="person-cell">
+                            <div class="person-avatar">${avatarText}</div>
+                            <span>${displayName}</span>
                         </div>
                     </div>
                     <div class="table-cell" data-label="Project">
                         ${task.project ? `<span class="project-badge" title="${task.project}">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
                     </div>
-                    <div class="table-cell" data-label="Start Date">
-                        <span class="date-cell editable-field" onclick="startInlineEdit(${index}, 'startDate', this)" title="Click to edit">${formatDateForDisplay(task.startDate)}</span>
+                    <div class="table-cell" data-label="Date">
+                        <span class="date-cell">${task.date}</span>
                     </div>
-                    <div class="table-cell" data-label="Due Date">
-                        <span class="date-cell editable-field" onclick="startInlineEdit(${index}, 'date', this)" title="Click to edit">${formatDateForDisplay(task.date)}</span>
+                    <div class="table-cell" data-label="Timeline">
+                        <span class="date-cell">${task.timeline}</span>
                     </div>
                     <div class="table-cell" data-label="Actions">
                         <div class="action-buttons">
-                            <button class="action-btn subtask-btn" data-action="subtask" data-index="${index}" title="Add subtask">
-                                ➕
-                            </button>
                             <button class="action-btn edit-btn" data-action="edit" data-index="${index}" title="Edit task">
                                 ✏️
                             </button>
@@ -7717,12 +5511,6 @@
             `;
             }).join('');
 
-            // Render subtasks after filtered tasks
-            renderSubtasks();
-
-            // Setup drag and drop for tasks (as drop targets)
-            setupTaskDropTargets();
-
             // Re-attach event listeners
             document.querySelectorAll('.action-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
@@ -7730,9 +5518,7 @@
                     const action = this.getAttribute('data-action');
                     const index = parseInt(this.getAttribute('data-index'));
 
-                    if (action === 'subtask') {
-                        showInlineAddSubtask(index);
-                    } else if (action === 'edit') {
+                    if (action === 'edit') {
                         editTask(index);
                     } else if (action === 'clone') {
                         cloneTask(index);
@@ -7912,9 +5698,8 @@
 
             if (taskFilters.assignedTo) {
                 filteredTasks = filteredTasks.filter(t => {
-                    // Check assignedTo (primary ID), assignedToIds (array), and person (name) for backward compatibility
+                    // Check both assignedTo (ID) and person (name) for backward compatibility
                     return t.assignedTo === taskFilters.assignedTo ||
-                           (t.assignedToIds && t.assignedToIds.includes(taskFilters.assignedTo)) ||
                            (t.person && document.getElementById('filterAssignedTo').selectedOptions[0] &&
                             t.person === document.getElementById('filterAssignedTo').selectedOptions[0].text);
                 });
@@ -7948,55 +5733,17 @@
 
             tableBody.innerHTML = filteredTasks.map((task, displayIndex) => {
                 const index = tasks.indexOf(task);
-
-                // Handle multiple assignees
-                let assignedToHTML = '';
-                if (task.assignedToNames && task.assignedToNames.length > 0) {
-                    // Multiple assignees
-                    const displayNames = task.assignedToNames.map(name => formatNameWithInitial(name));
-                    if (task.assignedToNames.length === 1) {
-                        const fullName = task.assignedToNames[0];
-                        const displayName = displayNames[0];
-                        const avatarText = fullName.split(' ').map(n => n[0]).join('');
-                        assignedToHTML = `
-                            <div class="person-cell">
-                                <div class="person-avatar">${avatarText}</div>
-                                <span>${displayName}</span>
-                            </div>`;
-                    } else {
-                        // Multiple members - show avatars stacked
-                        const avatars = task.assignedToNames.map(name => {
-                            const avatarText = name.split(' ').map(n => n[0]).join('');
-                            return `<div class="person-avatar person-avatar-small" title="${name}">${avatarText}</div>`;
-                        }).join('');
-                        assignedToHTML = `
-                            <div class="person-cell">
-                                <div class="person-avatars-group">${avatars}</div>
-                            </div>`;
-                    }
-                } else {
-                    // Fallback to old single assignee format
-                    const fullName = task.personName || task.person || 'Unknown';
-                    const displayName = formatNameWithInitial(fullName);
-                    const avatarText = fullName.split(' ').map(n => n[0]).join('');
-                    assignedToHTML = `
-                        <div class="person-cell">
-                            <div class="person-avatar">${avatarText}</div>
-                            <span>${displayName}</span>
-                        </div>`;
-                }
-
-                // Check if task is overdue (past due date and not done)
-                const isOverdue = task.date && new Date(task.date) < new Date(new Date().setHours(0, 0, 0, 0)) && task.status !== 'done';
-                const overdueClass = isOverdue ? ' overdue' : '';
+                const fullName = task.personName || task.person || 'Unknown';
+                const displayName = formatNameWithInitial(fullName);
+                const avatarText = fullName.split(' ').map(n => n[0]).join('');
 
                 return `
-                <div class="table-row${overdueClass}" data-index="${index}" data-task-id="${task.id}">
+                <div class="table-row" data-index="${index}">
                     <div class="table-cell" data-label="#">
                         <span class="row-number">${displayIndex + 1}</span>
                     </div>
                     <div class="table-cell" data-label="Task">
-                        <span class="task-name editable-field" onclick="startInlineEdit(${index}, 'name', this)" title="Click to edit">${task.name}</span>
+                        <span class="task-name">${task.name}</span>
                     </div>
                     <div class="table-cell" data-label="Status">
                         <div class="status-badge-wrapper">
@@ -8026,24 +5773,22 @@
                         </div>
                     </div>
                     <div class="table-cell" data-label="Assigned To">
-                        <div class="editable-field" onclick="startInlineEdit(${index}, 'assignedTo', this)" title="Click to edit">
-                            ${assignedToHTML}
+                        <div class="person-cell">
+                            <div class="person-avatar">${avatarText}</div>
+                            <span>${displayName}</span>
                         </div>
                     </div>
                     <div class="table-cell" data-label="Project">
                         ${task.project ? `<span class="project-badge" title="${task.project}">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
                     </div>
-                    <div class="table-cell" data-label="Start Date">
-                        <span class="date-cell editable-field" onclick="startInlineEdit(${index}, 'startDate', this)" title="Click to edit">${formatDateForDisplay(task.startDate)}</span>
+                    <div class="table-cell" data-label="Date">
+                        <span class="date-cell">${task.date}</span>
                     </div>
-                    <div class="table-cell" data-label="Due Date">
-                        <span class="date-cell editable-field" onclick="startInlineEdit(${index}, 'date', this)" title="Click to edit">${formatDateForDisplay(task.date)}</span>
+                    <div class="table-cell" data-label="Timeline">
+                        <span class="date-cell">${task.timeline}</span>
                     </div>
                     <div class="table-cell" data-label="Actions">
                         <div class="action-buttons">
-                            <button class="action-btn subtask-btn" data-action="subtask" data-index="${index}" title="Add subtask">
-                                ➕
-                            </button>
                             <button class="action-btn edit-btn" data-action="edit" data-index="${index}" title="Edit task">
                                 ✏️
                             </button>
@@ -8059,12 +5804,6 @@
             `;
             }).join('');
 
-            // Render subtasks after filtered tasks
-            renderSubtasks();
-
-            // Setup drag and drop for tasks (as drop targets)
-            setupTaskDropTargets();
-
             // Re-attach event listeners
             document.querySelectorAll('.action-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
@@ -8072,9 +5811,7 @@
                     const action = this.getAttribute('data-action');
                     const index = parseInt(this.getAttribute('data-index'));
 
-                    if (action === 'subtask') {
-                        showInlineAddSubtask(index);
-                    } else if (action === 'edit') {
+                    if (action === 'edit') {
                         editTask(index);
                     } else if (action === 'clone') {
                         cloneTask(index);
@@ -8197,7 +5934,6 @@
             const projectData = {
                 name: document.getElementById('projectName').value,
                 description: document.getElementById('projectDescription').value,
-                projectType: document.getElementById('projectType').value,
                 status: document.getElementById('projectStatus').value,
                 priority: document.getElementById('projectPriority').value,
                 sdlc: document.getElementById('projectSDLC').value,
@@ -8265,7 +6001,6 @@
             // Load from Firebase
             if (db) {
                 await loadTasksFromFirebase();
-                await loadSubtasksFromFirebase();
                 await loadTeamMembersWithStats();
                 await loadProjectsFromFirebase();
                 setupRealtimeListener();
@@ -8284,6 +6019,5 @@
             <div class="spinner-text" id="spinnerText">Loading...</div>
         </div>
     </div>
-
 </body>
 </html>

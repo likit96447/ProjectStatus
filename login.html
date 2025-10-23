@@ -325,10 +325,29 @@
                 // Check password
                 const userDoc = snapshot.docs[0];
                 const userData = userDoc.data();
-                let userPassword = userData.password || '1111'; // Default password
 
-                // Decode password if it's base64 encoded
-                userPassword = decodePassword(userPassword);
+                // Check if password is blank or null
+                const hasPassword = userData.password && userData.password.trim() !== '';
+                let userPassword = '1111'; // Default password
+
+                if (hasPassword) {
+                    userPassword = userData.password;
+                    // Decode password if it's base64 encoded
+                    userPassword = decodePassword(userPassword);
+                } else {
+                    // User doesn't have a password - set default password "1111" (base64 encoded)
+                    console.log('User has no password, setting default password "1111"');
+                    try {
+                        const encodedPassword = btoa('1111'); // Base64 encode
+                        await db.collection('team_members').doc(userDoc.id).update({
+                            password: encodedPassword,
+                            passwordUpdatedAt: new Date().toISOString()
+                        });
+                        console.log('✅ Default password set for user');
+                    } catch (error) {
+                        console.error('Error setting default password:', error);
+                    }
+                }
 
                 if (password === userPassword) {
                     // Successful login
