@@ -1192,6 +1192,7 @@
         .multi-select-dropdown {
             position: relative;
             width: 100%;
+            z-index: 50;
         }
 
         .multi-select-display {
@@ -1206,6 +1207,7 @@
             align-items: center;
             justify-content: space-between;
             transition: all 0.2s ease;
+            position: relative;
         }
 
         .multi-select-display:hover {
@@ -1216,13 +1218,16 @@
             content: '▼';
             position: absolute;
             right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
             font-size: 10px;
             color: #676879;
             transition: transform 0.2s ease;
+            pointer-events: none;
         }
 
         .multi-select-display.open::after {
-            transform: rotate(180deg);
+            transform: translateY(-50%) rotate(180deg);
         }
 
         .multi-select-options {
@@ -1235,10 +1240,11 @@
             border-radius: 6px;
             margin-top: 4px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
+            z-index: 99999 !important;
             display: none;
             max-height: 250px;
             overflow-y: auto;
+            pointer-events: auto;
         }
 
         .multi-select-options.open {
@@ -1271,12 +1277,62 @@
             color: #323338;
         }
 
+        /* Project Health 3D Circle Styles */
+        .project-health-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            font-size: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+            position: relative;
+            background: linear-gradient(135deg, var(--health-light), var(--health-dark));
+        }
+
+        .project-health-circle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            border-radius: 50% 50% 0 0;
+            background: rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+        }
+
+        .project-health-circle.green {
+            --health-light: #65d814;
+            --health-dark: #3fa015;
+        }
+
+        .project-health-circle.amber {
+            --health-light: #ffb800;
+            --health-dark: #d99400;
+        }
+
+        .project-health-circle.red {
+            --health-light: #ff5555;
+            --health-dark: #c21e1e;
+        }
+
+        .project-health-circle.none {
+            --health-light: #e6e9ef;
+            --health-dark: #b0b8c8;
+            color: #676879;
+        }
+
         /* Projects Grid Styles */
         .projects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 24px;
             padding: 24px 0;
+            width: 100%;
         }
 
         .project-card {
@@ -1525,6 +1581,30 @@
             font-size: 11px;
             color: #676879;
             font-weight: 600;
+        }
+
+        /* Timeline Scale Buttons */
+        .timeline-scale-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 2px solid #e6e9ef;
+            background: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #676879;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-scale-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .timeline-scale-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
         }
 
         .modal {
@@ -2441,19 +2521,168 @@
                                 <span>+</span>
                                 <span>New Project</span>
                             </button>
-                            <button class="btn btn-secondary">
+                            <button class="btn btn-secondary" id="tableViewBtn" onclick="switchProjectView('grid')">
+                                <span>📊</span>
+                                <span>Project Card</span>
+                            </button>
+                            <button class="btn btn-secondary" id="timelineViewBtn" onclick="switchProjectView('timeline')">
+                                <span>📈</span>
+                                <span>Timeline</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="toggleProjectFilter()">
                                 <span>🔍</span>
                                 <span>Filter</span>
                             </button>
-                            <button class="btn btn-secondary">
+                            <button class="btn btn-secondary" onclick="exportProjects()">
                                 <span>📤</span>
                                 <span>Export</span>
                             </button>
                         </div>
                     </div>
 
+                    <!-- Project Filter Panel -->
+                    <div id="projectFilterPanel" style="display: none; background: white; padding: 20px; margin: 16px 0; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #323338;">Filter Projects</h3>
+                            <button onclick="clearProjectFilters()" style="background: transparent; border: none; color: #e44258; cursor: pointer; font-size: 14px; font-weight: 600;">
+                                Clear All
+                            </button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Status</label>
+                                <select id="projectFilterStatus" onchange="applyProjectFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                                    <option value="">All Statuses</option>
+                                    <option value="planned">Planned</option>
+                                    <option value="in-progress">In Progress</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="on-hold">On Hold</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Project Type</label>
+                                <select id="projectFilterType" onchange="applyProjectFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                                    <option value="">All Types</option>
+                                    <option value="Project">Project</option>
+                                    <option value="BAU">BAU</option>
+                                    <option value="Parameter">Parameter</option>
+                                    <option value="Support">Support</option>
+                                    <option value="Incident">Incident</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">SDLC Phase</label>
+                                <select id="projectFilterSDLC" onchange="applyProjectFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                                    <option value="">All Phases</option>
+                                    <option value="Requirement">Requirement</option>
+                                    <option value="Design">Design</option>
+                                    <option value="Development">Development</option>
+                                    <option value="Smoke Test">Smoke Test</option>
+                                    <option value="SIT">SIT</option>
+                                    <option value="UAT">UAT</option>
+                                    <option value="Implemented">Implemented</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Priority</label>
+                                <select id="projectFilterPriority" onchange="applyProjectFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                                    <option value="">All Priorities</option>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Project Manager</label>
+                                <div class="multi-select-dropdown" id="projectManagerFilterDropdown">
+                                    <div class="multi-select-display" id="projectManagerFilterDisplay" onclick="toggleProjectManagerDropdown()">
+                                        <span id="projectManagerFilterText">All Managers</span>
+                                    </div>
+                                    <div class="multi-select-options" id="projectManagerFilterOptions">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Project Health</label>
+                                <div class="multi-select-dropdown" id="projectHealthFilterDropdown">
+                                    <div class="multi-select-display" id="projectHealthFilterDisplay" onclick="toggleProjectHealthDropdown()">
+                                        <span id="projectHealthFilterText">All Health</span>
+                                    </div>
+                                    <div class="multi-select-options" id="projectHealthFilterOptions">
+                                        <div class="multi-select-option" onclick="event.stopPropagation()">
+                                            <input type="checkbox" id="health-green" value="green" onchange="updateProjectHealthFilter()">
+                                            <label for="health-green" style="display: flex; align-items: center; gap: 6px;">
+                                                <span style="width: 12px; height: 12px; border-radius: 50%; background: #65d814; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
+                                                Green
+                                            </label>
+                                        </div>
+                                        <div class="multi-select-option" onclick="event.stopPropagation()">
+                                            <input type="checkbox" id="health-amber" value="amber" onchange="updateProjectHealthFilter()">
+                                            <label for="health-amber" style="display: flex; align-items: center; gap: 6px;">
+                                                <span style="width: 12px; height: 12px; border-radius: 50%; background: #ffb800; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
+                                                Amber
+                                            </label>
+                                        </div>
+                                        <div class="multi-select-option" onclick="event.stopPropagation()">
+                                            <input type="checkbox" id="health-red" value="red" onchange="updateProjectHealthFilter()">
+                                            <label for="health-red" style="display: flex; align-items: center; gap: 6px;">
+                                                <span style="width: 12px; height: 12px; border-radius: 50%; background: #ff5555; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
+                                                Red
+                                            </label>
+                                        </div>
+                                        <div class="multi-select-option" onclick="event.stopPropagation()">
+                                            <input type="checkbox" id="health-none" value="none" onchange="updateProjectHealthFilter()">
+                                            <label for="health-none" style="display: flex; align-items: center; gap: 6px;">
+                                                <span style="width: 12px; height: 12px; border-radius: 50%; background: #e6e9ef; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
+                                                None
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="projectsGrid" class="projects-grid">
                         <!-- Projects will be rendered here dynamically -->
+                    </div>
+
+                    <!-- Projects Table View -->
+                    <div id="projectsTableView" style="display: none;">
+                        <div class="table-container">
+                            <div class="table-header">
+                                <div class="table-cell" style="flex: 2;">Project Name</div>
+                                <div class="table-cell">Status</div>
+                                <div class="table-cell">Type</div>
+                                <div class="table-cell">SDLC Phase</div>
+                                <div class="table-cell">Health</div>
+                                <div class="table-cell">Progress</div>
+                                <div class="table-cell">Start Date</div>
+                                <div class="table-cell">End Date</div>
+                                <div class="table-cell">Actions</div>
+                            </div>
+                            <div id="projectsTableBody" class="table-body">
+                                <!-- Projects table rows will be rendered here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Projects Timeline View (Gantt Chart) -->
+                    <div id="projectsTimelineView" style="display: none;">
+                        <div style="padding: 20px; background: white; border-radius: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #323338;">Project Timeline - Gantt Chart</h3>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="timeline-scale-btn" id="scaleDay" onclick="setTimelineScale('day')">Day</button>
+                                    <button class="timeline-scale-btn" id="scaleWeek" onclick="setTimelineScale('week')">Week</button>
+                                    <button class="timeline-scale-btn active" id="scaleMonth" onclick="setTimelineScale('month')">Month</button>
+                                    <button class="timeline-scale-btn" id="scaleYear" onclick="setTimelineScale('year')">Year</button>
+                                </div>
+                            </div>
+                            <div id="ganttChart" style="overflow-x: auto; padding: 20px 0;">
+                                <!-- Gantt chart will be rendered here -->
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -2483,15 +2712,15 @@
                     </div>
 
                     <!-- Task Filter Panel -->
-                    <div id="taskFilterPanel" style="display: none; background: white; padding: 20px; margin: 16px 0; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    <div id="taskFilterPanel" style="display: none; background: white; padding: 20px; margin: 16px 0; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: visible; position: relative; z-index: 100;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                             <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #323338;">Filter Tasks</h3>
                             <button onclick="clearAllTaskFilters()" style="background: transparent; border: none; color: #e44258; cursor: pointer; font-size: 14px; font-weight: 600;">
                                 Clear All
                             </button>
                         </div>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-                            <div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; overflow: visible; position: relative; align-items: start;">
+                            <div style="overflow: visible;">
                                 <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Status</label>
                                 <div class="multi-select-dropdown" id="statusFilterDropdown">
                                     <div class="multi-select-display" id="statusFilterDisplay" onclick="toggleStatusDropdown()">
@@ -2517,7 +2746,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div>
+                            <div style="overflow: visible;">
                                 <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Priority</label>
                                 <select id="filterPriority" onchange="applyTaskFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
                                     <option value="">All Priority</option>
@@ -2526,17 +2755,21 @@
                                     <option value="high">High</option>
                                 </select>
                             </div>
-                            <div>
+                            <div style="overflow: visible;">
                                 <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Assigned To</label>
                                 <select id="filterAssignedTo" onchange="applyTaskFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
                                     <option value="">All Members</option>
                                 </select>
                             </div>
-                            <div>
+                            <div style="overflow: visible;">
                                 <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Project</label>
-                                <select id="filterProject" onchange="applyTaskFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
-                                    <option value="">All Projects</option>
-                                </select>
+                                <div class="multi-select-dropdown" id="projectFilterDropdown">
+                                    <div class="multi-select-display" id="projectFilterDisplay" onclick="toggleProjectFilterDropdown()">
+                                        <span id="projectFilterText">All Projects</span>
+                                    </div>
+                                    <div class="multi-select-options" id="projectFilterOptions">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div id="activeFiltersDisplay" style="margin-top: 12px; display: none;">
@@ -3006,6 +3239,15 @@
                         </select>
                     </div>
                     <div class="form-group">
+                        <label class="form-label">Project Health</label>
+                        <select class="form-select" id="projectHealth">
+                            <option value="none">None</option>
+                            <option value="red">Red</option>
+                            <option value="amber">Amber</option>
+                            <option value="green">Green</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">Status</label>
                         <select class="form-select" id="projectStatus">
                             <option value="planned">Planned</option>
@@ -3025,6 +3267,13 @@
                             <option value="UAT">UAT</option>
                             <option value="Implement">Implemented</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Project Manager</label>
+                        <select class="form-select" id="projectManager" multiple size="5">
+                            <option value="" disabled>Loading team members...</option>
+                        </select>
+                        <small style="color: #676879; font-size: 12px; margin-top: 4px; display: block;">Hold Ctrl/Cmd to select multiple managers</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Priority</label>
@@ -4154,6 +4403,9 @@
                 // Check if any filters are active and re-apply them
                 // Reset allTasks when loading fresh data
                 allTasks = [];
+
+                // Populate filter dropdowns now that tasks are loaded
+                populateFilterDropdowns();
 
                 const hasActiveFilters = taskFilters && Object.values(taskFilters).some(v => v !== '');
 
@@ -6980,14 +7232,33 @@
         // ========================================
 
         function renderProjects() {
+            // Reset filtered projects when rendering all projects
+            currentFilteredProjects = null;
+
+            // Render in the current view
+            if (currentProjectView === 'table') {
+                renderProjectsTable();
+            } else if (currentProjectView === 'timeline') {
+                renderGanttChart();
+            } else {
+                renderProjectsGridView(projects);
+            }
+        }
+
+        function renderProjectsGridOld() {
             const projectsGrid = document.getElementById('projectsGrid');
             if (!projectsGrid) return;
 
             projectsGrid.innerHTML = projects.map((project, index) => `
-                <div class="project-card">
+                <div class="project-card" onclick="if(event.target.closest('.project-action-btn') || event.target.closest('.project-status-badge')) return; editProject(${index})">
                     <div class="project-card-header">
                         <div>
-                            <div class="project-card-title">${project.name}</div>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <div class="project-health-circle ${project.projectHealth || 'none'}" title="Health: ${project.projectHealth || 'None'}">
+                                   
+                                </div>
+                                <div class="project-card-title">${project.name}</div>
+                            </div>
                             <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
                                 <div class="project-status-popup-wrapper">
                                     <span class="project-status-badge clickable ${project.status}"
@@ -7076,6 +7347,17 @@
                         </div>
                     </div>
 
+                    ${project.projectManagers && project.projectManagers.length > 0 ? `
+                        <div class="project-team-members" style="margin-top: 12px; padding: 12px; background: #ffe6f0; border-radius: 8px;">
+                            <div style="font-size: 12px; font-weight: 700; color: #c2185b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Project Managers</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                ${project.projectManagers.map(manager => `
+                                    <span style="background: white; padding: 4px 10px; border-radius: 6px; font-size: 13px; color: #c2185b; border: 1px solid #f48fb1; font-weight: 600;">${formatNameWithInitial(manager)}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
                     ${project.teamMembers && project.teamMembers.length > 0 ? `
                         <div class="project-team-members" style="margin-top: 12px; padding: 12px; background: #f6f7fb; border-radius: 8px;">
                             <div style="font-size: 12px; font-weight: 700; color: #676879; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Team Members</div>
@@ -7114,6 +7396,302 @@
 
         function formatPriority(priority) {
             return priority.charAt(0).toUpperCase() + priority.slice(1);
+        }
+
+        // ========================================
+        // PROJECT VIEW SWITCHING FUNCTIONS
+        // ========================================
+
+        // Store current project view
+        let currentProjectView = 'grid';
+        let currentTimelineScale = 'month';
+        let currentFilteredProjects = null; // Store filtered projects when filters are applied
+
+        function switchProjectView(viewType) {
+            currentProjectView = viewType;
+            const gridView = document.getElementById('projectsGrid');
+            const tableView = document.getElementById('projectsTableView');
+            const timelineView = document.getElementById('projectsTimelineView');
+            const tableBtn = document.getElementById('tableViewBtn');
+            const timelineBtn = document.getElementById('timelineViewBtn');
+
+            // Hide all views
+            gridView.style.display = 'none';
+            tableView.style.display = 'none';
+            timelineView.style.display = 'none';
+
+            // Reset button styles
+            tableBtn.style.background = '';
+            tableBtn.style.border = '';
+            tableBtn.style.color = '';
+            timelineBtn.style.background = '';
+            timelineBtn.style.border = '';
+            timelineBtn.style.color = '';
+
+            if (viewType === 'table') {
+                tableView.style.display = 'block';
+                tableBtn.style.background = 'white';
+                tableBtn.style.border = '2px solid #667eea';
+                tableBtn.style.color = '#667eea';
+                renderProjectsTable(currentFilteredProjects);
+            } else if (viewType === 'timeline') {
+                timelineView.style.display = 'block';
+                timelineBtn.style.background = 'white';
+                timelineBtn.style.border = '2px solid #667eea';
+                timelineBtn.style.color = '#667eea';
+                renderGanttChart(currentFilteredProjects);
+            } else {
+                gridView.style.display = 'grid';
+                gridView.style.width = '100%';
+                // Highlight the Project Card button when viewing grid
+                tableBtn.style.background = 'white';
+                tableBtn.style.border = '2px solid #667eea';
+                tableBtn.style.color = '#667eea';
+                // Reset timeline button
+                timelineBtn.style.background = '';
+                timelineBtn.style.border = '';
+                timelineBtn.style.color = '';
+                renderProjectsGridView(currentFilteredProjects);
+            }
+        }
+
+        // Render projects in table format
+        function renderProjectsTable(filteredProjects) {
+            const tableBody = document.getElementById('projectsTableBody');
+
+            // Use filtered projects if provided, otherwise use all projects
+            const projectsToDisplay = filteredProjects || projects;
+
+            if (projectsToDisplay.length === 0) {
+                tableBody.innerHTML = '<div style="text-align: center; padding: 40px; color: #676879;">No projects found</div>';
+                return;
+            }
+
+            tableBody.innerHTML = projectsToDisplay.map((project, index) => `
+                <div class="table-row">
+                    <div class="table-cell" style="flex: 2; font-weight: 600;">${project.name}</div>
+                    <div class="table-cell">
+                        <span class="project-status-badge ${project.status}">${formatStatus(project.status)}</span>
+                    </div>
+                    <div class="table-cell">
+                        <span style="font-size: 12px; padding: 4px 8px; background: #f0f2f5; border-radius: 4px;">${project.projectType || 'N/A'}</span>
+                    </div>
+                    <div class="table-cell">
+                        <span style="font-size: 12px; padding: 4px 8px; background: #e8f0fe; border-radius: 4px; color: #0073ea;">${project.sdlc || 'N/A'}</span>
+                    </div>
+                    <div class="table-cell">
+                        ${project.projectHealth && project.projectHealth !== 'none' ? `
+                            <div class="project-health-circle ${project.projectHealth}">${project.projectHealth.charAt(0).toUpperCase()}</div>
+                        ` : '<span style="color: #999;">—</span>'}
+                    </div>
+                    <div class="table-cell">
+                        <div style="font-size: 12px; color: #676879;">${project.progress || 0}%</div>
+                        <div style="background: #e6e9ef; border-radius: 4px; height: 4px; margin-top: 4px; overflow: hidden;">
+                            <div style="background: #667eea; height: 100%; width: ${project.progress || 0}%;"></div>
+                        </div>
+                    </div>
+                    <div class="table-cell" style="font-size: 12px;">${project.startDate || 'N/A'}</div>
+                    <div class="table-cell" style="font-size: 12px;">${project.endDate || 'N/A'}</div>
+                    <div class="table-cell">
+                        <button class="project-action-btn" style="padding: 4px 8px; font-size: 12px;" onclick="editProject(${index})">✏️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Gantt chart
+        function renderGanttChart(filteredProjects) {
+            try {
+                const ganttContainer = document.getElementById('ganttChart');
+
+                if (!ganttContainer) {
+                    console.error('Gantt chart container not found');
+                    return;
+                }
+
+                // Use filtered projects if provided, otherwise use all projects
+                const projectsToDisplay = filteredProjects || projects;
+
+                if (projectsToDisplay.length === 0) {
+                    ganttContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: #676879;">No projects to display</div>';
+                    return;
+                }
+
+                // Get date range for the chart
+                let minDate = new Date();
+                let maxDate = new Date();
+
+                projectsToDisplay.forEach(project => {
+                    if (project.startDate) {
+                        const start = parseDate(project.startDate);
+                        if (start < minDate) minDate = start;
+                    }
+                    if (project.endDate) {
+                        const end = parseDate(project.endDate);
+                        if (end > maxDate) maxDate = end;
+                    }
+                });
+
+                // Calculate total days and scale based on currentTimelineScale
+                const totalDays = Math.max((maxDate - minDate) / (1000 * 60 * 60 * 24), 1);
+                let pixelsPerUnit = 50;
+                let headerFormat = '';
+                let incrementFunction = '';
+
+                if (currentTimelineScale === 'day') {
+                    // For day view: scale based on total days, minimum 30px per day
+                    pixelsPerUnit = Math.max(30, 1200 / Math.max(totalDays, 1));
+                    headerFormat = 'day';
+                    incrementFunction = 'Day';
+                } else if (currentTimelineScale === 'week') {
+                    // For week view: scale based on total weeks, minimum 50px per week
+                    const totalWeeks = Math.max(totalDays / 7, 1);
+                    pixelsPerUnit = Math.max(50, 1200 / totalWeeks);
+                    headerFormat = 'week';
+                    incrementFunction = 'Week';
+                } else if (currentTimelineScale === 'month') {
+                    // For month view: scale based on total months, minimum 60px per month
+                    const totalMonths = Math.max(totalDays / 30, 1);
+                    pixelsPerUnit = Math.max(60, 1200 / totalMonths);
+                    headerFormat = 'month';
+                    incrementFunction = 'Month';
+                } else if (currentTimelineScale === 'year') {
+                    // For year view: scale based on total years, minimum 70px per year
+                    const totalYears = Math.max(totalDays / 365, 1);
+                    pixelsPerUnit = Math.max(70, 1200 / totalYears);
+                    headerFormat = 'year';
+                    incrementFunction = 'Year';
+                }
+
+                // Render timeline header with appropriate scale
+                let ganttHTML = `
+                <div style="display: flex; margin-bottom: 20px;">
+                    <div style="flex: 0 0 250px; padding: 10px; font-weight: 600; border-bottom: 2px solid #e6e9ef;">Project Name</div>
+                    <div style="flex: 1; padding: 10px; border-bottom: 2px solid #e6e9ef;">
+                        <div style="display: flex; height: 40px;">
+                `;
+
+                // Add headers based on scale
+                let currentDate = new Date(minDate);
+                if (currentTimelineScale === 'day') {
+                    while (currentDate <= maxDate) {
+                        const day = currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        ganttHTML += `<div style="flex: 0 0 ${pixelsPerUnit}px; text-align: center; font-size: 11px; color: #676879; border-right: 1px solid #e6e9ef;">${day}</div>`;
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                } else if (currentTimelineScale === 'week') {
+                    while (currentDate <= maxDate) {
+                        const week = `W${Math.ceil((currentDate.getDate()) / 7)}`;
+                        ganttHTML += `<div style="flex: 0 0 ${pixelsPerUnit}px; text-align: center; font-size: 11px; color: #676879; border-right: 1px solid #e6e9ef;">${week}</div>`;
+                        currentDate.setDate(currentDate.getDate() + 7);
+                    }
+                } else if (currentTimelineScale === 'month') {
+                    while (currentDate <= maxDate) {
+                        const month = currentDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                        ganttHTML += `<div style="flex: 0 0 ${pixelsPerUnit}px; text-align: center; font-size: 12px; color: #676879; border-right: 1px solid #e6e9ef;">${month}</div>`;
+                        currentDate.setMonth(currentDate.getMonth() + 1);
+                    }
+                } else if (currentTimelineScale === 'year') {
+                    while (currentDate <= maxDate) {
+                        const year = currentDate.getFullYear();
+                        ganttHTML += `<div style="flex: 0 0 ${pixelsPerUnit}px; text-align: center; font-size: 12px; color: #676879; border-right: 1px solid #e6e9ef;">${year}</div>`;
+                        currentDate.setFullYear(currentDate.getFullYear() + 1);
+                    }
+                }
+
+                ganttHTML += `</div></div></div>`;
+
+                // Render project timeline bars
+                projectsToDisplay.forEach(project => {
+                    const startDate = project.startDate ? parseDate(project.startDate) : minDate;
+                    const endDate = project.endDate ? parseDate(project.endDate) : maxDate;
+
+                    const offsetDays = (startDate - minDate) / (1000 * 60 * 60 * 24);
+                    const durationDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
+
+                    // Calculate offset and width based on scale
+                    let offsetPixels = 0;
+                    let barWidth = 50;
+
+                    if (currentTimelineScale === 'day') {
+                        offsetPixels = offsetDays * pixelsPerUnit;
+                        barWidth = Math.max(durationDays * pixelsPerUnit, 20);
+                    } else if (currentTimelineScale === 'week') {
+                        offsetPixels = (offsetDays / 7) * pixelsPerUnit;
+                        barWidth = Math.max((durationDays / 7) * pixelsPerUnit, 20);
+                    } else if (currentTimelineScale === 'month') {
+                        offsetPixels = (offsetDays / 30) * pixelsPerUnit;
+                        barWidth = Math.max((durationDays / 30) * pixelsPerUnit, 20);
+                    } else if (currentTimelineScale === 'year') {
+                        offsetPixels = (offsetDays / 365) * pixelsPerUnit;
+                        barWidth = Math.max((durationDays / 365) * pixelsPerUnit, 20);
+                    }
+
+                    // Determine bar color based on status
+                    let barColor = '#667eea';
+                    if (project.status === 'completed') barColor = '#65d814';
+                    if (project.status === 'on-hold') barColor = '#ffb800';
+
+                    ganttHTML += `
+                        <div style="display: flex; align-items: center; margin-bottom: 15px; padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
+                            <div style="flex: 0 0 250px; padding: 10px; font-weight: 500; color: #323338; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${project.name}">
+                                ${project.name}
+                            </div>
+                            <div style="flex: 1; padding: 10px; position: relative; height: 30px;">
+                                <div style="position: absolute; left: ${offsetPixels}px; width: ${barWidth}px; height: 28px; background: ${barColor}; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600; cursor: pointer;" title="${project.name} - ${project.startDate} to ${project.endDate} (${project.progress || 0}%)">
+                                    ${project.progress || 0}%
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                ganttContainer.innerHTML = ganttHTML;
+            } catch (error) {
+                console.error('Error rendering Gantt chart:', error);
+                const ganttContainer = document.getElementById('ganttChart');
+                if (ganttContainer) {
+                    ganttContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: #e44258;">Error loading timeline. Please check the console for details.</div>';
+                }
+            }
+        }
+
+        // Parse date string in yyyy-mm-dd format (from project collection)
+        function parseDate(dateString) {
+            if (!dateString) return new Date();
+
+            // Check if format is yyyy-mm-dd or dd/mm/yyyy
+            if (dateString.includes('-')) {
+                // yyyy-mm-dd format
+                const [year, month, day] = dateString.split('-');
+                return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            } else if (dateString.includes('/')) {
+                // dd/mm/yyyy format (legacy)
+                const [day, month, year] = dateString.split('/');
+                return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            }
+
+            return new Date();
+        }
+
+        // Set timeline scale and re-render chart
+        function setTimelineScale(scale) {
+            currentTimelineScale = scale;
+
+            // Update button styles
+            const buttons = document.querySelectorAll('.timeline-scale-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Highlight the active button
+            const activeBtn = document.getElementById('scale' + scale.charAt(0).toUpperCase() + scale.slice(1));
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+
+            // Re-render the gantt chart with new scale, respecting active filters
+            renderGanttChart(currentFilteredProjects);
         }
 
         // ========================================
@@ -7316,6 +7894,7 @@
                 });
 
                 console.log(`✅ Loaded ${projects.length} projects from Firebase`);
+                populateProjectManagerFilterDropdown();
                 renderProjects();
             } catch (error) {
                 console.error('❌ Error loading projects from Firebase:', error);
@@ -7330,6 +7909,7 @@
                         });
                     });
                     console.log(`✅ Loaded ${projects.length} projects from Firebase (fallback)`);
+                    populateProjectManagerFilterDropdown();
                     renderProjects();
                 } catch (fallbackError) {
                     console.error('❌ Fallback also failed:', fallbackError);
@@ -7414,6 +7994,117 @@
             }
         }
 
+        async function populateProjectManagerDropdown() {
+            console.log('🔄 populateProjectManagerDropdown() called');
+            const selectElement = document.getElementById('projectManager');
+
+            if (!db) {
+                console.error('❌ Firebase not initialized');
+                selectElement.innerHTML = '<option value="">Firebase not connected</option>';
+                return;
+            }
+
+            try {
+                console.log('📊 Loading from team_members collection...');
+                const membersSnapshot = await db.collection('team_members').get();
+
+                console.log(`📦 Found ${membersSnapshot.size} team members`);
+
+                if (membersSnapshot.empty) {
+                    console.warn('⚠️ No team members found in database');
+                    selectElement.innerHTML = '<option value="">No team members found</option>';
+                    return;
+                }
+
+                // Clear existing options
+                selectElement.innerHTML = '';
+
+                let loadedCount = 0;
+                membersSnapshot.forEach(doc => {
+                    const member = doc.data();
+
+                    // Only show active members
+                    const isActive = member.active === true ||
+                                   member.status === 'Active' ||
+                                   (member.active === undefined && member.status === undefined);
+
+                    if (isActive && member.name) {
+                        const option = document.createElement('option');
+                        option.value = doc.id;
+                        option.setAttribute('data-member-name', member.name);
+                        option.textContent = `${member.name} - ${member.role || 'Team Member'}`;
+                        selectElement.appendChild(option);
+                        loadedCount++;
+                        console.log(`👤 Added: ${member.name} (${member.role || 'N/A'})`);
+                    }
+                });
+
+                console.log(`✅ Populated project manager dropdown with ${loadedCount} active team members`);
+
+                if (loadedCount === 0) {
+                    selectElement.innerHTML = '<option value="">No active team members</option>';
+                    console.warn('⚠️ All team members are inactive');
+                }
+
+            } catch (error) {
+                console.error('❌ Error loading team members:', error);
+                selectElement.innerHTML = '<option value="">Error loading members</option>';
+            }
+        }
+
+        // Populate project manager filter dropdown with checkboxes
+        function populateProjectManagerFilterDropdown() {
+            const optionsContainer = document.getElementById('projectManagerFilterOptions');
+
+            try {
+                // Extract unique project managers from all projects
+                const managerMap = new Map(); // To store manager names by ID (sorted)
+
+                projects.forEach(project => {
+                    if (project.projectManagerIds && Array.isArray(project.projectManagerIds)) {
+                        project.projectManagerIds.forEach((managerId, index) => {
+                            if (!managerMap.has(managerId)) {
+                                const managerName = (project.projectManagers && project.projectManagers[index]) || 'Unknown Manager';
+                                managerMap.set(managerId, managerName);
+                            }
+                        });
+                    }
+                });
+
+                // Sort managers by name
+                const sortedManagers = Array.from(managerMap.entries()).sort((a, b) => a[1].localeCompare(b[1]));
+
+                // Clear existing options
+                optionsContainer.innerHTML = '';
+
+                // Add checkboxes for each unique manager
+                sortedManagers.forEach(([managerId, managerName]) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'multi-select-option';
+                    optionDiv.onclick = (e) => e.stopPropagation();
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `manager-${managerId}`;
+                    checkbox.value = managerId;
+                    checkbox.onchange = updateProjectManagerFilter;
+
+                    const label = document.createElement('label');
+                    label.htmlFor = `manager-${managerId}`;
+                    label.textContent = managerName;
+
+                    optionDiv.appendChild(checkbox);
+                    optionDiv.appendChild(label);
+                    optionsContainer.appendChild(optionDiv);
+                });
+
+                console.log(`✅ Populated project manager filter with ${sortedManagers.length} unique managers`);
+
+            } catch (error) {
+                console.error('❌ Error populating project manager filter:', error);
+            }
+        }
+
         function openProjectModal() {
             console.log('🚪 openProjectModal() called');
             editingProjectIndex = -1;
@@ -7428,6 +8119,10 @@
             // Populate team members dropdown
             console.log('📞 Calling populateProjectTeamMembersDropdown()...');
             populateProjectTeamMembersDropdown();
+
+            // Populate project manager dropdown
+            console.log('📞 Calling populateProjectManagerDropdown()...');
+            populateProjectManagerDropdown();
 
             document.getElementById('projectModal').classList.add('active');
             console.log('✅ Project modal opened');
@@ -7451,6 +8146,7 @@
             document.getElementById('projectName').value = project.name;
             document.getElementById('projectDescription').value = project.description;
             document.getElementById('projectType').value = project.projectType || 'Project';
+            document.getElementById('projectHealth').value = project.projectHealth || 'none';
             document.getElementById('projectStatus').value = project.status;
             document.getElementById('projectPriority').value = project.priority;
             document.getElementById('projectSDLC').value = project.sdlc || 'Development';
@@ -7485,6 +8181,29 @@
                 }
             });
 
+            // Populate project manager dropdown and select the correct managers
+            populateProjectManagerDropdown().then(() => {
+                const projectManagerSelect = document.getElementById('projectManager');
+
+                // If project has projectManagerIds, use those. Otherwise try to match by name
+                if (project.projectManagerIds && project.projectManagerIds.length > 0) {
+                    // Select by IDs
+                    Array.from(projectManagerSelect.options).forEach(option => {
+                        if (project.projectManagerIds.includes(option.value)) {
+                            option.selected = true;
+                        }
+                    });
+                } else if (project.projectManagers && project.projectManagers.length > 0) {
+                    // Fallback: try to match by name for old data
+                    Array.from(projectManagerSelect.options).forEach(option => {
+                        const memberName = option.getAttribute('data-member-name');
+                        if (project.projectManagers.includes(memberName)) {
+                            option.selected = true;
+                        }
+                    });
+                }
+            });
+
             // Open modal
             document.getElementById('projectModal').classList.add('active');
         }
@@ -7513,6 +8232,385 @@
                     alert('❌ Error deleting project: ' + error.message);
                 }
             }
+        }
+
+        // ========================================
+        // PROJECT FILTER FUNCTIONS
+        // ========================================
+
+        function toggleProjectFilter() {
+            const filterPanel = document.getElementById('projectFilterPanel');
+            if (filterPanel.style.display === 'none' || filterPanel.style.display === '') {
+                filterPanel.style.display = 'block';
+            } else {
+                filterPanel.style.display = 'none';
+            }
+        }
+
+        function applyProjectFilters() {
+            const statusFilter = document.getElementById('projectFilterStatus').value;
+            const typeFilter = document.getElementById('projectFilterType').value;
+            const sdlcFilter = document.getElementById('projectFilterSDLC').value;
+            const priorityFilter = document.getElementById('projectFilterPriority').value;
+
+            // Get multiple selected managers from checkboxes
+            const managerCheckboxes = document.querySelectorAll('#projectManagerFilterOptions input[type="checkbox"]');
+            const selectedManagers = [];
+            managerCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedManagers.push(checkbox.value);
+                }
+            });
+
+            // Get multiple selected health statuses from checkboxes
+            const healthCheckboxes = document.querySelectorAll('#projectHealthFilterOptions input[type="checkbox"]');
+            const selectedHealth = [];
+            healthCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedHealth.push(checkbox.value);
+                }
+            });
+
+            let filteredProjects = projects;
+
+            // Apply status filter
+            if (statusFilter) {
+                filteredProjects = filteredProjects.filter(p => p.status === statusFilter);
+            }
+
+            // Apply project type filter
+            if (typeFilter) {
+                filteredProjects = filteredProjects.filter(p => p.projectType === typeFilter);
+            }
+
+            // Apply SDLC filter
+            if (sdlcFilter) {
+                filteredProjects = filteredProjects.filter(p => p.sdlc === sdlcFilter);
+            }
+
+            // Apply priority filter
+            if (priorityFilter) {
+                filteredProjects = filteredProjects.filter(p => p.priority === priorityFilter);
+            }
+
+            // Apply project manager filter (multiple selection)
+            if (selectedManagers.length > 0) {
+                filteredProjects = filteredProjects.filter(p =>
+                    p.projectManagerIds && p.projectManagerIds.some(managerId => selectedManagers.includes(managerId))
+                );
+            }
+
+            // Apply project health filter (multiple selection)
+            if (selectedHealth.length > 0) {
+                filteredProjects = filteredProjects.filter(p =>
+                    selectedHealth.includes(p.projectHealth || 'none')
+                );
+            }
+
+            // Render filtered projects
+            renderFilteredProjects(filteredProjects);
+        }
+
+        function renderFilteredProjects(filteredProjects) {
+            // Store the filtered projects so they persist when switching views
+            currentFilteredProjects = filteredProjects;
+
+            // Render in the current view with filtered projects
+            if (currentProjectView === 'table') {
+                renderProjectsTable(filteredProjects);
+            } else if (currentProjectView === 'timeline') {
+                renderGanttChart(filteredProjects);
+            } else {
+                renderProjectsGridView(filteredProjects);
+            }
+        }
+
+        function renderProjectsGridView(filteredProjects) {
+            const projectsGrid = document.getElementById('projectsGrid');
+            if (!projectsGrid) return;
+
+            if (filteredProjects.length === 0) {
+                projectsGrid.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: #676879; grid-column: 1 / -1;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
+                        <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">No projects match your filters</div>
+                        <div style="font-size: 14px;">Try adjusting your filter criteria</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Use the original index from projects array
+            projectsGrid.innerHTML = filteredProjects.map((project) => {
+                const index = projects.indexOf(project);
+                return `
+                <div class="project-card" onclick="if(event.target.closest('.project-action-btn') || event.target.closest('.project-status-badge')) return; editProject(${index})">
+                    <div class="project-card-header">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <div class="project-health-circle ${project.projectHealth || 'none'}" title="Health: ${project.projectHealth || 'None'}">
+                                    ${project.projectHealth && project.projectHealth !== 'none' ? project.projectHealth.charAt(0).toUpperCase() : '–'}
+                                </div>
+                                <div class="project-card-title">${project.name}</div>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
+                                <div class="project-status-popup-wrapper">
+                                    <span class="project-status-badge clickable ${project.status}"
+                                          onclick="toggleProjectStatusPopup(event, '${project.id}', ${index})"
+                                          title="Click to change status">
+                                        ${formatStatus(project.status)}
+                                    </span>
+                                    <div class="project-status-popup" id="project-status-popup-${project.id}">
+                                        <div class="project-status-popup-option planned" onclick="changeProjectStatus('${project.id}', ${index}, 'planned')">
+                                            Planned
+                                        </div>
+                                        <div class="project-status-popup-option in-progress" onclick="changeProjectStatus('${project.id}', ${index}, 'in-progress')">
+                                            In Progress
+                                        </div>
+                                        <div class="project-status-popup-option completed" onclick="changeProjectStatus('${project.id}', ${index}, 'completed')">
+                                            Completed
+                                        </div>
+                                        <div class="project-status-popup-option on-hold" onclick="changeProjectStatus('${project.id}', ${index}, 'on-hold')">
+                                            On Hold
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="project-status-popup-wrapper">
+                                    <span class="project-status-badge clickable"
+                                          style="background: #0073ea; color: white;"
+                                          onclick="toggleProjectSDLCPopup(event, '${project.id}', ${index})"
+                                          title="Click to change SDLC phase">
+                                        ${project.sdlc || 'No Phase'}
+                                    </span>
+                                    <div class="project-status-popup" id="project-sdlc-popup-${project.id}">
+                                        <div class="project-status-popup-option sdlc" onclick="changeProjectSDLC('${project.id}', ${index}, 'Requirement')">
+                                            Requirement
+                                        </div>
+                                        <div class="project-status-popup-option sdlc" onclick="changeProjectSDLC('${project.id}', ${index}, 'Design')">
+                                            Design
+                                        </div>
+                                        <div class="project-status-popup-option sdlc" onclick="changeProjectSDLC('${project.id}', ${index}, 'Development')">
+                                            Development
+                                        </div>
+                                        <div class="project-status-popup-option sdlc" onclick="changeProjectSDLC('${project.id}', ${index}, 'Smoke Test')">
+                                            Smoke Test
+                                        </div>
+                                        <div class="project-status-popup-option sdlc" onclick="changeProjectSDLC('${project.id}', ${index}, 'SIT')">
+                                            SIT
+                                        </div>
+                                        <div class="project-status-popup-option sdlc" onclick="changeProjectSDLC('${project.id}', ${index}, 'UAT')">
+                                            UAT
+                                        </div>
+                                        <div class="project-status-popup-option sdlc" onclick="changeProjectSDLC('${project.id}', ${index}, 'Implemented')">
+                                            Implemented
+                                        </div>
+                                    </div>
+                                </div>
+                                ${project.projectType ? `<span class="project-status-badge" style="background: #9b59b6; color: white;">${project.projectType}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="project-card-description">${project.description}</div>
+
+                    <div class="project-progress">
+                        <div class="project-progress-label">
+                            <span>Progress</span>
+                            <span>${project.progress}%</span>
+                        </div>
+                        <div class="project-progress-bar">
+                            <div class="project-progress-fill" style="width: ${project.progress}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="project-card-meta">
+                        <div class="project-meta-item">
+                            <span class="project-meta-icon">📅</span>
+                            <span>${formatDateForDisplay(project.startDate)} - ${formatDateForDisplay(project.endDate)}</span>
+                        </div>
+                        <div class="project-meta-item">
+                            <span class="project-meta-icon">💰</span>
+                            <span>฿${project.budget.toLocaleString()}</span>
+                        </div>
+                        <div class="project-meta-item">
+                            <span class="project-meta-icon">👥</span>
+                            <span>${project.teamMembers && project.teamMembers.length > 0 ? project.teamMembers.length + ' members' : 'No members'}</span>
+                        </div>
+                        <div class="project-meta-item">
+                            <span class="project-meta-icon">⚡</span>
+                            <span>${formatPriority(project.priority)}</span>
+                        </div>
+                    </div>
+
+                    ${project.projectManagers && project.projectManagers.length > 0 ? `
+                        <div class="project-team-members" style="margin-top: 12px; padding: 12px; background: #ffe6f0; border-radius: 8px;">
+                            <div style="font-size: 12px; font-weight: 700; color: #c2185b; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Project Managers</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                ${project.projectManagers.map(manager => `
+                                    <span style="background: white; padding: 4px 10px; border-radius: 6px; font-size: 13px; color: #c2185b; border: 1px solid #f48fb1; font-weight: 600;">${formatNameWithInitial(manager)}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${project.teamMembers && project.teamMembers.length > 0 ? `
+                        <div class="project-team-members" style="margin-top: 12px; padding: 12px; background: #f6f7fb; border-radius: 8px;">
+                            <div style="font-size: 12px; font-weight: 700; color: #676879; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Team Members</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                ${project.teamMembers.map(member => `
+                                    <span style="background: white; padding: 4px 10px; border-radius: 6px; font-size: 13px; color: #323338; border: 1px solid #e6e9ef;">${formatNameWithInitial(member)}</span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${project.tags && project.tags.length > 0 ? `
+                        <div class="project-tags">
+                            ${project.tags.map(tag => `<span class="project-tag">${tag}</span>`).join('')}
+                        </div>
+                    ` : ''}
+
+                    <div class="project-card-actions">
+                        <button class="project-action-btn" onclick="viewProjectTasks('${project.id}', '${project.name}')">
+                            📋 Tasks
+                        </button>
+                        <button class="project-action-btn" onclick="editProject(${index})">
+                            ✏️ Edit
+                        </button>
+                        <button class="project-action-btn delete" onclick="deleteProject(${index})">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        function clearProjectFilters() {
+            document.getElementById('projectFilterStatus').value = '';
+            document.getElementById('projectFilterType').value = '';
+            document.getElementById('projectFilterSDLC').value = '';
+            document.getElementById('projectFilterPriority').value = '';
+
+            // Clear all selected checkboxes in the manager filter
+            const managerCheckboxes = document.querySelectorAll('#projectManagerFilterOptions input[type="checkbox"]');
+            managerCheckboxes.forEach(checkbox => checkbox.checked = false);
+
+            // Clear all selected checkboxes in the health filter
+            const healthCheckboxes = document.querySelectorAll('#projectHealthFilterOptions input[type="checkbox"]');
+            healthCheckboxes.forEach(checkbox => checkbox.checked = false);
+
+            // Reset display text
+            document.getElementById('projectManagerFilterText').textContent = 'All Managers';
+            document.getElementById('projectHealthFilterText').textContent = 'All Health';
+
+            renderProjects();
+        }
+
+        function toggleProjectManagerDropdown() {
+            const display = document.getElementById('projectManagerFilterDisplay');
+            const options = document.getElementById('projectManagerFilterOptions');
+
+            display.classList.toggle('open');
+            options.classList.toggle('open');
+        }
+
+        // Close project manager dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('projectManagerFilterDropdown');
+            const display = document.getElementById('projectManagerFilterDisplay');
+            const options = document.getElementById('projectManagerFilterOptions');
+
+            if (dropdown && !dropdown.contains(event.target)) {
+                display.classList.remove('open');
+                options.classList.remove('open');
+            }
+        });
+
+        // Update project manager filter when checkboxes change
+        function updateProjectManagerFilter() {
+            const checkboxes = document.querySelectorAll('#projectManagerFilterOptions input[type="checkbox"]');
+            const selectedManagers = [];
+            let selectedCount = 0;
+
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedManagers.push(checkbox.value);
+                    selectedCount++;
+                }
+            });
+
+            // Update display text
+            const displayText = document.getElementById('projectManagerFilterText');
+            if (selectedCount === 0) {
+                displayText.textContent = 'All Managers';
+            } else if (selectedCount === 1) {
+                const checkedCheckbox = document.querySelector('#projectManagerFilterOptions input[type="checkbox"]:checked');
+                const label = checkedCheckbox.nextElementSibling;
+                displayText.textContent = label.textContent;
+            } else {
+                displayText.textContent = `${selectedCount} selected`;
+            }
+
+            // Apply filters
+            applyProjectFilters();
+        }
+
+        // Toggle project health filter dropdown
+        function toggleProjectHealthDropdown() {
+            const display = document.getElementById('projectHealthFilterDisplay');
+            const options = document.getElementById('projectHealthFilterOptions');
+
+            display.classList.toggle('open');
+            options.classList.toggle('open');
+        }
+
+        // Close project health filter dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('projectHealthFilterDropdown');
+            const display = document.getElementById('projectHealthFilterDisplay');
+            const options = document.getElementById('projectHealthFilterOptions');
+
+            if (dropdown && !dropdown.contains(event.target)) {
+                display.classList.remove('open');
+                options.classList.remove('open');
+            }
+        });
+
+        // Update project health filter when checkboxes change
+        function updateProjectHealthFilter() {
+            const checkboxes = document.querySelectorAll('#projectHealthFilterOptions input[type="checkbox"]');
+            const selectedHealth = [];
+            let selectedCount = 0;
+
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedHealth.push(checkbox.value);
+                    selectedCount++;
+                }
+            });
+
+            // Update display text
+            const displayText = document.getElementById('projectHealthFilterText');
+            if (selectedCount === 0) {
+                displayText.textContent = 'All Health';
+            } else if (selectedCount === 1) {
+                const healthNames = {
+                    'green': '🟢 Green',
+                    'amber': '🟡 Amber',
+                    'red': '🔴 Red',
+                    'none': '⚪ None'
+                };
+                const checkedCheckbox = document.querySelector('#projectHealthFilterOptions input[type="checkbox"]:checked');
+                displayText.textContent = healthNames[checkedCheckbox.value] || checkedCheckbox.value;
+            } else {
+                displayText.textContent = `${selectedCount} selected`;
+            }
+
+            // Apply filters
+            applyProjectFilters();
+        }
+
+        function exportProjects() {
+            alert('Export functionality coming soon!');
         }
 
         // Global variable to store current project filter
@@ -7750,7 +8848,7 @@
             status: [],  // Changed to array for multiple selections
             priority: '',
             assignedTo: '',
-            project: ''
+            projects: []  // Changed to array for multiple project selections
         };
 
         // ========================================
@@ -7822,6 +8920,95 @@
             }
         }
 
+        // Toggle project filter dropdown
+        function toggleProjectFilterDropdown() {
+            const display = document.getElementById('projectFilterDisplay');
+            const options = document.getElementById('projectFilterOptions');
+
+            display.classList.toggle('open');
+            options.classList.toggle('open');
+
+            // Calculate position if opening
+            if (options.classList.contains('open')) {
+                setTimeout(() => {
+                    const rect = display.getBoundingClientRect();
+                    options.style.position = 'fixed';
+                    options.style.top = (rect.bottom + 4) + 'px';
+                    options.style.left = rect.left + 'px';
+                    options.style.width = rect.width + 'px';
+                    options.style.right = 'auto';
+                }, 0);
+            } else {
+                options.style.position = 'absolute';
+                options.style.top = '100%';
+                options.style.left = '0';
+                options.style.right = '0';
+            }
+        }
+
+        // Reposition project filter dropdown on scroll
+        window.addEventListener('scroll', function() {
+            const options = document.getElementById('projectFilterOptions');
+            if (options && options.classList.contains('open')) {
+                const display = document.getElementById('projectFilterDisplay');
+                const rect = display.getBoundingClientRect();
+                options.style.top = (rect.bottom + 4) + 'px';
+                options.style.left = rect.left + 'px';
+            }
+        }, true);
+
+        // Close project filter dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('projectFilterDropdown');
+            const display = document.getElementById('projectFilterDisplay');
+            const options = document.getElementById('projectFilterOptions');
+
+            if (dropdown && !dropdown.contains(event.target) && options && !options.contains(event.target)) {
+                display.classList.remove('open');
+                options.classList.remove('open');
+            }
+        });
+
+        // Update project filter when checkboxes change
+        function updateProjectFilter() {
+            const checkboxes = document.querySelectorAll('#projectFilterOptions input[type="checkbox"]');
+            const selectedProjects = [];
+
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedProjects.push(checkbox.value);
+                }
+            });
+
+            // Update taskFilters object
+            taskFilters.projects = selectedProjects;
+
+            // Update display text
+            updateProjectFilterDisplay();
+
+            // Apply filters immediately
+            applyTaskFilters();
+        }
+
+        // Update the display text based on selected projects
+        function updateProjectFilterDisplay() {
+            const displayText = document.getElementById('projectFilterText');
+            const selectedProjects = taskFilters.projects;
+
+            if (selectedProjects.length === 0) {
+                displayText.textContent = 'All Projects';
+            } else if (selectedProjects.length === 1) {
+                // Show single project name
+                const checkbox = document.querySelector(`#project-${selectedProjects[0]}`);
+                if (checkbox) {
+                    const label = checkbox.nextElementSibling;
+                    displayText.textContent = label.textContent;
+                }
+            } else {
+                displayText.textContent = `${selectedProjects.length} projects selected`;
+            }
+        }
+
         // Toggle filter panel visibility
         function toggleFilterPanel() {
             const panel = document.getElementById('taskFilterPanel');
@@ -7865,8 +9052,8 @@
                 assignedToSelect.value = savedAssignedTo;
             }
 
-            // Populate Project dropdown
-            const projectSelect = document.getElementById('filterProject');
+            // Populate Project filter with checkboxes
+            const projectOptionsContainer = document.getElementById('projectFilterOptions');
             const uniqueProjects = [...new Set(tasks.map(t => t.projectId).filter(Boolean))];
 
             const projectOptions = await Promise.all(
@@ -7876,13 +9063,39 @@
                 })
             );
 
-            projectSelect.innerHTML = '<option value="">All Projects</option>' +
-                projectOptions.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+            // Sort projects by name
+            projectOptions.sort((a, b) => a.name.localeCompare(b.name));
 
-            // Restore saved value
-            if (savedProject) {
-                projectSelect.value = savedProject;
-            }
+            // Clear and rebuild with checkboxes
+            projectOptionsContainer.innerHTML = '';
+
+            projectOptions.forEach(project => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'multi-select-option';
+                optionDiv.onclick = (e) => e.stopPropagation();
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `project-${project.id}`;
+                checkbox.value = project.id;
+                checkbox.onchange = updateProjectFilter;
+
+                // Restore saved selections
+                if (taskFilters.projects && taskFilters.projects.includes(project.id)) {
+                    checkbox.checked = true;
+                }
+
+                const label = document.createElement('label');
+                label.htmlFor = `project-${project.id}`;
+                label.textContent = project.name;
+
+                optionDiv.appendChild(checkbox);
+                optionDiv.appendChild(label);
+                projectOptionsContainer.appendChild(optionDiv);
+            });
+
+            // Update display text based on saved selections
+            updateProjectFilterDisplay();
         }
 
         // Apply task filters
@@ -7890,13 +9103,21 @@
             // Get filter values (status is already in taskFilters.status as array)
             taskFilters.priority = document.getElementById('filterPriority').value;
             taskFilters.assignedTo = document.getElementById('filterAssignedTo').value;
-            taskFilters.project = document.getElementById('filterProject').value;
+
+            // Get multiple selected projects from checkboxes
+            const projectCheckboxes = document.querySelectorAll('#projectFilterOptions input[type="checkbox"]');
+            taskFilters.projects = [];
+            projectCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    taskFilters.projects.push(checkbox.value);
+                }
+            });
 
             // Check if any filter is active
             const hasActiveFilters = taskFilters.status.length > 0 ||
                                       taskFilters.priority !== '' ||
                                       taskFilters.assignedTo !== '' ||
-                                      taskFilters.project !== '';
+                                      taskFilters.projects.length > 0;
 
             // Filter tasks
             let filteredTasks = tasks;
@@ -7920,8 +9141,9 @@
                 });
             }
 
-            if (taskFilters.project) {
-                filteredTasks = filteredTasks.filter(t => t.projectId === taskFilters.project);
+            // Filter by multiple projects (OR logic)
+            if (taskFilters.projects.length > 0) {
+                filteredTasks = filteredTasks.filter(t => taskFilters.projects.includes(t.projectId));
             }
 
             // Render filtered tasks
@@ -8112,9 +9334,12 @@
                 const memberName = document.getElementById('filterAssignedTo').selectedOptions[0].text;
                 activeFilters.push({ type: 'assignedTo', label: 'Member', value: memberName });
             }
-            if (taskFilters.project) {
-                const projectName = document.getElementById('filterProject').selectedOptions[0].text;
-                activeFilters.push({ type: 'project', label: 'Project', value: projectName });
+            if (taskFilters.projects && taskFilters.projects.length > 0) {
+                const projectNames = taskFilters.projects.map(projectId => {
+                    const checkbox = document.querySelector(`#project-${projectId}`);
+                    return checkbox ? checkbox.nextElementSibling.textContent : 'Unknown';
+                }).join(', ');
+                activeFilters.push({ type: 'projects', label: 'Project', value: projectNames });
             }
 
             if (activeFilters.length > 0) {
@@ -8138,6 +9363,12 @@
                 checkboxes.forEach(checkbox => checkbox.checked = false);
                 taskFilters.status = [];
                 updateStatusFilterDisplay();
+            } else if (filterType === 'projects') {
+                // Uncheck all project checkboxes
+                const checkboxes = document.querySelectorAll('#projectFilterOptions input[type="checkbox"]');
+                checkboxes.forEach(checkbox => checkbox.checked = false);
+                taskFilters.projects = [];
+                updateProjectFilterDisplay();
             } else {
                 document.getElementById('filter' + filterType.charAt(0).toUpperCase() + filterType.slice(1)).value = '';
             }
@@ -8150,19 +9381,25 @@
             const statusCheckboxes = document.querySelectorAll('#statusFilterOptions input[type="checkbox"]');
             statusCheckboxes.forEach(checkbox => checkbox.checked = false);
 
+            // Clear project checkboxes
+            const projectCheckboxes = document.querySelectorAll('#projectFilterOptions input[type="checkbox"]');
+            projectCheckboxes.forEach(checkbox => checkbox.checked = false);
+
             document.getElementById('filterPriority').value = '';
             document.getElementById('filterAssignedTo').value = '';
-            document.getElementById('filterProject').value = '';
 
             taskFilters = {
                 status: [],  // Changed to empty array
                 priority: '',
                 assignedTo: '',
-                project: ''
+                projects: []  // Changed to empty array
             };
 
             // Update status filter display
             updateStatusFilterDisplay();
+
+            // Update project filter display
+            updateProjectFilterDisplay();
 
             // Clear project filter variable
             currentProjectFilter = null;
@@ -8191,6 +9428,13 @@
                 return;
             }
 
+            // Get selected project manager IDs and names
+            const projectManagerSelect = document.getElementById('projectManager');
+            const selectedManagerOptions = Array.from(projectManagerSelect.selectedOptions);
+
+            const projectManagerIds = selectedManagerOptions.map(opt => opt.value).filter(v => v);
+            const projectManagerNames = selectedManagerOptions.map(opt => opt.getAttribute('data-member-name')).filter(n => n);
+
             const tagsInput = document.getElementById('projectTags').value;
             const tagsArray = tagsInput ? tagsInput.split(',').map(s => s.trim()).filter(s => s) : [];
 
@@ -8198,6 +9442,7 @@
                 name: document.getElementById('projectName').value,
                 description: document.getElementById('projectDescription').value,
                 projectType: document.getElementById('projectType').value,
+                projectHealth: document.getElementById('projectHealth').value,
                 status: document.getElementById('projectStatus').value,
                 priority: document.getElementById('projectPriority').value,
                 sdlc: document.getElementById('projectSDLC').value,
@@ -8207,6 +9452,8 @@
                 budget: parseInt(document.getElementById('projectBudget').value) || 0,
                 teamMemberIds: teamMemberIds,  // Store IDs
                 teamMembers: teamMemberNames,   // Store names for backwards compatibility and display
+                projectManagerIds: projectManagerIds,  // Store manager IDs
+                projectManagers: projectManagerNames,  // Store manager names
                 tags: tagsArray
             };
 
@@ -8274,6 +9521,16 @@
                 renderProjects();
                 updateDashboardStats();
             }
+
+            // Initialize project view styling
+            setTimeout(() => {
+                const tableBtn = document.getElementById('tableViewBtn');
+                if (tableBtn && currentProjectView === 'grid') {
+                    tableBtn.style.background = 'white';
+                    tableBtn.style.border = '2px solid #667eea';
+                    tableBtn.style.color = '#667eea';
+                }
+            }, 100);
         });
     </script>
 
