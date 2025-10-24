@@ -7534,6 +7534,10 @@
                     }
                 });
 
+                // Set minDate to start of day (00:00:00) and maxDate to end of day (23:59:59)
+                minDate.setHours(0, 0, 0, 0);
+                maxDate.setHours(23, 59, 59, 999);
+
                 // Calculate total days and scale based on currentTimelineScale
                 const totalDays = Math.max((maxDate - minDate) / (1000 * 60 * 60 * 24), 1);
                 let pixelsPerUnit = 50;
@@ -7558,9 +7562,10 @@
                     headerFormat = 'month';
                     incrementFunction = 'Month';
                 } else if (currentTimelineScale === 'quarter') {
-                    // For quarter view: scale based on total quarters (3 months), minimum 55px per quarter
-                    const totalQuarters = Math.max(totalDays / 90, 1);
-                    pixelsPerUnit = Math.max(55, 1200 / totalQuarters);
+                    // For quarter view: scale based on total months (since quarter = 3 months)
+                    // pixelsPerUnit represents 1 month, and quarter uses 3 months
+                    const totalMonths = Math.max(totalDays / 30, 1);
+                    pixelsPerUnit = Math.max(60, 1200 / totalMonths) / 3; // Divide by 3 since quarter = 3 months
                     headerFormat = 'quarter';
                     incrementFunction = 'Quarter';
                 } else if (currentTimelineScale === '6month') {
@@ -7577,56 +7582,198 @@
                     incrementFunction = 'Year';
                 }
 
-                // Render timeline header with appropriate scale
+                // Render timeline header with Major and Minor scales
                 let ganttHTML = `
-                <div style="display: flex; margin-bottom: 20px;">
+                <div style="display: flex; margin-bottom: 0;">
                     <div style="flex: 0 0 250px; padding: 10px; font-weight: 600; border-bottom: 2px solid #e6e9ef;">Project Name</div>
-                    <div style="flex: 1; padding: 10px; border-bottom: 2px solid #e6e9ef;">
-                        <div style="display: flex; height: 40px;">
+                    <div style="flex: 1; padding: 0; border-bottom: 2px solid #e6e9ef;">
+                        <!-- Major Scale Header -->
+                        <div style="display: flex; height: 25px; margin-bottom: 0; border-bottom: 1px solid #e6e9ef;">
                 `;
 
-                // Add headers based on scale
+                // Add Major scale headers based on selected scale
+                // Calculate minor pixel widths first to derive major widths
+                let minorPixelWidth = 0;
+                let majorUnitMultiplier = 1;
                 let currentDate = new Date(minDate);
+
                 if (currentTimelineScale === 'day') {
+                    // Major: Day by day starting from minDate
+                    minorPixelWidth = pixelsPerUnit;
+                    currentDate = new Date(minDate);
                     while (currentDate <= maxDate) {
-                        const day = currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                        ganttHTML += `<div style="flex: 0 0 ${pixelsPerUnit}px; text-align: center; font-size: 11px; color: #676879; border-right: 1px solid #e6e9ef;">${day}</div>`;
+                        const day = currentDate.toLocaleDateString('en-US', { day: 'numeric' });
+                        ganttHTML += `<div style="flex: 0 0 ${minorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${day}</div>`;
                         currentDate.setDate(currentDate.getDate() + 1);
                     }
                 } else if (currentTimelineScale === 'week') {
+                    // Major: Week (7 days), Minor: Day - Start from minDate exactly
+                    minorPixelWidth = pixelsPerUnit / 7;
+
+                    currentDate = new Date(minDate);
                     while (currentDate <= maxDate) {
-                        const week = `W${Math.ceil((currentDate.getDate()) / 7)}`;
-                        ganttHTML += `<div style="flex: 0 0 ${pixelsPerUnit}px; text-align: center; font-size: 11px; color: #676879; border-right: 1px solid #e6e9ef;">${week}</div>`;
+                        const majorPixelWidth = minorPixelWidth * 7;
+                        // Format: start date-end date (e.g., 01/07-07/07)
+                        const weekStart = new Date(currentDate);
+                        const weekEnd = new Date(currentDate);
+                        weekEnd.setDate(weekEnd.getDate() + 6); // 7 days in a week (0-6)
+
+                        const startDay = String(weekStart.getDate()).padStart(2, '0');
+                        const startMonth = String(weekStart.getMonth() + 1).padStart(2, '0');
+                        const endDay = String(weekEnd.getDate()).padStart(2, '0');
+                        const endMonth = String(weekEnd.getMonth() + 1).padStart(2, '0');
+
+                        const weekLabel = `${startDay}/${startMonth}-${endDay}/${endMonth}`;
+
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${weekLabel}</div>`;
                         currentDate.setDate(currentDate.getDate() + 7);
                     }
                 } else if (currentTimelineScale === 'month') {
+                    // Major: Month, Minor: Day - Start from minDate exactly
+                    minorPixelWidth = pixelsPerUnit / 30;
+
+                    currentDate = new Date(minDate);
                     while (currentDate <= maxDate) {
+                        // Calculate actual number of days in this month
+                        const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+                        const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+                        const daysInMonth = monthEnd.getDate();
+
+                        // Width based on actual days in month
+                        const majorPixelWidth = minorPixelWidth * daysInMonth;
+
                         const month = currentDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-                        ganttHTML += `<div style="flex: 0 0 ${pixelsPerUnit}px; text-align: center; font-size: 12px; color: #676879; border-right: 1px solid #e6e9ef;">${month}</div>`;
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${month}</div>`;
                         currentDate.setMonth(currentDate.getMonth() + 1);
+                        currentDate.setDate(1);
                     }
                 } else if (currentTimelineScale === 'quarter') {
+                    // Major: Quarter (3 months), Minor: Month - Show only quarters containing data
+                    minorPixelWidth = pixelsPerUnit / 30; // Each month = 30 days
+
+                    currentDate = new Date(minDate);
                     while (currentDate <= maxDate) {
-                        const quarter = Math.ceil((currentDate.getMonth() + 1) / 3);
                         const year = currentDate.getFullYear();
-                        const quarterLabel = `Q${quarter} '${year.toString().slice(-2)}`;
-                        ganttHTML += `<div style="flex: 0 0 ${pixelsPerUnit}px; text-align: center; font-size: 11px; color: #676879; border-right: 1px solid #e6e9ef;">${quarterLabel}</div>`;
-                        currentDate.setMonth(currentDate.getMonth() + 3);
+                        const currentMonth = currentDate.getMonth();
+                        const quarterNum = Math.floor(currentMonth / 3) + 1;
+                        const quarterStartMonth = (quarterNum - 1) * 3; // 0, 3, 6, 9
+
+                        // Calculate days in quarter (sum of days in 3 months of this quarter)
+                        let daysInQuarter = 0;
+                        for (let i = 0; i < 3; i++) {
+                            const monthStart = new Date(year, quarterStartMonth + i, 1);
+                            const monthEnd = new Date(year, quarterStartMonth + i + 1, 0);
+                            daysInQuarter += monthEnd.getDate();
+                        }
+
+                        const majorPixelWidth = minorPixelWidth * daysInQuarter;
+                        const quarterLabel = `Q${quarterNum} '${year.toString().slice(-2)}`;
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${quarterLabel}</div>`;
+                        currentDate = new Date(year, quarterStartMonth + 3, 1);
                     }
                 } else if (currentTimelineScale === '6month') {
+                    // Major: 6-Month periods - Fits with 6th and 12th month
+                    minorPixelWidth = pixelsPerUnit / 30; // Each month = 30 days
+
+                    currentDate = new Date(minDate);
                     while (currentDate <= maxDate) {
-                        const month = currentDate.getMonth() + 1;
-                        const half = month <= 6 ? 'H1' : 'H2';
-                        const year = currentDate.getFullYear().toString().slice(-2);
-                        const halfLabel = `${half} '${year}`;
-                        ganttHTML += `<div style="flex: 0 0 ${pixelsPerUnit}px; text-align: center; font-size: 11px; color: #676879; border-right: 1px solid #e6e9ef;">${halfLabel}</div>`;
+                        const halfYear = Math.floor(currentDate.getMonth() / 6) + 1;
+                        const year = currentDate.getFullYear();
+
+                        // Calculate days in 6-month period (sum of days in 6 months)
+                        let daysIn6Month = 0;
+                        for (let i = 0; i < 6; i++) {
+                            const monthStart = new Date(year, currentDate.getMonth() + i, 1);
+                            const monthEnd = new Date(year, currentDate.getMonth() + i + 1, 0);
+                            daysIn6Month += monthEnd.getDate();
+                        }
+
+                        const majorPixelWidth = minorPixelWidth * daysIn6Month;
+                        const halfYearLabel = `H${halfYear} '${year.toString().slice(-2)}`;
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${halfYearLabel}</div>`;
                         currentDate.setMonth(currentDate.getMonth() + 6);
                     }
                 } else if (currentTimelineScale === 'year') {
+                    // Major: Year, Minor: Month - Year fits with December
+                    minorPixelWidth = pixelsPerUnit / 30; // Each month = 30 days
+
+                    currentDate = new Date(minDate);
                     while (currentDate <= maxDate) {
                         const year = currentDate.getFullYear();
-                        ganttHTML += `<div style="flex: 0 0 ${pixelsPerUnit}px; text-align: center; font-size: 12px; color: #676879; border-right: 1px solid #e6e9ef;">${year}</div>`;
+
+                        // Calculate days in full year (sum of days in 12 months)
+                        let daysInYear = 0;
+                        for (let i = 0; i < 12; i++) {
+                            const monthStart = new Date(year, i, 1);
+                            const monthEnd = new Date(year, i + 1, 0);
+                            daysInYear += monthEnd.getDate();
+                        }
+
+                        const majorPixelWidth = minorPixelWidth * daysInYear;
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${year}</div>`;
                         currentDate.setFullYear(currentDate.getFullYear() + 1);
+                    }
+                }
+
+                ganttHTML += `</div>
+                        <!-- Minor Scale Header -->
+                        <div style="display: flex; height: 25px;">
+                `;
+
+                // Add Minor scale headers - Start from minDate exactly
+                currentDate = new Date(minDate);
+                if (currentTimelineScale === 'day') {
+                    // Minor scale not shown for day view (same as major)
+                } else if (currentTimelineScale === 'week') {
+                    // Minor: Day (7 days per week) - Start from minDate
+                    const minorPixels = pixelsPerUnit / 7;
+                    while (currentDate <= maxDate) {
+                        const day = currentDate.toLocaleDateString('en-US', { day: 'numeric' });
+                        ganttHTML += `<div style="flex: 0 0 ${minorPixels}px; text-align: center; font-size: 10px; color: #676879; border-right: 1px solid #e6e9ef;">${day}</div>`;
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                } else if (currentTimelineScale === 'month') {
+                    // Minor: Day (showing dates) - Start from minDate
+                    const minorPixels = pixelsPerUnit / 30;
+                    currentDate = new Date(minDate);
+                    while (currentDate <= maxDate) {
+                        const day = String(currentDate.getDate()).padStart(2, '0');
+                        ganttHTML += `<div style="flex: 0 0 ${minorPixels}px; text-align: center; font-size: 10px; color: #676879; border-right: 1px solid #e6e9ef;">${day}</div>`;
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                } else if (currentTimelineScale === 'quarter') {
+                    // Minor: Month (3 months per quarter) - Show only months in quarters containing data
+                    const minorPixels = pixelsPerUnit / 30;
+
+                    currentDate = new Date(minDate);
+                    while (currentDate <= maxDate) {
+                        const month = currentDate.toLocaleDateString('en-US', { month: 'short' });
+                        // Calculate days in this month
+                        const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+                        const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+                        const daysInMonth = monthEnd.getDate();
+                        const monthPixelWidth = minorPixels * daysInMonth;
+
+                        ganttHTML += `<div style="flex: 0 0 ${monthPixelWidth}px; text-align: center; font-size: 10px; color: #676879; border-right: 1px solid #e6e9ef;">${month}</div>`;
+                        currentDate.setMonth(currentDate.getMonth() + 1);
+                    }
+                } else if (currentTimelineScale === '6month') {
+                    // Minor: Month (6 months) - Start from minDate
+                    const minorPixels = pixelsPerUnit / 6;
+                    currentDate = new Date(minDate);
+                    while (currentDate <= maxDate) {
+                        const month = currentDate.toLocaleDateString('en-US', { month: 'short' });
+                        ganttHTML += `<div style="flex: 0 0 ${minorPixels}px; text-align: center; font-size: 10px; color: #676879; border-right: 1px solid #e6e9ef;">${month}</div>`;
+                        currentDate.setMonth(currentDate.getMonth() + 1);
+                    }
+                } else if (currentTimelineScale === 'year') {
+                    // Minor: Month (12 months per year) - Start from minDate
+                    const minorPixels = pixelsPerUnit / 12;
+                    currentDate = new Date(minDate);
+                    while (currentDate <= maxDate) {
+                        const month = currentDate.toLocaleDateString('en-US', { month: 'short' });
+                        ganttHTML += `<div style="flex: 0 0 ${minorPixels}px; text-align: center; font-size: 10px; color: #676879; border-right: 1px solid #e6e9ef;">${month}</div>`;
+                        currentDate.setMonth(currentDate.getMonth() + 1);
                     }
                 }
 
@@ -7636,6 +7783,10 @@
                 projectsToDisplay.forEach(project => {
                     const startDate = project.startDate ? parseDate(project.startDate) : minDate;
                     const endDate = project.endDate ? parseDate(project.endDate) : maxDate;
+
+                    // Set start date to start of day and end date to end of day
+                    startDate.setHours(0, 0, 0, 0);
+                    endDate.setHours(23, 59, 59, 999);
 
                     const offsetDays = (startDate - minDate) / (1000 * 60 * 60 * 24);
                     const durationDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
@@ -7674,7 +7825,7 @@
                             <div style="flex: 0 0 250px; padding: 10px; font-weight: 500; color: #323338; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${project.name}">
                                 ${project.name}
                             </div>
-                            <div style="flex: 1; padding: 10px; position: relative; height: 30px;">
+                            <div style="flex: 1; padding: 0; position: relative; height: 30px;">
                                 <div style="position: absolute; left: ${offsetPixels}px; width: ${barWidth}px; height: 28px; background: ${barColor}; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600; cursor: pointer;" title="${project.name} - ${project.startDate} to ${project.endDate} (${project.progress || 0}%)">
                                     ${project.progress || 0}%
                                 </div>
@@ -7683,7 +7834,56 @@
                     `;
                 });
 
+                // Calculate today's position and add today indicator line
+                const today = new Date();
+                const todayDays = (today - minDate) / (1000 * 60 * 60 * 24);
+                let todayPixels = 0;
+
+                if (currentTimelineScale === 'day') {
+                    todayPixels = todayDays * pixelsPerUnit;
+                } else if (currentTimelineScale === 'week') {
+                    todayPixels = (todayDays / 7) * pixelsPerUnit;
+                } else if (currentTimelineScale === 'month') {
+                    todayPixels = (todayDays / 30) * pixelsPerUnit;
+                } else if (currentTimelineScale === 'quarter') {
+                    todayPixels = (todayDays / 90) * pixelsPerUnit;
+                } else if (currentTimelineScale === '6month') {
+                    todayPixels = (todayDays / 180) * pixelsPerUnit;
+                } else if (currentTimelineScale === 'year') {
+                    todayPixels = (todayDays / 365) * pixelsPerUnit;
+                }
+
                 ganttContainer.innerHTML = ganttHTML;
+
+                // Add today indicator line after content is rendered
+                if (todayPixels >= 0) {
+                    const todayLine = document.createElement('div');
+                    const projectNameWidth = 250;
+                    const lineLeft = projectNameWidth + todayPixels;
+
+                    // Calculate the height of the timeline body
+                    // Height = (row height + 30px) × number of rows
+                    const rowHeight = 45;
+                    const totalBodyHeight = (rowHeight + 30) * projectsToDisplay.length;
+                    const lineStartOffset = 90 - 10 - 5; // -15px from original position
+
+                    todayLine.style.cssText = `
+                        position: absolute;
+                        left: ${lineLeft}px;
+                        top: ${lineStartOffset}px;
+                        width: 1px;
+                        height: ${totalBodyHeight}px;
+                        border-left: 1px dashed #e44258;
+                        background: none;
+                        z-index: 10;
+                        pointer-events: none;
+                    `;
+
+                    // Make the container position relative so the line positions correctly
+                    ganttContainer.style.position = 'relative';
+                    ganttContainer.style.overflow = 'visible';
+                    ganttContainer.appendChild(todayLine);
+                }
             } catch (error) {
                 console.error('Error rendering Gantt chart:', error);
                 const ganttContainer = document.getElementById('ganttChart');
