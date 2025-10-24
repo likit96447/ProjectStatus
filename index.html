@@ -2676,6 +2676,8 @@
                                     <button class="timeline-scale-btn" id="scaleDay" onclick="setTimelineScale('day')">Day</button>
                                     <button class="timeline-scale-btn" id="scaleWeek" onclick="setTimelineScale('week')">Week</button>
                                     <button class="timeline-scale-btn active" id="scaleMonth" onclick="setTimelineScale('month')">Month</button>
+                                    <button class="timeline-scale-btn" id="scaleQuarter" onclick="setTimelineScale('quarter')">Quarter</button>
+                                    <button class="timeline-scale-btn" id="scale6Month" onclick="setTimelineScale('6month')">6 Month</button>
                                     <button class="timeline-scale-btn" id="scaleYear" onclick="setTimelineScale('year')">Year</button>
                                 </div>
                             </div>
@@ -7555,6 +7557,18 @@
                     pixelsPerUnit = Math.max(60, 1200 / totalMonths);
                     headerFormat = 'month';
                     incrementFunction = 'Month';
+                } else if (currentTimelineScale === 'quarter') {
+                    // For quarter view: scale based on total quarters (3 months), minimum 55px per quarter
+                    const totalQuarters = Math.max(totalDays / 90, 1);
+                    pixelsPerUnit = Math.max(55, 1200 / totalQuarters);
+                    headerFormat = 'quarter';
+                    incrementFunction = 'Quarter';
+                } else if (currentTimelineScale === '6month') {
+                    // For 6-month view: scale based on 6-month periods, minimum 65px per 6-month
+                    const total6Months = Math.max(totalDays / 180, 1);
+                    pixelsPerUnit = Math.max(65, 1200 / total6Months);
+                    headerFormat = '6month';
+                    incrementFunction = '6Month';
                 } else if (currentTimelineScale === 'year') {
                     // For year view: scale based on total years, minimum 70px per year
                     const totalYears = Math.max(totalDays / 365, 1);
@@ -7591,6 +7605,23 @@
                         ganttHTML += `<div style="flex: 0 0 ${pixelsPerUnit}px; text-align: center; font-size: 12px; color: #676879; border-right: 1px solid #e6e9ef;">${month}</div>`;
                         currentDate.setMonth(currentDate.getMonth() + 1);
                     }
+                } else if (currentTimelineScale === 'quarter') {
+                    while (currentDate <= maxDate) {
+                        const quarter = Math.ceil((currentDate.getMonth() + 1) / 3);
+                        const year = currentDate.getFullYear();
+                        const quarterLabel = `Q${quarter} '${year.toString().slice(-2)}`;
+                        ganttHTML += `<div style="flex: 0 0 ${pixelsPerUnit}px; text-align: center; font-size: 11px; color: #676879; border-right: 1px solid #e6e9ef;">${quarterLabel}</div>`;
+                        currentDate.setMonth(currentDate.getMonth() + 3);
+                    }
+                } else if (currentTimelineScale === '6month') {
+                    while (currentDate <= maxDate) {
+                        const month = currentDate.getMonth() + 1;
+                        const half = month <= 6 ? 'H1' : 'H2';
+                        const year = currentDate.getFullYear().toString().slice(-2);
+                        const halfLabel = `${half} '${year}`;
+                        ganttHTML += `<div style="flex: 0 0 ${pixelsPerUnit}px; text-align: center; font-size: 11px; color: #676879; border-right: 1px solid #e6e9ef;">${halfLabel}</div>`;
+                        currentDate.setMonth(currentDate.getMonth() + 6);
+                    }
                 } else if (currentTimelineScale === 'year') {
                     while (currentDate <= maxDate) {
                         const year = currentDate.getFullYear();
@@ -7622,6 +7653,12 @@
                     } else if (currentTimelineScale === 'month') {
                         offsetPixels = (offsetDays / 30) * pixelsPerUnit;
                         barWidth = Math.max((durationDays / 30) * pixelsPerUnit, 20);
+                    } else if (currentTimelineScale === 'quarter') {
+                        offsetPixels = (offsetDays / 90) * pixelsPerUnit;
+                        barWidth = Math.max((durationDays / 90) * pixelsPerUnit, 20);
+                    } else if (currentTimelineScale === '6month') {
+                        offsetPixels = (offsetDays / 180) * pixelsPerUnit;
+                        barWidth = Math.max((durationDays / 180) * pixelsPerUnit, 20);
                     } else if (currentTimelineScale === 'year') {
                         offsetPixels = (offsetDays / 365) * pixelsPerUnit;
                         barWidth = Math.max((durationDays / 365) * pixelsPerUnit, 20);
@@ -7656,22 +7693,34 @@
             }
         }
 
-        // Parse date string in yyyy-mm-dd format (from project collection)
+        // Parse date string - supports yyyy-mm-dd, yyyy/mm/dd, and dd/mm/yyyy formats
         function parseDate(dateString) {
             if (!dateString) return new Date();
 
-            // Check if format is yyyy-mm-dd or dd/mm/yyyy
+            let year, month, day;
+
             if (dateString.includes('-')) {
                 // yyyy-mm-dd format
-                const [year, month, day] = dateString.split('-');
-                return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                [year, month, day] = dateString.split('-');
             } else if (dateString.includes('/')) {
-                // dd/mm/yyyy format (legacy)
-                const [day, month, year] = dateString.split('/');
-                return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                // Could be yyyy/mm/dd or dd/mm/yyyy
+                const parts = dateString.split('/');
+                const firstPart = parseInt(parts[0]);
+
+                // If first part > 31, it's yyyy/mm/dd format
+                if (firstPart > 31) {
+                    [year, month, day] = parts;
+                } else {
+                    // It's dd/mm/yyyy format
+                    [day, month, year] = parts;
+                }
             }
 
-            return new Date();
+            if (!year || !month || !day) {
+                return new Date();
+            }
+
+            return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
         }
 
         // Set timeline scale and re-render chart
@@ -7688,6 +7737,12 @@
             const activeBtn = document.getElementById('scale' + scale.charAt(0).toUpperCase() + scale.slice(1));
             if (activeBtn) {
                 activeBtn.classList.add('active');
+            }
+
+            // Clear the old gantt chart completely
+            const ganttContainer = document.getElementById('ganttChart');
+            if (ganttContainer) {
+                ganttContainer.innerHTML = '';
             }
 
             // Re-render the gantt chart with new scale, respecting active filters
