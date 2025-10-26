@@ -5571,10 +5571,39 @@
             // At Risk/Delayed: Projects that are in progress with due date passed
             const delayed = filteredProjects.filter(p => {
                 if (p.status === 'In Progress') {
+                    // Case 1: Overdue - today is past the due date
                     if (p.dueDate) {
-                        return new Date() > new Date(p.dueDate);
+                        if (new Date() > new Date(p.dueDate)) {
+                            return true;  // Overdue
+                        }
+
+                        // Case 3: Progress behind schedule - if today's expected progress > actual progress by 10%+
+                        if (p.startDate) {
+                            const startDate = new Date(p.startDate);
+                            const dueDate = new Date(p.dueDate);
+                            const today = new Date();
+
+                            // Calculate total project duration in days
+                            const totalDays = Math.floor((dueDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+                            // Calculate days elapsed since start
+                            const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+                            // Expected progress: (days elapsed / total days) * 100
+                            const expectedProgress = Math.min((daysElapsed / totalDays) * 100, 100);
+
+                            // Actual progress
+                            const actualProgress = p.progress || 0;
+
+                            // At risk if expected progress exceeds actual progress by more than 10%
+                            if (expectedProgress > actualProgress + 10) {
+                                return true;  // Behind schedule
+                            }
+                        }
+                        return false;
                     }
-                    // If no dueDate, consider at risk if progress < 50% and more than 30 days old
+
+                    // Case 2: No dueDate - consider at risk if progress < 50% and more than 30 days old
                     if (p.startDate && (p.progress || 0) < 50) {
                         const startDate = new Date(p.startDate);
                         const daysSinceStart = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
@@ -6028,6 +6057,35 @@
             // Overdue projects
             filteredProjects.filter(p => normalizeStatus(p.status) === 'In Progress' && p.dueDate && new Date() > new Date(p.dueDate)).forEach(p => {
                 alerts.push({ type: '⏰', title: `Overdue: ${p.name}`, color: '#ffb800' });
+            });
+
+            // Behind schedule projects (expected progress > actual progress by 10%+)
+            filteredProjects.filter(p => {
+                if (normalizeStatus(p.status) === 'In Progress' && p.startDate && p.dueDate) {
+                    const startDate = new Date(p.startDate);
+                    const dueDate = new Date(p.dueDate);
+                    const today = new Date();
+
+                    // Only check if not already overdue (avoid duplicate alerts)
+                    if (today <= dueDate) {
+                        const totalDays = Math.floor((dueDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                        const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                        const expectedProgress = Math.min((daysElapsed / totalDays) * 100, 100);
+                        const actualProgress = p.progress || 0;
+
+                        return expectedProgress > actualProgress + 10;
+                    }
+                }
+                return false;
+            }).forEach(p => {
+                const startDate = new Date(p.startDate);
+                const dueDate = new Date(p.dueDate);
+                const totalDays = Math.floor((dueDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                const today = new Date();
+                const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                const expectedProgress = Math.min((daysElapsed / totalDays) * 100, 100).toFixed(0);
+                const actualProgress = (p.progress || 0).toFixed(0);
+                alerts.push({ type: '📉', title: `Behind Schedule: ${p.name} (Expected: ${expectedProgress}%, Actual: ${actualProgress}%)`, color: '#ff7043' });
             });
 
             // Low progress projects
