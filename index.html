@@ -2580,6 +2580,14 @@
                             <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">At Risk</div>
                             <div style="font-size: 32px; font-weight: bold;" id="metricsAtRisk">0</div>
                             <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;" id="metricsAtRiskPercent">0%</div>
+                            <div style="font-size: 10px; opacity: 0.85; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.3);">
+                                <div style="margin-bottom: 4px;">
+                                    <span id="metricsAtRiskOverdue">⏰ Overdue: 0</span>
+                                </div>
+                                <div>
+                                    <span id="metricsAtRiskBehind">📉 Behind: 0</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -5569,11 +5577,15 @@
             }).length;
 
             // At Risk/Delayed: Projects that are in progress with due date passed
+            let overduCount = 0;
+            let behindScheduleCount = 0;
+
             const delayed = filteredProjects.filter(p => {
                 if (p.status === 'In Progress') {
                     // Case 1: Overdue - today is past the due date
                     if (p.dueDate) {
                         if (new Date() > new Date(p.dueDate)) {
+                            overduCount++;
                             return true;  // Overdue
                         }
 
@@ -5597,6 +5609,7 @@
 
                             // At risk if expected progress exceeds actual progress by more than 10%
                             if (expectedProgress > actualProgress + 10) {
+                                behindScheduleCount++;
                                 return true;  // Behind schedule
                             }
                         }
@@ -5634,6 +5647,8 @@
             document.getElementById('metricsAvgDuration').textContent = Math.round(avgDuration);
             document.getElementById('metricsAtRisk').textContent = delayed;
             document.getElementById('metricsAtRiskPercent').textContent = atRiskPercent + '%';
+            document.getElementById('metricsAtRiskOverdue').textContent = `⏰ Overdue: ${overduCount}`;
+            document.getElementById('metricsAtRiskBehind').textContent = `📉 Behind: ${behindScheduleCount}`;
         }
 
         // Render Project Status Chart
