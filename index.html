@@ -9454,6 +9454,9 @@
                     return pixelPos;
                 }
 
+                // Store task references for dependencies and interactions
+                const taskBars = {};
+
                 projectsToDisplay.forEach(project => {
                     const startDate = project.startDate ? parseDate(project.startDate) : minDate;
                     const endDate = project.endDate ? parseDate(project.endDate) : maxDate;
@@ -9473,18 +9476,74 @@
                     if (project.projectHealth === 'amber') barColor = '#ffb800';
                     if (project.projectHealth === 'red') barColor = '#ff5555';
 
+                    // Check if this is a milestone (0 day duration or marked as milestone)
+                    const isMilestone = barWidth <= 20 && project.isMilestone;
+
+                    // Build tooltip with full project details
+                    const tooltipText = `
+                        Project: ${project.name}
+                        Status: ${normalizeStatus(project.status)}
+                        Progress: ${project.progress || 0}%
+                        Start: ${project.startDate}
+                        End: ${project.endDate}
+                        Priority: ${normalizePriority(project.priority)}
+                        Health: ${project.projectHealth || 'None'}
+                        Manager: ${project.projectManagers?.join(', ') || 'Unassigned'}
+                    `.trim();
+
+                    // Create bar element with drag-drop support
+                    const barId = `bar-${project.id || project.name.replace(/\s+/g, '-')}`;
+                    const barClass = isMilestone ? 'gantt-milestone' : 'gantt-bar';
+
+                    // Render milestone as diamond or bar as rectangle
+                    let barHTML = '';
+                    if (isMilestone) {
+                        // Milestone diamond
+                        barHTML = `<div style="position: absolute; left: ${offsetPixels - 8}px; width: 16px; height: 16px; background: #ffb800; transform: rotate(45deg); cursor: pointer; border-radius: 2px;"
+                                       class="${barClass}"
+                                       id="${barId}"
+                                       data-project-id="${project.id}"
+                                       title="${tooltipText}"></div>`;
+                    } else {
+                        // Regular task bar with progress indicator
+                        const progressWidth = Math.max((barWidth * (project.progress || 0)) / 100, 2);
+                        barHTML = `<div style="position: absolute; left: ${offsetPixels}px; width: ${barWidth}px; height: 28px; background: ${barColor}; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600; cursor: grab; border: 2px solid transparent; transition: all 0.2s ease;"
+                                       class="${barClass}"
+                                       id="${barId}"
+                                       data-project-id="${project.id}"
+                                       data-start-date="${project.startDate}"
+                                       data-end-date="${project.endDate}"
+                                       data-offset="${offsetPixels}"
+                                       data-width="${barWidth}"
+                                       title="${tooltipText}"
+                                       onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.borderColor='#323338';"
+                                       onmouseout="this.style.boxShadow='none'; this.style.borderColor='transparent';">
+                                    ${project.progress || 0}%
+                                    <div style="position: absolute; left: 2px; top: 0; height: 100%; width: ${progressWidth - 4}px; background: rgba(0,0,0,0.2); border-radius: 2px;"></div>
+                                </div>`;
+                    }
+
                     ganttHTML += `
-                        <div style="display: flex; align-items: center; margin-bottom: 15px; padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
+                        <div style="display: flex; align-items: center; margin-bottom: 15px; padding: 10px 0; border-bottom: 1px solid #f0f0f0;" class="gantt-row" data-project-id="${project.id}">
                             <div style="flex: 0 0 250px; padding: 10px; font-weight: 500; color: #323338; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${project.name}">
                                 ${project.name}
                             </div>
                             <div style="min-width: ${totalTimelineWidth}px; padding: 0; position: relative; height: 30px;">
-                                <div style="position: absolute; left: ${offsetPixels}px; width: ${barWidth}px; height: 28px; background: ${barColor}; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600; cursor: pointer;" title="${project.name} - ${project.startDate} to ${project.endDate} (${project.progress || 0}%)">
-                                    ${project.progress || 0}%
-                                </div>
+                                ${barHTML}
                             </div>
                         </div>
                     `;
+
+                    // Store bar reference for later manipulation
+                    taskBars[barId] = {
+                        projectId: project.id,
+                        element: null, // Will be set after DOM creation
+                        offsetPixels,
+                        barWidth,
+                        startDate,
+                        endDate,
+                        isMilestone
+                    };
                 });
 
                 // Calculate today's position and add today indicator line using accurate positioning
@@ -9492,6 +9551,73 @@
                 let todayPixels = calculatePixelPosition(today, today, minDate, pixelsPerUnit, currentTimelineScale);
 
                 ganttContainer.innerHTML = ganttHTML;
+
+                // Attach event listeners to bars for drag-and-drop
+                const bars = ganttContainer.querySelectorAll('.gantt-bar');
+                bars.forEach(bar => {
+                    const barId = bar.id;
+                    const barData = taskBars[barId];
+                    if (!barData) return;
+
+                    let isDragging = false;
+                    let startX = 0;
+                    let startLeft = 0;
+
+                    // Drag start
+                    bar.addEventListener('mousedown', (e) => {
+                        if (e.button !== 0) return; // Only left click
+                        isDragging = true;
+                        startX = e.clientX;
+                        startLeft = parseInt(bar.style.left) || barData.offsetPixels;
+                        bar.style.cursor = 'grabbing';
+                        e.preventDefault();
+                    });
+
+                    // Drag move
+                    document.addEventListener('mousemove', (e) => {
+                        if (!isDragging) return;
+
+                        const deltaX = e.clientX - startX;
+                        const newLeft = Math.max(0, startLeft + deltaX);
+                        bar.style.left = newLeft + 'px';
+                    });
+
+                    // Drag end
+                    document.addEventListener('mouseup', () => {
+                        if (!isDragging) return;
+                        isDragging = false;
+                        bar.style.cursor = 'grab';
+
+                        // Convert pixel position back to date
+                        const newOffset = parseInt(bar.style.left);
+                        const daysDiff = (newOffset / (pixelsPerUnit / 30)); // Approximate
+
+                        // TODO: Reschedule project in database
+                        // For now, just provide visual feedback
+                    });
+                });
+
+                // Add tooltip styling
+                const style = document.createElement('style');
+                style.textContent = `
+                    .gantt-bar, .gantt-milestone {
+                        transition: all 0.2s ease;
+                    }
+                    .gantt-bar:hover {
+                        filter: brightness(1.1);
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+                    }
+                    .gantt-milestone:hover {
+                        filter: brightness(1.1);
+                    }
+                    .gantt-row {
+                        transition: background-color 0.2s ease;
+                    }
+                    .gantt-row:hover {
+                        background-color: #f9f9f9;
+                    }
+                `;
+                document.head.appendChild(style);
 
                 // Add today indicator line after content is rendered
                 if (todayPixels >= 0) {
@@ -9509,18 +9635,39 @@
                         position: absolute;
                         left: ${lineLeft}px;
                         top: ${lineStartOffset}px;
-                        width: 1px;
+                        width: 2px;
                         height: ${totalBodyHeight}px;
-                        border-left: 1px dashed #e44258;
-                        background: none;
+                        background: #e44258;
+                        border-left: none;
                         z-index: 10;
                         pointer-events: none;
+                        opacity: 0.8;
                     `;
+
+                    // Add "Today" label
+                    const todayLabel = document.createElement('div');
+                    todayLabel.style.cssText = `
+                        position: absolute;
+                        left: ${lineLeft}px;
+                        top: -20px;
+                        transform: translateX(-50%);
+                        background: #e44258;
+                        color: white;
+                        padding: 2px 8px;
+                        border-radius: 3px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        white-space: nowrap;
+                        z-index: 11;
+                        pointer-events: none;
+                    `;
+                    todayLabel.textContent = 'Today';
 
                     // Make the container position relative so the line positions correctly
                     ganttContainer.style.position = 'relative';
                     ganttContainer.style.overflow = 'visible';
                     ganttContainer.appendChild(todayLine);
+                    ganttContainer.appendChild(todayLabel);
                 }
             } catch (error) {
                 console.error('Error rendering Gantt chart:', error);
