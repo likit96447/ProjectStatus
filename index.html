@@ -9258,22 +9258,24 @@
                     // Major: Day by day starting from minDate
                     minorPixelWidth = pixelsPerUnit;
                     currentDate = new Date(minDate);
-                    while (currentDate <= maxDate) {
+                    while (currentDate < maxDate) {  // Changed to < to include final day
                         const day = currentDate.toLocaleDateString('en-US', { day: 'numeric' });
                         ganttHTML += `<div style="flex: 0 0 ${minorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${day}</div>`;
                         currentDate.setDate(currentDate.getDate() + 1);
                     }
+                    // Add final day
+                    const day = currentDate.toLocaleDateString('en-US', { day: 'numeric' });
+                    ganttHTML += `<div style="flex: 0 0 ${minorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${day}</div>`;
                 } else if (currentTimelineScale === 'week') {
                     // Major: Week (7 days), Minor: Day - Start from minDate exactly
                     minorPixelWidth = pixelsPerUnit / 7;
 
                     currentDate = new Date(minDate);
-                    while (currentDate <= maxDate) {
+                    while (currentDate < maxDate) {  // Changed to < to continue until we pass maxDate
                         const majorPixelWidth = minorPixelWidth * 7;
-                        // Format: start date-end date (e.g., 01/07-07/07)
                         const weekStart = new Date(currentDate);
                         const weekEnd = new Date(currentDate);
-                        weekEnd.setDate(weekEnd.getDate() + 6); // 7 days in a week (0-6)
+                        weekEnd.setDate(weekEnd.getDate() + 6);
 
                         const startDay = String(weekStart.getDate()).padStart(2, '0');
                         const startMonth = String(weekStart.getMonth() + 1).padStart(2, '0');
@@ -9285,49 +9287,81 @@
                         ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${weekLabel}</div>`;
                         currentDate.setDate(currentDate.getDate() + 7);
                     }
+                    // Add final week if needed
+                    if (currentDate >= maxDate && currentDate > minDate) {
+                        const majorPixelWidth = minorPixelWidth * 7;
+                        const weekStart = currentDate;
+                        weekStart.setDate(weekStart.getDate() - 7);
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekEnd.getDate() + 6);
+
+                        const startDay = String(weekStart.getDate()).padStart(2, '0');
+                        const startMonth = String(weekStart.getMonth() + 1).padStart(2, '0');
+                        const endDay = String(weekEnd.getDate()).padStart(2, '0');
+                        const endMonth = String(weekEnd.getMonth() + 1).padStart(2, '0');
+
+                        const weekLabel = `${startDay}/${startMonth}-${endDay}/${endMonth}`;
+
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${weekLabel}</div>`;
+                    }
                 } else if (currentTimelineScale === 'month') {
                     // Major: Month, Minor: Day - Start from minDate exactly
                     // Use fixed 30 days per month for consistent alignment
                     minorPixelWidth = pixelsPerUnit / 30;
 
                     currentDate = new Date(minDate);
-                    while (currentDate <= maxDate) {
-                        // Use fixed 30 days per month for consistent spacing
+                    while (currentDate < maxDate) {  // Changed to < to continue until we pass maxDate
                         const majorPixelWidth = minorPixelWidth * 30;
-
                         const month = currentDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
                         ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${month}</div>`;
                         currentDate.setMonth(currentDate.getMonth() + 1);
                     }
+                    // Add final month
+                    const majorPixelWidth = minorPixelWidth * 30;
+                    const month = currentDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                    ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${month}</div>`;
                 } else if (currentTimelineScale === '6month') {
                     // Major: 6-Month periods - Use fixed 30 days per month (180 days per 6-month)
                     minorPixelWidth = pixelsPerUnit / 30; // Each month = 30 days
 
                     currentDate = new Date(minDate);
-                    while (currentDate <= maxDate) {
+                    while (currentDate < maxDate) {  // Changed to < to continue until we pass maxDate
                         const halfYear = Math.floor(currentDate.getMonth() / 6) + 1;
                         const year = currentDate.getFullYear();
 
-                        // Use fixed 30 days per month for consistency
-                        const daysIn6Month = 6 * 30;  // Fixed 180 days per 6-month period
+                        const daysIn6Month = 6 * 30;
                         const majorPixelWidth = minorPixelWidth * daysIn6Month;
                         const halfYearLabel = `H${halfYear} '${year.toString().slice(-2)}`;
                         ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${halfYearLabel}</div>`;
                         currentDate.setMonth(currentDate.getMonth() + 6);
+                    }
+                    // Add final 6-month period if needed
+                    if (currentDate >= maxDate && currentDate > minDate) {
+                        const halfYear = Math.floor(currentDate.getMonth() / 6) + 1;
+                        const year = currentDate.getFullYear();
+                        const daysIn6Month = 6 * 30;
+                        const majorPixelWidth = minorPixelWidth * daysIn6Month;
+                        const halfYearLabel = `H${halfYear} '${year.toString().slice(-2)}`;
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${halfYearLabel}</div>`;
                     }
                 } else if (currentTimelineScale === 'year') {
                     // Major: Year, Minor: Month - Use fixed 30 days per month (360 days per year)
                     minorPixelWidth = pixelsPerUnit / 30; // Each month = 30 days
 
                     currentDate = new Date(minDate);
-                    while (currentDate <= maxDate) {
+                    while (currentDate < maxDate) {  // Changed to < to continue until we pass maxDate
                         const year = currentDate.getFullYear();
-
-                        // Use fixed 30 days per month for consistency
-                        const daysInYear = 12 * 30;  // Fixed 360 days per year
+                        const daysInYear = 12 * 30;
                         const majorPixelWidth = minorPixelWidth * daysInYear;
                         ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${year}</div>`;
                         currentDate.setFullYear(currentDate.getFullYear() + 1);
+                    }
+                    // Add final year if needed
+                    if (currentDate >= maxDate && currentDate > minDate) {
+                        const year = currentDate.getFullYear();
+                        const daysInYear = 12 * 30;
+                        const majorPixelWidth = minorPixelWidth * daysInYear;
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${year}</div>`;
                     }
                 }
 
