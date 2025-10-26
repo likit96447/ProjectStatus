@@ -2474,6 +2474,34 @@
                         <p class="board-subtitle">Track your team's progress and performance</p>
                     </div>
 
+                    <div class="dashboard-grid">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalItems">8</div>
+                            <div class="stat-label">Total Items</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="workingItems">4</div>
+                            <div class="stat-label">In Progress</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="doneItems">2</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="stuckItems">1</div>
+                            <div class="stat-label">Needs Attention</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <h3 class="chart-title">Project Progress</h3>
+                        <div id="projectProgressList">
+                            <!-- Projects will be rendered here dynamically -->
+                            <div style="text-align: center; padding: 20px; color: #999;">
+                                Loading projects...
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Charts Row Container -->
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px;">
@@ -2530,192 +2558,6 @@
                     <button id="clearChartFiltersBtn" onclick="clearChartFilters()" style="display: none; padding: 8px 16px; background: #e44258; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 24px;">
                         Clear Chart Filters
                     </button>
-
-                    <!-- Key Metrics Cards Row -->
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">Total Projects</div>
-                            <div style="font-size: 32px; font-weight: bold;" id="metricsTotal">0</div>
-                            <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;">Active: <span id="metricsActive">0</span></div>
-                        </div>
-                        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">On-Time</div>
-                            <div style="font-size: 32px; font-weight: bold;" id="metricsOnTime">0</div>
-                            <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;" id="metricsOnTimePercent">0%</div>
-                        </div>
-                        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">Avg Duration</div>
-                            <div style="font-size: 32px; font-weight: bold;" id="metricsAvgDuration">0</div>
-                            <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;">days</div>
-                        </div>
-                        <div onclick="showAtRiskDetails()" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';">
-                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">At Risk (Click for details)</div>
-                            <div style="font-size: 32px; font-weight: bold;" id="metricsAtRisk">0</div>
-                            <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;" id="metricsAtRiskPercent">0%</div>
-                            <div style="font-size: 10px; opacity: 0.85; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.3);">
-                                <div style="margin-bottom: 3px;">
-                                    <span id="metricsAtRiskOverdue">⏰ Overdue: 0</span>
-                                </div>
-                                <div style="margin-bottom: 3px;">
-                                    <span id="metricsAtRiskBehind">📉 Behind: 0</span>
-                                </div>
-                                <div style="margin-bottom: 3px;">
-                                    <span id="metricsAtRiskNoProgress">🚫 No Progress: 0</span>
-                                </div>
-                                <div>
-                                    <span id="metricsAtRiskSlow">⚠️ Slow: 0</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Additional Charts Row 1 -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-                        <!-- Project Status Distribution -->
-                        <div class="chart-container">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <h3 class="chart-title" style="margin: 0;">Projects by Status</h3>
-                                <span id="statusChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
-                                    Filtered: <span id="statusChartFilterValue"></span>
-                                </span>
-                            </div>
-                            <div id="projectStatusChartContainer" style="position: relative; height: 300px; padding: 10px;">
-                                <canvas id="projectStatusChartCanvas" style="max-height: 300px;"></canvas>
-                                <div id="projectStatusChart" style="text-align: center; padding: 20px; color: #999; display: none;">
-                                    Loading project status data...
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Project Priority Distribution -->
-                        <div class="chart-container">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <h3 class="chart-title" style="margin: 0;">Projects by Priority</h3>
-                                <span id="priorityChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
-                                    Filtered: <span id="priorityChartFilterValue"></span>
-                                </span>
-                            </div>
-                            <div id="projectPriorityChartContainer" style="position: relative; height: 300px; padding: 10px;">
-                                <canvas id="projectPriorityChartCanvas" style="max-height: 300px;"></canvas>
-                                <div id="projectPriorityChart" style="text-align: center; padding: 20px; color: #999; display: none;">
-                                    Loading project priority data...
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- SDLC Phase Progress -->
-                        <div class="chart-container">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <h3 class="chart-title" style="margin: 0;">SDLC Phase Progress</h3>
-                                <span id="sdlcChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
-                                    Filtered: <span id="sdlcChartFilterValue"></span>
-                                </span>
-                            </div>
-                            <div id="projectSDLCChartContainer" style="position: relative; height: 300px; padding: 10px;">
-                                <canvas id="projectSDLCChartCanvas" style="max-height: 300px;"></canvas>
-                                <div id="projectSDLCChart" style="text-align: center; padding: 20px; color: #999; display: none;">
-                                    Loading SDLC phase data...
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Additional Charts Row 2 -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-                        <!-- Project Progress Distribution -->
-                        <div class="chart-container">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <h3 class="chart-title" style="margin: 0;">Progress Distribution</h3>
-                            </div>
-                            <div id="projectProgressDistChartContainer" style="position: relative; height: 300px; padding: 10px;">
-                                <canvas id="projectProgressDistChartCanvas" style="max-height: 300px;"></canvas>
-                                <div id="projectProgressDistChart" style="text-align: center; padding: 20px; color: #999; display: none;">
-                                    Loading progress distribution data...
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Timeline Analytics -->
-                        <div class="chart-container">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <h3 class="chart-title" style="margin: 0;">Timeline Analytics</h3>
-                            </div>
-                            <div id="projectTimelineChartContainer" style="position: relative; height: 300px; padding: 10px;">
-                                <canvas id="projectTimelineChartCanvas" style="max-height: 300px;"></canvas>
-                                <div id="projectTimelineChart" style="text-align: center; padding: 20px; color: #999; display: none;">
-                                    Loading timeline data...
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Project Completion Forecast -->
-                        <div class="chart-container">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <h3 class="chart-title" style="margin: 0;">Completion Forecast</h3>
-                            </div>
-                            <div id="projectForecastChartContainer" style="position: relative; height: 300px; padding: 10px;">
-                                <canvas id="projectForecastChartCanvas" style="max-height: 300px;"></canvas>
-                                <div id="projectForecastChart" style="text-align: center; padding: 20px; color: #999; display: none;">
-                                    Loading forecast data...
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bottleneck Alerts Panel -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-                        <!-- Bottleneck Alerts -->
-                        <div class="chart-container">
-                            <h3 class="chart-title">⚠️ Bottleneck Alerts</h3>
-                            <ul id="bottleneckAlertsList" style="list-style: none; padding: 0;">
-                                <li style="text-align: center; padding: 20px; color: #999;">
-                                    Loading alerts...
-                                </li>
-                            </ul>
-                        </div>
-
-                        <!-- Team Workload by Manager -->
-                        <div class="chart-container">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <h3 class="chart-title" style="margin: 0;">Team Workload</h3>
-                            </div>
-                            <div id="projectWorkloadChartContainer" style="position: relative; height: 300px; padding: 10px;">
-                                <canvas id="projectWorkloadChartCanvas" style="max-height: 300px;"></canvas>
-                                <div id="projectWorkloadChart" style="text-align: center; padding: 20px; color: #999; display: none;">
-                                    Loading workload data...
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!--<div class="dashboard-grid">
-                        <div class="stat-card">
-                            <div class="stat-value" id="totalItems">8</div>
-                            <div class="stat-label">Total Items</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="workingItems">4</div>
-                            <div class="stat-label">In Progress</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="doneItems">2</div>
-                            <div class="stat-label">Completed</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="stuckItems">1</div>
-                            <div class="stat-label">Needs Attention</div>
-                        </div>
-                    </div>-->
-
-                    <div class="chart-container">
-                        <h3 class="chart-title">Project Progress</h3>
-                        <div id="projectProgressList">
-                            <!-- Projects will be rendered here dynamically -->
-                            <div style="text-align: center; padding: 20px; color: #999;">
-                                Loading projects...
-                            </div>
-                        </div>
-                    </div>
 
                     <div class="chart-container">
                         <h3 class="chart-title">Recent Activity</h3>
@@ -3226,19 +3068,6 @@
                     </div>
                 </div>
             </main>
-
-            <!-- At Risk Details Modal -->
-            <div id="atRiskModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
-                <div style="background: white; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
-                    <div style="padding: 24px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: white;">
-                        <h2 style="margin: 0; color: #323338;">At Risk Projects</h2>
-                        <button onclick="closeAtRiskModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">×</button>
-                    </div>
-                    <div id="atRiskDetailsContent" style="padding: 24px;">
-                        Loading...
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Initialize Data Button -->
@@ -4914,35 +4743,20 @@
             const doneTasks = tasksToCount.filter(t => t.status === 'done').length;
             const stuckTasks = tasksToCount.filter(t => t.status === 'stuck').length;
 
-            // document.getElementById('totalItems').textContent = totalTasks;
-            // document.getElementById('workingItems').textContent = workingTasks;
-            // document.getElementById('doneItems').textContent = doneTasks;
-            // document.getElementById('stuckItems').textContent = stuckTasks;
+            document.getElementById('totalItems').textContent = totalTasks;
+            document.getElementById('workingItems').textContent = workingTasks;
+            document.getElementById('doneItems').textContent = doneTasks;
+            document.getElementById('stuckItems').textContent = stuckTasks;
 
             console.log(`✅ Task stats: ${totalTasks} total, ${workingTasks} in progress, ${doneTasks} done, ${stuckTasks} stuck`);
 
             // Update project progress
             renderProjectProgress();
 
-            // Update key metrics
-            renderKeyMetrics();
-
             // Update project type, health, and manager charts
             renderProjectTypeChart();
             renderProjectHealthChart();
             renderProjectManagerChart();
-
-            // Update additional dashboard charts
-            renderProjectStatusChart();
-            renderProjectPriorityChart();
-            renderProjectSDLCChart();
-            renderProjectProgressDistChart();
-            renderProjectTimelineChart();
-            renderProjectForecastChart();
-            renderProjectWorkloadChart();
-
-            // Update alerts
-            renderBottleneckAlerts();
 
             // Setup click-outside detection for charts
             setupChartClickOutside();
@@ -5474,861 +5288,26 @@
             const typeChartContainer = document.getElementById('projectTypeChartContainer');
             const healthChartContainer = document.getElementById('projectHealthChartContainer');
             const managerChartContainer = document.getElementById('projectManagerChartContainer');
-            const statusChartContainer = document.getElementById('projectStatusChartContainer');
-            const priorityChartContainer = document.getElementById('projectPriorityChartContainer');
-            const sdlcChartContainer = document.getElementById('projectSDLCChartContainer');
 
             if (typeChartContainer && healthChartContainer && managerChartContainer) {
                 document.addEventListener('click', function(event) {
                     const isClickInsideTypeChart = typeChartContainer.contains(event.target);
                     const isClickInsideHealthChart = healthChartContainer.contains(event.target);
                     const isClickInsideManagerChart = managerChartContainer.contains(event.target);
-                    const isClickInsideStatusChart = statusChartContainer && statusChartContainer.contains(event.target);
-                    const isClickInsidePriorityChart = priorityChartContainer && priorityChartContainer.contains(event.target);
-                    const isClickInsideSDLCChart = sdlcChartContainer && sdlcChartContainer.contains(event.target);
                     const isClickInsideDashboard = event.target.closest('.dashboard-content') !== null;
 
                     // If clicked outside all charts but inside dashboard, clear filters
-                    if (!isClickInsideTypeChart && !isClickInsideHealthChart && !isClickInsideManagerChart &&
-                        !isClickInsideStatusChart && !isClickInsidePriorityChart && !isClickInsideSDLCChart && isClickInsideDashboard) {
+                    if (!isClickInsideTypeChart && !isClickInsideHealthChart && !isClickInsideManagerChart && isClickInsideDashboard) {
                         // Only clear if filters are currently active
-                        if (chartTypeFilter || chartHealthFilter || chartManagerFilter || chartStatusFilter || chartPriorityFilter || chartSDLCFilter) {
+                        if (chartTypeFilter || chartHealthFilter || chartManagerFilter) {
                             chartTypeFilter = null;
                             chartHealthFilter = null;
                             chartManagerFilter = null;
-                            chartStatusFilter = null;
-                            chartPriorityFilter = null;
-                            chartSDLCFilter = null;
                             applyChartFilters();
                         }
                     }
                 });
             }
-        }
-
-        // Chart instances for new dashboards
-        let projectStatusChartInstance = null;
-        let projectPriorityChartInstance = null;
-        let projectSDLCChartInstance = null;
-        let projectProgressDistChartInstance = null;
-        let projectTimelineChartInstance = null;
-        let projectForecastChartInstance = null;
-        let projectWorkloadChartInstance = null;
-
-        // Helper function to normalize status values from Firebase format
-        function normalizeStatus(status) {
-            if (!status) return 'Planned';
-            const lowerStatus = status.toLowerCase();
-            if (lowerStatus === 'in-progress' || lowerStatus === 'inprogress') return 'In Progress';
-            if (lowerStatus === 'completed') return 'Completed';
-            if (lowerStatus === 'on-hold' || lowerStatus === 'onhold') return 'On Hold';
-            if (lowerStatus === 'planned') return 'Planned';
-            // Return title-cased version for unknown statuses
-            return status.charAt(0).toUpperCase() + status.slice(1);
-        }
-
-        // Helper function to get SDLC phase (checks both p.sdlc and p.sdlcPhase)
-        function getSDLCPhase(project) {
-            return project.sdlc || project.sdlcPhase || 'Development';
-        }
-
-        // Helper function to normalize priority values from Firebase format
-        function normalizePriority(priority) {
-            if (!priority) return 'Medium';
-            const lowerPriority = priority.toLowerCase();
-            if (lowerPriority === 'high') return 'High';
-            if (lowerPriority === 'medium') return 'Medium';
-            if (lowerPriority === 'low') return 'Low';
-            // Return title-cased version for unknown priorities
-            return priority.charAt(0).toUpperCase() + priority.slice(1);
-        }
-
-        // Helper function to parse date strings reliably (handles both YYYY-MM-DD and YYYY/MM/DD formats)
-        function parseDate(dateStr) {
-            if (!dateStr) return null;
-            // Handle both '2025-10-25' and '2025/10/25' formats
-            const normalizedStr = dateStr.replace(/\//g, '-');
-            const parts = normalizedStr.split('-');
-            if (parts.length === 3) {
-                const [year, month, day] = parts.map(p => parseInt(p, 10));
-                // Create date at midnight to avoid timezone issues
-                return new Date(year, month - 1, day, 0, 0, 0, 0);
-            }
-            return new Date(dateStr);
-        }
-
-        // Helper function to get today's date at midnight (for consistent date comparisons)
-        function getTodayMidnight() {
-            const today = new Date();
-            return new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
-        }
-
-        // Store at-risk project details for modal
-        let atRiskDetails = {
-            overdue: [],
-            behindSchedule: [],
-            noProgress: [],
-            slow: []
-        };
-
-        // Show At Risk Details Modal
-        function showAtRiskDetails() {
-            const modal = document.getElementById('atRiskModal');
-            const content = document.getElementById('atRiskDetailsContent');
-
-            // Build the display content
-            let html = '';
-
-            // Overdue section
-            if (atRiskDetails.overdue.length > 0) {
-                html += `
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="color: #d32f2f; margin: 0 0 12px 0; font-size: 16px;">
-                            ⏰ Overdue (${atRiskDetails.overdue.length})
-                        </h3>
-                        <div style="background: #ffebee; border-left: 4px solid #d32f2f; padding: 12px; border-radius: 4px;">
-                            ${atRiskDetails.overdue.map(p => `
-                                <div style="margin-bottom: 8px; color: #323338;">
-                                    • <strong>${p.name}</strong> (${p.daysOverdue} days overdue)
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            // Behind Schedule section
-            if (atRiskDetails.behindSchedule.length > 0) {
-                html += `
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="color: #ff7043; margin: 0 0 12px 0; font-size: 16px;">
-                            📉 Behind Schedule (${atRiskDetails.behindSchedule.length})
-                        </h3>
-                        <div style="background: #ffe0b2; border-left: 4px solid #ff7043; padding: 12px; border-radius: 4px;">
-                            ${atRiskDetails.behindSchedule.map(p => `
-                                <div style="margin-bottom: 8px; color: #323338;">
-                                    • <strong>${p.name}</strong> (Expected: ${p.expectedProgress}%, Actual: ${p.actualProgress}%)
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            // No Progress section
-            if (atRiskDetails.noProgress.length > 0) {
-                html += `
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="color: #d32f2f; margin: 0 0 12px 0; font-size: 16px;">
-                            🚫 No Progress (${atRiskDetails.noProgress.length})
-                        </h3>
-                        <div style="background: #ffcdd2; border-left: 4px solid #d32f2f; padding: 12px; border-radius: 4px;">
-                            ${atRiskDetails.noProgress.map(p => `
-                                <div style="margin-bottom: 8px; color: #323338;">
-                                    • <strong>${p.name}</strong> (${p.daysElapsed} days, 0% progress)
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            // Slow Progress section (for context)
-            if (atRiskDetails.slow.length > 0) {
-                html += `
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="color: #667eea; margin: 0 0 12px 0; font-size: 16px;">
-                            ⚠️ Slow Progress (${atRiskDetails.slow.length})
-                        </h3>
-                        <div style="background: #e8eaf6; border-left: 4px solid #667eea; padding: 12px; border-radius: 4px;">
-                            ${atRiskDetails.slow.map(p => `
-                                <div style="margin-bottom: 8px; color: #323338;">
-                                    • <strong>${p.name}</strong> (${p.actualProgress}% progress)
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            if (html === '') {
-                html = '<div style="text-align: center; color: #999; padding: 20px;">✅ No at-risk projects</div>';
-            }
-
-            content.innerHTML = html;
-            modal.style.display = 'flex';
-        }
-
-        // Close At Risk Modal
-        function closeAtRiskModal() {
-            const modal = document.getElementById('atRiskModal');
-            modal.style.display = 'none';
-        }
-
-        // Close modal when clicking outside
-        document.addEventListener('click', function(event) {
-            const modal = document.getElementById('atRiskModal');
-            if (modal && event.target === modal) {
-                closeAtRiskModal();
-            }
-        });
-
-        // Render Key Metrics
-        function renderKeyMetrics() {
-            // Get filtered projects
-            let filteredProjects = [...projects];
-            if (chartTypeFilter) {
-                filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
-            }
-            if (chartHealthFilter) {
-                filteredProjects = filteredProjects.filter(p => {
-                    const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
-                    return projectHealth === chartHealthFilter;
-                });
-            }
-            if (chartManagerFilter) {
-                filteredProjects = filteredProjects.filter(p =>
-                    p.projectManagers && p.projectManagers.includes(chartManagerFilter)
-                );
-            }
-            if (chartStatusFilter) {
-                filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            }
-            if (chartPriorityFilter) {
-                filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
-            }
-            if (chartSDLCFilter) {
-                filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
-            }
-
-            const total = filteredProjects.length;
-            const active = filteredProjects.filter(p => {
-                const status = normalizeStatus(p.status);
-                return ['In Progress', 'Planned'].includes(status);
-            }).length;
-            const completed = filteredProjects.filter(p => {
-                const status = normalizeStatus(p.status);
-                return status === 'Completed';
-            }).length;
-
-            // On-Time: Completed projects with 100% progress, OR In-Progress projects that are on schedule
-            const onTime = filteredProjects.filter(p => {
-                const status = normalizeStatus(p.status);
-
-                // Completed projects: count as on-time if 100% progress
-                if (status === 'Completed') {
-                    return (p.progress || 0) === 100;
-                }
-
-                // In-Progress projects: count as on-time if not behind schedule
-                if (status === 'In Progress' && p.startDate && p.endDate) {
-                    const startDate = parseDate(p.startDate);
-                    const endDate = parseDate(p.endDate);
-                    const today = getTodayMidnight();
-
-                    // If not yet past end date, check if on track
-                    if (today <= endDate) {
-                        const totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-                        const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
-
-                        if (daysElapsed > 0) {
-                            const expectedProgress = Math.min((daysElapsed / totalDays) * 100, 100);
-                            const actualProgress = p.progress || 0;
-
-                            // On-time if actual progress >= expected progress (within 10% tolerance)
-                            return actualProgress >= expectedProgress - 10;
-                        }
-                    }
-                }
-
-                return false;
-            }).length;
-
-            // At Risk/Delayed: Projects that are in progress with due date passed
-            let overduCount = 0;
-            let behindScheduleCount = 0;
-            let slowProgressCount = 0;
-            atRiskDetails = { overdue: [], behindSchedule: [], noProgress: [], slow: [] };
-
-            const delayed = filteredProjects.filter(p => {
-                const normalizedStatus = normalizeStatus(p.status);
-                if (normalizedStatus === 'In Progress') {
-                    // Case 1: Overdue - today is past the end date
-                    if (p.endDate) {
-                        const endDate = parseDate(p.endDate);
-                        const today = getTodayMidnight();
-
-                        if (today > endDate) {
-                            overduCount++;
-                            const daysOverdue = Math.floor((today - endDate) / (1000 * 60 * 60 * 24));
-                            atRiskDetails.overdue.push({ name: p.name, daysOverdue });
-                            return true;  // Overdue
-                        }
-
-                        // Case 3 & 4: Progress behind schedule
-                        if (p.startDate) {
-                            const startDate = parseDate(p.startDate);
-                            const totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-                            const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
-
-                            // Only check if project has started
-                            if (daysElapsed > 0) {
-                                // Expected progress: (days elapsed / total days) * 100
-                                const expectedProgress = Math.min((daysElapsed / totalDays) * 100, 100);
-                                const actualProgress = p.progress || 0;
-
-                                // Case 3: At risk if expected progress exceeds actual progress by more than 10%
-                                if (expectedProgress > actualProgress + 10) {
-                                    behindScheduleCount++;
-                                    atRiskDetails.behindSchedule.push({
-                                        name: p.name,
-                                        expectedProgress: Math.round(expectedProgress),
-                                        actualProgress: Math.round(actualProgress)
-                                    });
-                                    return true;  // Behind schedule
-                                }
-
-                                // Case 4: No progress yet but days have passed (0% after days started)
-                                if (actualProgress === 0 && daysElapsed >= 5) {
-                                    behindScheduleCount++;
-                                    atRiskDetails.noProgress.push({ name: p.name, daysElapsed });
-                                    return true;  // No progress made
-                                }
-                            }
-                        }
-                        return false;
-                    }
-
-                    // Case 2: No endDate - consider at risk if progress < 50% and more than 30 days old
-                    if (p.startDate && (p.progress || 0) < 50) {
-                        const startDate = parseDate(p.startDate);
-                        const today = getTodayMidnight();
-                        const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-                        if (daysSinceStart > 30) {
-                            slowProgressCount++;
-                            atRiskDetails.slow.push({ name: p.name, actualProgress: p.progress || 0 });
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }).length;
-
-            const avgDuration = filteredProjects.reduce((sum, p) => {
-                if (p.startDate && p.endDate) {
-                    const start = parseDate(p.startDate);
-                    const end = parseDate(p.endDate);
-                    return sum + Math.floor((end - start) / (1000 * 60 * 60 * 24));
-                }
-                return sum;
-            }, 0) / Math.max(filteredProjects.filter(p => p.startDate && p.endDate).length, 1);
-
-            // On-Time Percentage: (On-Time / Total Projects) * 100
-            const onTimePercent = total > 0 ? ((onTime / total) * 100).toFixed(0) : 0;
-            // At Risk Percentage: (Delayed / Total Active)
-            const atRiskPercent = active > 0 ? ((delayed / active) * 100).toFixed(0) : 0;
-
-            document.getElementById('metricsTotal').textContent = total;
-            document.getElementById('metricsActive').textContent = active;
-            document.getElementById('metricsOnTime').textContent = onTime;
-            document.getElementById('metricsOnTimePercent').textContent = onTimePercent + '%';
-            document.getElementById('metricsAvgDuration').textContent = Math.round(avgDuration);
-            document.getElementById('metricsAtRisk').textContent = delayed;
-            document.getElementById('metricsAtRiskPercent').textContent = atRiskPercent + '%';
-            document.getElementById('metricsAtRiskOverdue').textContent = `⏰ Overdue: ${overduCount}`;
-            document.getElementById('metricsAtRiskBehind').textContent = `📉 Behind: ${behindScheduleCount}`;
-            document.getElementById('metricsAtRiskNoProgress').textContent = `🚫 No Progress: ${atRiskDetails.noProgress.length}`;
-            document.getElementById('metricsAtRiskSlow').textContent = `⚠️ Slow: ${slowProgressCount}`;
-        }
-
-        // Render Project Status Chart
-        function renderProjectStatusChart() {
-            const canvas = document.getElementById('projectStatusChartCanvas');
-            if (!canvas) return;
-
-            let filteredProjects = [...projects];
-            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
-            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
-                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
-                return projectHealth === chartHealthFilter;
-            });
-            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
-                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
-            );
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
-
-            const statusGroups = { 'Planned': 0, 'In Progress': 0, 'Completed': 0, 'On Hold': 0 };
-            filteredProjects.forEach(p => {
-                const status = normalizeStatus(p.status);
-                if (statusGroups.hasOwnProperty(status)) statusGroups[status]++;
-                else statusGroups['Planned']++;
-            });
-
-            const labels = Object.keys(statusGroups).filter(s => statusGroups[s] > 0);
-            const data = labels.map(s => statusGroups[s]);
-            const colors = ['#0073ea', '#667eea', '#00c875', '#ffb800'];
-
-            if (projectStatusChartInstance) projectStatusChartInstance.destroy();
-            projectStatusChartInstance = new Chart(canvas.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{ data: data, backgroundColor: colors.slice(0, labels.length).map((color, idx) => {
-                        if (chartStatusFilter && labels[idx] !== chartStatusFilter) return color + '40';
-                        return color;
-                    }), borderColor: '#fff', borderWidth: 3, hoverBorderWidth: 5 }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    onClick: function(event, activeElements) {
-                        if (activeElements.length > 0) {
-                            const clickedIndex = activeElements[0].index;
-                            const selectedStatus = labels[clickedIndex];
-                            if (chartStatusFilter === selectedStatus) {
-                                chartStatusFilter = null;
-                            } else {
-                                chartStatusFilter = selectedStatus;
-                            }
-                            applyChartFilters();
-                        }
-                    },
-                    plugins: {
-                        legend: { position: 'bottom', labels: { font: { size: 13 }, padding: 15, cursor: 'pointer' } },
-                        tooltip: { callbacks: { label: (c) => {
-                            const total = data.reduce((a,b)=>a+b,0);
-                            const pct = ((c.parsed / total)*100).toFixed(1);
-                            const filtered = chartStatusFilter === c.label ? ' (FILTERED)' : '';
-                            return `${c.label}: ${c.parsed} (${pct}%)${filtered}`;
-                        }} }
-                    }
-                }
-            });
-        }
-
-        // Render Project Priority Chart
-        function renderProjectPriorityChart() {
-            const canvas = document.getElementById('projectPriorityChartCanvas');
-            if (!canvas) return;
-
-            let filteredProjects = [...projects];
-            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
-            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
-                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
-                return projectHealth === chartHealthFilter;
-            });
-            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
-                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
-            );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
-
-            const priorityGroups = { 'High': 0, 'Medium': 0, 'Low': 0 };
-            filteredProjects.forEach(p => {
-                const priority = normalizePriority(p.priority);
-                if (priorityGroups.hasOwnProperty(priority)) priorityGroups[priority]++;
-            });
-
-            const labels = Object.keys(priorityGroups).filter(p => priorityGroups[p] > 0);
-            const data = labels.map(p => priorityGroups[p]);
-            const colors = ['#ff5555', '#ffb800', '#00c875'];
-
-            if (projectPriorityChartInstance) projectPriorityChartInstance.destroy();
-            projectPriorityChartInstance = new Chart(canvas.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'Projects', data: data, backgroundColor: colors.slice(0, labels.length).map((color, idx) => {
-                        if (chartPriorityFilter && labels[idx] !== chartPriorityFilter) return color + '40';
-                        return color;
-                    }), borderRadius: 6, borderWidth: 2, borderColor: colors.slice(0, labels.length) }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    onClick: function(event, activeElements) {
-                        if (activeElements.length > 0) {
-                            const clickedIndex = activeElements[0].index;
-                            const selectedPriority = labels[clickedIndex];
-                            if (chartPriorityFilter === selectedPriority) {
-                                chartPriorityFilter = null;
-                            } else {
-                                chartPriorityFilter = selectedPriority;
-                            }
-                            applyChartFilters();
-                        }
-                    },
-                    scales: { x: { beginAtZero: true } },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: {
-                            label: (c) => {
-                                const total = data.reduce((a,b)=>a+b,0);
-                                const pct = ((c.parsed.x / total)*100).toFixed(1);
-                                const filtered = chartPriorityFilter === c.label ? ' (FILTERED)' : '';
-                                return `${c.parsed.x} projects (${pct}%)${filtered}`;
-                            }
-                        }}
-                    }
-                }
-            });
-        }
-
-        // Render SDLC Phase Chart
-        function renderProjectSDLCChart() {
-            const canvas = document.getElementById('projectSDLCChartCanvas');
-            if (!canvas) return;
-
-            let filteredProjects = [...projects];
-            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
-            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
-                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
-                return projectHealth === chartHealthFilter;
-            });
-            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
-                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
-            );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
-
-            const sdlcGroups = { 'Requirement': 0, 'Design': 0, 'Development': 0, 'Smoke Test': 0, 'SIT': 0, 'Testing': 0, 'UAT': 0, 'Implemented': 0};
-            filteredProjects.forEach(p => {
-                const sdlc = getSDLCPhase(p);
-                if (sdlcGroups.hasOwnProperty(sdlc)) sdlcGroups[sdlc]++;
-                else if (sdlc && sdlc !== 'Development') {
-                    // Handle any other SDLC phases by adding them dynamically
-                    sdlcGroups[sdlc] = (sdlcGroups[sdlc] || 0) + 1;
-                }
-            });
-
-            const labels = Object.keys(sdlcGroups).filter(s => sdlcGroups[s] > 0);
-            const data = labels.map(s => sdlcGroups[s]);
-            // Colors for SDLC phases: Requirement, Design, Development, Smoke Test, SIT, Testing, UAT, Implemented, Deployment
-            const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#00bcd4', '#ff9800', '#ff6b6b'];
-
-            if (projectSDLCChartInstance) projectSDLCChartInstance.destroy();
-            projectSDLCChartInstance = new Chart(canvas.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'Projects', data: data, backgroundColor: colors.slice(0, labels.length).map((color, idx) => {
-                        if (chartSDLCFilter && labels[idx] !== chartSDLCFilter) return color + '40';
-                        return color;
-                    }), borderRadius: 6, borderWidth: 2, borderColor: colors.slice(0, labels.length) }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    onClick: function(event, activeElements) {
-                        if (activeElements.length > 0) {
-                            const clickedIndex = activeElements[0].index;
-                            const selectedSDLC = labels[clickedIndex];
-                            if (chartSDLCFilter === selectedSDLC) {
-                                chartSDLCFilter = null;
-                            } else {
-                                chartSDLCFilter = selectedSDLC;
-                            }
-                            applyChartFilters();
-                        }
-                    },
-                    scales: { y: { beginAtZero: true } },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: {
-                            label: (c) => {
-                                const total = data.reduce((a,b)=>a+b,0);
-                                const pct = ((c.parsed.y / total)*100).toFixed(1);
-                                const filtered = chartSDLCFilter === c.label ? ' (FILTERED)' : '';
-                                return `${c.parsed.y} projects (${pct}%)${filtered}`;
-                            }
-                        }}
-                    }
-                }
-            });
-        }
-
-        // Render Progress Distribution Chart
-        function renderProjectProgressDistChart() {
-            const canvas = document.getElementById('projectProgressDistChartCanvas');
-            if (!canvas) return;
-
-            let filteredProjects = [...projects];
-            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
-            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
-                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
-                return projectHealth === chartHealthFilter;
-            });
-            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
-                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
-            );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
-
-            const ranges = { '0-25%': 0, '25-50%': 0, '50-75%': 0, '75-100%': 0 };
-            filteredProjects.forEach(p => {
-                const progress = p.progress || 0;
-                if (progress < 25) ranges['0-25%']++;
-                else if (progress < 50) ranges['25-50%']++;
-                else if (progress < 75) ranges['50-75%']++;
-                else ranges['75-100%']++;
-            });
-
-            const labels = Object.keys(ranges).filter(r => ranges[r] > 0);
-            const data = labels.map(r => ranges[r]);
-            const colors = ['#ff5555', '#ffb800', '#667eea', '#00c875'];
-
-            if (projectProgressDistChartInstance) projectProgressDistChartInstance.destroy();
-            projectProgressDistChartInstance = new Chart(canvas.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'Projects', data: data, backgroundColor: colors.slice(0, labels.length), borderRadius: 6 }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true } },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
-
-        // Render Timeline Analytics Chart
-        function renderProjectTimelineChart() {
-            const canvas = document.getElementById('projectTimelineChartCanvas');
-            if (!canvas) return;
-
-            let filteredProjects = [...projects];
-            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
-            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
-                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
-                return projectHealth === chartHealthFilter;
-            });
-            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
-                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
-            );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
-
-            const monthData = {};
-            filteredProjects.forEach(p => {
-                if (p.startDate) {
-                    const date = parseDate(p.startDate);
-                    const month = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-                    monthData[month] = (monthData[month] || 0) + 1;
-                }
-            });
-
-            const labels = Object.keys(monthData).slice(-6);
-            const data = labels.map(l => monthData[l] || 0);
-
-            if (projectTimelineChartInstance) projectTimelineChartInstance.destroy();
-            projectTimelineChartInstance = new Chart(canvas.getContext('2d'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'Projects Started', data: data, borderColor: '#0073ea', backgroundColor: 'rgba(0,115,234,0.1)', tension: 0.4, fill: true }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true } },
-                    plugins: { legend: { display: true } }
-                }
-            });
-        }
-
-        // Render Completion Forecast Chart
-        function renderProjectForecastChart() {
-            const canvas = document.getElementById('projectForecastChartCanvas');
-            if (!canvas) return;
-
-            let filteredProjects = [...projects];
-            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
-            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
-                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
-                return projectHealth === chartHealthFilter;
-            });
-            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
-                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
-            );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
-
-            const inProgress = filteredProjects.filter(p => normalizeStatus(p.status) === 'In Progress' && p.progress < 100);
-            const avgRemainingDays = inProgress.reduce((sum, p) => sum + ((100 - (p.progress || 0)) / 100 * 30), 0) / Math.max(inProgress.length, 1);
-
-            const forecastData = [
-                inProgress.length,
-                Math.round(inProgress.filter(p => (p.progress || 0) >= 75).length),
-                Math.round(inProgress.filter(p => (p.progress || 0) >= 50 && (p.progress || 0) < 75).length),
-                Math.round(inProgress.filter(p => (p.progress || 0) < 50).length)
-            ];
-
-            if (projectForecastChartInstance) projectForecastChartInstance.destroy();
-            projectForecastChartInstance = new Chart(canvas.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['Total In Progress', 'On Track (75%+)', 'Medium Progress (50-75%)', 'Early Stage (<50%)'],
-                    datasets: [{ data: forecastData, backgroundColor: ['#0073ea', '#00c875', '#667eea', '#ffb800'], borderColor: '#fff', borderWidth: 3 }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 15 } } }
-                }
-            });
-        }
-
-        // Render Team Workload Chart
-        function renderProjectWorkloadChart() {
-            const canvas = document.getElementById('projectWorkloadChartCanvas');
-            if (!canvas) return;
-
-            let filteredProjects = [...projects];
-            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
-            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
-                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
-                return projectHealth === chartHealthFilter;
-            });
-            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
-                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
-            );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
-
-            const managerWorkload = {};
-            filteredProjects.forEach(p => {
-                if (p.projectManagers && p.projectManagers.length > 0) {
-                    p.projectManagers.forEach(m => {
-                        managerWorkload[m] = (managerWorkload[m] || 0) + 1;
-                    });
-                }
-            });
-
-            const sortedManagers = Object.entries(managerWorkload).sort((a, b) => b[1] - a[1]);
-            const labels = sortedManagers.map(m => m[0]);
-            const data = sortedManagers.map(m => m[1]);
-            const colors = ['#0073ea', '#00c875', '#fdab3d', '#ff5555', '#667eea', '#00bcd4'];
-
-            if (projectWorkloadChartInstance) projectWorkloadChartInstance.destroy();
-            projectWorkloadChartInstance = new Chart(canvas.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: 'Projects', data: data, backgroundColor: colors.slice(0, labels.length), borderRadius: 6 }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { x: { beginAtZero: true } },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
-
-        // Render Bottleneck Alerts
-        function renderBottleneckAlerts() {
-            const alertsList = document.getElementById('bottleneckAlertsList');
-            if (!alertsList) return;
-
-            let filteredProjects = [...projects];
-            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
-            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
-                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
-                return projectHealth === chartHealthFilter;
-            });
-            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
-                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
-            );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
-
-            const alerts = [];
-
-            // High priority projects
-            filteredProjects.filter(p => normalizePriority(p.priority) === 'High').forEach(p => {
-                alerts.push({ type: '🔴', title: `High Priority: ${p.name}`, color: '#ff5555' });
-            });
-
-            // Overdue projects
-            filteredProjects.filter(p => normalizeStatus(p.status) === 'In Progress' && p.endDate && getTodayMidnight() > parseDate(p.endDate)).forEach(p => {
-                alerts.push({ type: '⏰', title: `Overdue: ${p.name}`, color: '#ffb800' });
-            });
-
-            // Behind schedule projects (expected progress > actual progress by 10%+)
-            filteredProjects.filter(p => {
-                if (normalizeStatus(p.status) === 'In Progress' && p.startDate && p.endDate) {
-                    const startDate = parseDate(p.startDate);
-                    const endDate = parseDate(p.endDate);
-                    const today = getTodayMidnight();
-
-                    // Only check if not already overdue (avoid duplicate alerts)
-                    if (today <= endDate) {
-                        const totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-                        const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
-                        const expectedProgress = Math.min((daysElapsed / totalDays) * 100, 100);
-                        const actualProgress = p.progress || 0;
-
-                        return expectedProgress > actualProgress + 10;
-                    }
-                }
-                return false;
-            }).forEach(p => {
-                const startDate = parseDate(p.startDate);
-                const endDate = parseDate(p.endDate);
-                const totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-                const today = getTodayMidnight();
-                const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
-                const expectedProgress = Math.min((daysElapsed / totalDays) * 100, 100).toFixed(0);
-                const actualProgress = (p.progress || 0).toFixed(0);
-                alerts.push({ type: '📉', title: `Behind Schedule: ${p.name} (Expected: ${expectedProgress}%, Actual: ${actualProgress}%)`, color: '#ff7043' });
-            });
-
-            // No progress yet projects (0% after 5+ days started)
-            filteredProjects.filter(p => {
-                if (normalizeStatus(p.status) === 'In Progress' && p.startDate && (p.progress || 0) === 0) {
-                    const startDate = parseDate(p.startDate);
-                    const today = getTodayMidnight();
-                    const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-                    return daysElapsed >= 5;  // 5+ days with 0% progress
-                }
-                return false;
-            }).forEach(p => {
-                const startDate = parseDate(p.startDate);
-                const today = getTodayMidnight();
-                const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-                alerts.push({ type: '🚫', title: `No Progress: ${p.name} (${daysElapsed} days, 0%)`, color: '#d32f2f' });
-            });
-
-            // Low progress projects
-            filteredProjects.filter(p => normalizeStatus(p.status) === 'In Progress' && (p.progress || 0) < 25 && (p.progress || 0) > 0).forEach(p => {
-                alerts.push({ type: '⚠️', title: `Slow Progress: ${p.name} (${p.progress}%)`, color: '#667eea' });
-            });
-
-            // High health risk
-            filteredProjects.filter(p => p.projectHealth === 'red').forEach(p => {
-                alerts.push({ type: '🚨', title: `Health Risk: ${p.name}`, color: '#ff5555' });
-            });
-
-            if (alerts.length === 0) {
-                alertsList.innerHTML = '<li style="text-align: center; padding: 20px; color: #999;">✅ No alerts</li>';
-                return;
-            }
-
-            alertsList.innerHTML = alerts.map(a => `
-                <li style="padding: 12px; margin: 8px 0; background: ${a.color}20; border-left: 4px solid ${a.color}; border-radius: 4px; color: #323338;">
-                    <span style="font-size: 16px;">${a.type}</span> <strong>${a.title}</strong>
-                </li>
-            `).join('');
         }
 
         // Render recent activity on dashboard
@@ -9044,9 +8023,6 @@
         let chartTypeFilter = null; // Selected project type from chart
         let chartHealthFilter = null; // Selected health status from chart
         let chartManagerFilter = null; // Selected project manager from chart
-        let chartStatusFilter = null; // Selected project status from chart
-        let chartPriorityFilter = null; // Selected project priority from chart
-        let chartSDLCFilter = null; // Selected SDLC phase from chart
 
         function switchProjectView(viewType) {
             currentProjectView = viewType;
@@ -10119,36 +9095,13 @@
                 );
             }
 
-            // Apply project status filter from chart
-            if (chartStatusFilter) {
-                filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            }
-
-            // Apply project priority filter from chart
-            if (chartPriorityFilter) {
-                filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
-            }
-
-            // Apply SDLC phase filter from chart
-            if (chartSDLCFilter) {
-                filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
-            }
-
             // Render filtered projects
             renderFilteredProjects(filteredProjects);
 
-            // Re-render all charts to show selection state
+            // Re-render charts to show selection state
             renderProjectTypeChart();
             renderProjectHealthChart();
             renderProjectManagerChart();
-            renderProjectStatusChart();
-            renderProjectPriorityChart();
-            renderProjectSDLCChart();
-            renderProjectProgressDistChart();
-            renderProjectTimelineChart();
-            renderProjectForecastChart();
-            renderProjectWorkloadChart();
-            renderBottleneckAlerts();
 
             // Update filter labels
             const typeFilterLabel = document.getElementById('typeChartFilterLabel');
@@ -10184,44 +9137,8 @@
                 }
             }
 
-            const statusFilterLabel = document.getElementById('statusChartFilterLabel');
-            const statusFilterValue = document.getElementById('statusChartFilterValue');
-            if (statusFilterLabel && statusFilterValue) {
-                if (chartStatusFilter) {
-                    statusFilterLabel.style.display = 'inline';
-                    statusFilterValue.textContent = chartStatusFilter;
-                } else {
-                    statusFilterLabel.style.display = 'none';
-                }
-            }
-
-            const priorityFilterLabel = document.getElementById('priorityChartFilterLabel');
-            const priorityFilterValue = document.getElementById('priorityChartFilterValue');
-            if (priorityFilterLabel && priorityFilterValue) {
-                if (chartPriorityFilter) {
-                    priorityFilterLabel.style.display = 'inline';
-                    priorityFilterValue.textContent = chartPriorityFilter;
-                } else {
-                    priorityFilterLabel.style.display = 'none';
-                }
-            }
-
-            const sdlcFilterLabel = document.getElementById('sdlcChartFilterLabel');
-            const sdlcFilterValue = document.getElementById('sdlcChartFilterValue');
-            if (sdlcFilterLabel && sdlcFilterValue) {
-                if (chartSDLCFilter) {
-                    sdlcFilterLabel.style.display = 'inline';
-                    sdlcFilterValue.textContent = chartSDLCFilter;
-                } else {
-                    sdlcFilterLabel.style.display = 'none';
-                }
-            }
-
             // Update clear button visibility
             updateChartFilterClearButton();
-
-            // Update metric cards to reflect filtered data
-            renderKeyMetrics();
         }
 
         // Clear chart filters
@@ -10229,9 +9146,6 @@
             chartTypeFilter = null;
             chartHealthFilter = null;
             chartManagerFilter = null;
-            chartStatusFilter = null;
-            chartPriorityFilter = null;
-            chartSDLCFilter = null;
             applyChartFilters();
         }
 
@@ -10239,7 +9153,7 @@
         function updateChartFilterClearButton() {
             const clearBtn = document.getElementById('clearChartFiltersBtn');
             if (clearBtn) {
-                clearBtn.style.display = (chartTypeFilter || chartHealthFilter || chartManagerFilter || chartStatusFilter || chartPriorityFilter || chartSDLCFilter) ? 'inline-block' : 'none';
+                clearBtn.style.display = (chartTypeFilter || chartHealthFilter || chartManagerFilter) ? 'inline-block' : 'none';
             }
         }
 
@@ -10339,14 +9253,13 @@
             // Use the original index from projects array
             projectsGrid.innerHTML = filteredProjects.map((project) => {
                 const index = projects.indexOf(project);
-                //editProject(${index})
                 return `
-                <div class="project-card" onclick="if(event.target.closest('.project-action-btn') || event.target.closest('.project-status-badge')) return; ">
+                <div class="project-card" onclick="if(event.target.closest('.project-action-btn') || event.target.closest('.project-status-badge')) return; editProject(${index})">
                     <div class="project-card-header">
                         <div>
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                                 <div class="project-health-circle ${project.projectHealth || 'none'}" title="Health: ${project.projectHealth || 'None'}">
-                                    
+                                    ${project.projectHealth && project.projectHealth !== 'none' ? project.projectHealth.charAt(0).toUpperCase() : '–'}
                                 </div>
                                 <div class="project-card-title">${project.name}</div>
                             </div>

@@ -3,7 +3,9 @@
     "allow": [
       "Bash(dir index4.html)",
       "Bash(wmic datafile where \"name=''c:\\Users\\HP OMEN\\Downloads\\AI Vibe coding\\ProjectStatus\\index4.html''\" get FileSize)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
