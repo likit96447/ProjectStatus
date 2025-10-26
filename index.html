@@ -5499,6 +5499,11 @@
             return status.charAt(0).toUpperCase() + status.slice(1);
         }
 
+        // Helper function to get SDLC phase (checks both p.sdlc and p.sdlcPhase)
+        function getSDLCPhase(project) {
+            return project.sdlc || project.sdlcPhase || 'Development';
+        }
+
         // Render Key Metrics
         function renderKeyMetrics() {
             // Get filtered projects
@@ -5524,7 +5529,7 @@
                 filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
             }
             if (chartSDLCFilter) {
-                filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+                filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
             }
 
             const total = filteredProjects.length;
@@ -5606,7 +5611,7 @@
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
             if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
             const statusGroups = { 'Planned': 0, 'In Progress': 0, 'Completed': 0, 'On Hold': 0 };
             filteredProjects.forEach(p => {
@@ -5672,7 +5677,7 @@
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
             if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
             const priorityGroups = { 'High': 0, 'Medium': 0, 'Low': 0 };
             filteredProjects.forEach(p => {
@@ -5745,7 +5750,7 @@
 
             const sdlcGroups = { 'Requirement': 0, 'Design': 0, 'Development': 0, 'Testing': 0, 'UAT': 0, 'Deployment': 0 };
             filteredProjects.forEach(p => {
-                const sdlc = p.sdlcPhase || 'Development';
+                const sdlc = getSDLCPhase(p);
                 if (sdlcGroups.hasOwnProperty(sdlc)) sdlcGroups[sdlc]++;
             });
 
@@ -5810,7 +5815,7 @@
             );
             if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
             const ranges = { '0-25%': 0, '25-50%': 0, '50-75%': 0, '75-100%': 0 };
             filteredProjects.forEach(p => {
@@ -5857,7 +5862,7 @@
             );
             if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
             const monthData = {};
             filteredProjects.forEach(p => {
@@ -5903,7 +5908,7 @@
             );
             if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
             const inProgress = filteredProjects.filter(p => normalizeStatus(p.status) === 'In Progress' && p.progress < 100);
             const avgRemainingDays = inProgress.reduce((sum, p) => sum + ((100 - (p.progress || 0)) / 100 * 30), 0) / Math.max(inProgress.length, 1);
@@ -5946,7 +5951,7 @@
             );
             if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
             const managerWorkload = {};
             filteredProjects.forEach(p => {
@@ -5995,7 +6000,7 @@
             );
             if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
             const alerts = [];
 
@@ -9831,7 +9836,7 @@
 
             // Apply SDLC phase filter from chart
             if (chartSDLCFilter) {
-                filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+                filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
             }
 
             // Render filtered projects
