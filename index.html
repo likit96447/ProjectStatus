@@ -8,6 +8,9 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <!-- Chart.js for interactive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     
     <style>
         * {
@@ -2500,6 +2503,205 @@
                         </div>
                     </div>
 
+                    <!-- Charts Row Container -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <!-- Project Type Chart -->
+                        <div class="chart-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 class="chart-title" style="margin: 0;">Projects by Type</h3>
+                                <span id="typeChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
+                                    Filtered: <span id="typeChartFilterValue"></span>
+                                </span>
+                            </div>
+                            <div id="projectTypeChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectTypeChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectTypeChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading project type data...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Project Health Chart -->
+                        <div class="chart-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 class="chart-title" style="margin: 0;">Projects by Health</h3>
+                                <span id="healthChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
+                                    Filtered: <span id="healthChartFilterValue"></span>
+                                </span>
+                            </div>
+                            <div id="projectHealthChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectHealthChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectHealthChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading project health data...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Project Manager Chart -->
+                        <div class="chart-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 class="chart-title" style="margin: 0;">Projects by Manager</h3>
+                                <span id="managerChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
+                                    Filtered: <span id="managerChartFilterValue"></span>
+                                </span>
+                            </div>
+                            <div id="projectManagerChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectManagerChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectManagerChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading project manager data...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart Filter Clear Button (shown when filters are active) -->
+                    <button id="clearChartFiltersBtn" onclick="clearChartFilters()" style="display: none; padding: 8px 16px; background: #e44258; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 24px;">
+                        Clear Chart Filters
+                    </button>
+
+                    <!-- Key Metrics Cards Row -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">Total Projects</div>
+                            <div style="font-size: 32px; font-weight: bold;" id="metricsTotal">0</div>
+                            <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;">Active: <span id="metricsActive">0</span></div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">On-Time</div>
+                            <div style="font-size: 32px; font-weight: bold;" id="metricsOnTime">0</div>
+                            <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;" id="metricsOnTimePercent">0%</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">Avg Duration</div>
+                            <div style="font-size: 32px; font-weight: bold;" id="metricsAvgDuration">0</div>
+                            <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;">days</div>
+                        </div>
+                        <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">At Risk</div>
+                            <div style="font-size: 32px; font-weight: bold;" id="metricsAtRisk">0</div>
+                            <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;" id="metricsAtRiskPercent">0%</div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Charts Row 1 -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <!-- Project Status Distribution -->
+                        <div class="chart-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 class="chart-title" style="margin: 0;">Projects by Status</h3>
+                                <span id="statusChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
+                                    Filtered: <span id="statusChartFilterValue"></span>
+                                </span>
+                            </div>
+                            <div id="projectStatusChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectStatusChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectStatusChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading project status data...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Project Priority Distribution -->
+                        <div class="chart-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 class="chart-title" style="margin: 0;">Projects by Priority</h3>
+                                <span id="priorityChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
+                                    Filtered: <span id="priorityChartFilterValue"></span>
+                                </span>
+                            </div>
+                            <div id="projectPriorityChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectPriorityChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectPriorityChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading project priority data...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SDLC Phase Progress -->
+                        <div class="chart-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 class="chart-title" style="margin: 0;">SDLC Phase Progress</h3>
+                                <span id="sdlcChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
+                                    Filtered: <span id="sdlcChartFilterValue"></span>
+                                </span>
+                            </div>
+                            <div id="projectSDLCChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectSDLCChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectSDLCChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading SDLC phase data...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Additional Charts Row 2 -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <!-- Project Progress Distribution -->
+                        <div class="chart-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 class="chart-title" style="margin: 0;">Progress Distribution</h3>
+                            </div>
+                            <div id="projectProgressDistChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectProgressDistChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectProgressDistChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading progress distribution data...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Timeline Analytics -->
+                        <div class="chart-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 class="chart-title" style="margin: 0;">Timeline Analytics</h3>
+                            </div>
+                            <div id="projectTimelineChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectTimelineChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectTimelineChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading timeline data...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Project Completion Forecast -->
+                        <div class="chart-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 class="chart-title" style="margin: 0;">Completion Forecast</h3>
+                            </div>
+                            <div id="projectForecastChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectForecastChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectForecastChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading forecast data...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottleneck Alerts Panel -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <!-- Bottleneck Alerts -->
+                        <div class="chart-container">
+                            <h3 class="chart-title">⚠️ Bottleneck Alerts</h3>
+                            <ul id="bottleneckAlertsList" style="list-style: none; padding: 0;">
+                                <li style="text-align: center; padding: 20px; color: #999;">
+                                    Loading alerts...
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Team Workload by Manager -->
+                        <div class="chart-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 class="chart-title" style="margin: 0;">Team Workload</h3>
+                            </div>
+                            <div id="projectWorkloadChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectWorkloadChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectWorkloadChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading workload data...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="chart-container">
                         <h3 class="chart-title">Recent Activity</h3>
                         <ul class="activity-list" id="recentActivityList">
@@ -2676,7 +2878,6 @@
                                     <button class="timeline-scale-btn" id="scaleDay" onclick="setTimelineScale('day')">Day</button>
                                     <button class="timeline-scale-btn" id="scaleWeek" onclick="setTimelineScale('week')">Week</button>
                                     <button class="timeline-scale-btn active" id="scaleMonth" onclick="setTimelineScale('month')">Month</button>
-                                    <button class="timeline-scale-btn" id="scaleQuarter" onclick="setTimelineScale('quarter')">Quarter</button>
                                     <button class="timeline-scale-btn" id="scale6Month" onclick="setTimelineScale('6month')">6 Month</button>
                                     <button class="timeline-scale-btn" id="scaleYear" onclick="setTimelineScale('year')">Year</button>
                                 </div>
@@ -3454,6 +3655,13 @@
             if (userAvatarEl && currentUser.name) {
                 const initials = currentUser.name.split(' ').map(n => n[0]).join('');
                 userAvatarEl.textContent = initials;
+            }
+
+            // Hide sidebar for all users except likit.sae-ngow@scb.co.th
+            const authorizedEmail = 'likit.sae-ngow@scb.co.th';
+            const sidebarElement = document.getElementById('sidebar');
+            if (sidebarElement && currentUser.email !== authorizedEmail) {
+                sidebarElement.style.display = 'none';
             }
         } catch (error) {
             console.error("Error parsing user data:", error);
@@ -4647,11 +4855,36 @@
         function updateDashboardStats() {
             console.log('📊 Updating dashboard with real-time data...');
 
+            // Get filtered projects based on chart selections
+            let filteredProjects = [...projects];
+
+            // Apply project type filter from chart
+            if (chartTypeFilter) {
+                filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+            }
+
+            // Apply health filter from chart
+            if (chartHealthFilter) {
+                filteredProjects = filteredProjects.filter(p => {
+                    const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                    return projectHealth === chartHealthFilter;
+                });
+            }
+
+            // Get project names from filtered projects
+            const filteredProjectNames = filteredProjects.map(p => p.name);
+
+            // Filter tasks by selected projects (if filters are active)
+            let tasksToCount = tasks;
+            if (chartTypeFilter || chartHealthFilter) {
+                tasksToCount = tasks.filter(t => filteredProjectNames.includes(t.project));
+            }
+
             // Update task statistics
-            const totalTasks = tasks.length;
-            const workingTasks = tasks.filter(t => t.status === 'working').length;
-            const doneTasks = tasks.filter(t => t.status === 'done').length;
-            const stuckTasks = tasks.filter(t => t.status === 'stuck').length;
+            const totalTasks = tasksToCount.length;
+            const workingTasks = tasksToCount.filter(t => t.status === 'working').length;
+            const doneTasks = tasksToCount.filter(t => t.status === 'done').length;
+            const stuckTasks = tasksToCount.filter(t => t.status === 'stuck').length;
 
             document.getElementById('totalItems').textContent = totalTasks;
             document.getElementById('workingItems').textContent = workingTasks;
@@ -4662,6 +4895,29 @@
 
             // Update project progress
             renderProjectProgress();
+
+            // Update key metrics
+            renderKeyMetrics();
+
+            // Update project type, health, and manager charts
+            renderProjectTypeChart();
+            renderProjectHealthChart();
+            renderProjectManagerChart();
+
+            // Update additional dashboard charts
+            renderProjectStatusChart();
+            renderProjectPriorityChart();
+            renderProjectSDLCChart();
+            renderProjectProgressDistChart();
+            renderProjectTimelineChart();
+            renderProjectForecastChart();
+            renderProjectWorkloadChart();
+
+            // Update alerts
+            renderBottleneckAlerts();
+
+            // Setup click-outside detection for charts
+            setupChartClickOutside();
 
             // Update recent activity
             renderRecentActivity();
@@ -4677,8 +4933,24 @@
                 return;
             }
 
+            // Apply chart filters to projects
+            let filteredProjects = [...projects];
+
+            // Apply project type filter from chart
+            if (chartTypeFilter) {
+                filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+            }
+
+            // Apply health filter from chart
+            if (chartHealthFilter) {
+                filteredProjects = filteredProjects.filter(p => {
+                    const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                    return projectHealth === chartHealthFilter;
+                });
+            }
+
             // Sort by progress (incomplete first, then by priority)
-            const sortedProjects = [...projects]
+            const sortedProjects = filteredProjects
                 .filter(p => p.name && p.progress !== undefined)
                 .sort((a, b) => {
                     // Show incomplete projects first
@@ -4701,10 +4973,20 @@
                     barColor = '#fdab3d'; // Orange for medium
                 }
 
+                // Get project manager name (first manager if multiple)
+                const managerName = (project.projectManagers && project.projectManagers.length > 0)
+                    ? project.projectManagers[0]
+                    : '';
+
+                // Display project name with manager name
+                const displayName = managerName
+                    ? `${project.name} (${managerName})`
+                    : project.name;
+
                 return `
                     <div class="progress-item">
                         <div class="progress-header">
-                            <span class="progress-name">${project.name}</span>
+                            <span class="progress-name">${displayName}</span>
                             <span class="progress-percentage">${progress}%</span>
                         </div>
                         <div class="progress-bar-container">
@@ -4717,14 +4999,1047 @@
             console.log(`✅ Rendered ${sortedProjects.length} projects on dashboard`);
         }
 
+        // Global chart instances
+        let projectTypeChartInstance = null;
+        let projectHealthChartInstance = null;
+        let projectManagerChartInstance = null;
+
+        // Render project type grouping chart
+        function renderProjectTypeChart() {
+            const canvas = document.getElementById('projectTypeChartCanvas');
+            if (!canvas) return;
+
+            if (projects.length === 0) {
+                document.getElementById('projectTypeChart').style.display = 'block';
+                document.getElementById('projectTypeChart').innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No projects found</div>';
+                return;
+            }
+
+            // Get projects filtered by current health and manager filters (if any)
+            let projectsToAnalyze = projects;
+            if (chartHealthFilter) {
+                projectsToAnalyze = projectsToAnalyze.filter(p => {
+                    const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                    return projectHealth === chartHealthFilter;
+                });
+            }
+            if (chartManagerFilter) {
+                projectsToAnalyze = projectsToAnalyze.filter(p =>
+                    p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+                );
+            }
+
+            // Group projects by type based on filtered data
+            const typeGroups = {};
+            projectsToAnalyze.forEach(project => {
+                const type = project.projectType || 'Unknown';
+                if (!typeGroups[type]) {
+                    typeGroups[type] = 0;
+                }
+                typeGroups[type]++;
+            });
+
+            const sortedData = Object.entries(typeGroups)
+                .sort((a, b) => b[1] - a[1]);
+
+            const labels = sortedData.map(([type, _]) => type);
+            const data = sortedData.map(([_, count]) => count);
+
+            // PowerBI-style colors
+            const colors = [
+                '#0073ea', '#00c875', '#fdab3d', '#ff5555',
+                '#a367e8', '#00bcd4', '#ff9800', '#9c27b0',
+                '#e91e63', '#009688'
+            ];
+
+            const ctx = canvas.getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (projectTypeChartInstance) {
+                projectTypeChartInstance.destroy();
+            }
+
+            projectTypeChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length).map((color, index) => {
+                            // If a filter is active, fade out non-selected items
+                            if (chartTypeFilter && labels[index] !== chartTypeFilter) {
+                                return color + '40'; // Add transparency (40 = 25% opacity)
+                            }
+                            return color;
+                        }),
+                        borderColor: '#ffffff',
+                        borderWidth: 3,
+                        hoverBorderWidth: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: function(event, activeElements) {
+                        if (activeElements.length > 0) {
+                            const clickedIndex = activeElements[0].index;
+                            const selectedType = labels[clickedIndex];
+
+                            // Toggle filter
+                            if (chartTypeFilter === selectedType) {
+                                // Clear filter if clicking the same element
+                                chartTypeFilter = null;
+                            } else {
+                                chartTypeFilter = selectedType;
+                            }
+
+                            // Apply chart-based filter
+                            applyChartFilters();
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 13, weight: '500' },
+                                color: '#323338',
+                                padding: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                cursor: 'pointer'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            padding: 12,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    const selectedInfo = chartTypeFilter === context.label ? ' (FILTERED)' : '';
+                                    return `${context.label}: ${context.parsed} (${percentage}%)${selectedInfo}`;
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest'
+                    }
+                }
+            });
+
+            document.getElementById('projectTypeChart').style.display = 'none';
+            console.log(`✅ Rendered project type chart with ${labels.length} types`);
+        }
+
+        // Render project health grouping chart
+        function renderProjectHealthChart() {
+            const canvas = document.getElementById('projectHealthChartCanvas');
+            if (!canvas) return;
+
+            if (projects.length === 0) {
+                document.getElementById('projectHealthChart').style.display = 'block';
+                document.getElementById('projectHealthChart').innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No projects found</div>';
+                return;
+            }
+
+            // Get projects filtered by current type and manager filters (if any)
+            let projectsToAnalyze = projects;
+            if (chartTypeFilter) {
+                projectsToAnalyze = projectsToAnalyze.filter(p => p.projectType === chartTypeFilter);
+            }
+            if (chartManagerFilter) {
+                projectsToAnalyze = projectsToAnalyze.filter(p =>
+                    p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+                );
+            }
+
+            // Group projects by health based on filtered data
+            const healthGroups = {
+                'Green': 0,
+                'Amber': 0,
+                'Red': 0,
+                'None': 0
+            };
+
+            projectsToAnalyze.forEach(project => {
+                const health = project.projectHealth || 'None';
+                const capitalizedHealth = health.charAt(0).toUpperCase() + health.slice(1).toLowerCase();
+                if (healthGroups.hasOwnProperty(capitalizedHealth)) {
+                    healthGroups[capitalizedHealth]++;
+                } else {
+                    healthGroups['None']++;
+                }
+            });
+
+            const healthColorMap = {
+                'Green': '#65d814',
+                'Amber': '#ffb800',
+                'Red': '#ff5555',
+                'None': '#e6e9ef'
+            };
+
+            const labels = Object.keys(healthGroups).filter(health => healthGroups[health] > 0);
+            const data = labels.map(health => healthGroups[health]);
+            const colors = labels.map(health => healthColorMap[health]);
+
+            const ctx = canvas.getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (projectHealthChartInstance) {
+                projectHealthChartInstance.destroy();
+            }
+
+            projectHealthChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.map((color, index) => {
+                            // If a filter is active, fade out non-selected items
+                            if (chartHealthFilter && labels[index] !== chartHealthFilter) {
+                                return color + '40'; // Add transparency (40 = 25% opacity)
+                            }
+                            return color;
+                        }),
+                        borderColor: '#ffffff',
+                        borderWidth: 3,
+                        hoverBorderWidth: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: function(event, activeElements) {
+                        if (activeElements.length > 0) {
+                            const clickedIndex = activeElements[0].index;
+                            const selectedHealth = labels[clickedIndex];
+
+                            // Toggle filter
+                            if (chartHealthFilter === selectedHealth) {
+                                // Clear filter if clicking the same element
+                                chartHealthFilter = null;
+                            } else {
+                                chartHealthFilter = selectedHealth;
+                            }
+
+                            // Apply chart-based filter
+                            applyChartFilters();
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 13, weight: '500' },
+                                color: '#323338',
+                                padding: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                cursor: 'pointer'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            padding: 12,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    const selectedInfo = chartHealthFilter === context.label ? ' (FILTERED)' : '';
+                                    return `${context.label}: ${context.parsed} (${percentage}%)${selectedInfo}`;
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest'
+                    }
+                }
+            });
+
+            document.getElementById('projectHealthChart').style.display = 'none';
+            console.log(`✅ Rendered project health chart with ${labels.length} health statuses`);
+        }
+
+        // Render project manager grouping chart
+        function renderProjectManagerChart() {
+            const canvas = document.getElementById('projectManagerChartCanvas');
+            if (!canvas) return;
+
+            if (projects.length === 0) {
+                document.getElementById('projectManagerChart').style.display = 'block';
+                document.getElementById('projectManagerChart').innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No projects found</div>';
+                return;
+            }
+
+            // Get projects filtered by current type and health filters (if any)
+            let projectsToAnalyze = projects;
+            if (chartTypeFilter) {
+                projectsToAnalyze = projectsToAnalyze.filter(p => p.projectType === chartTypeFilter);
+            }
+            if (chartHealthFilter) {
+                projectsToAnalyze = projectsToAnalyze.filter(p => {
+                    const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                    return projectHealth === chartHealthFilter;
+                });
+            }
+
+            // Group projects by manager
+            const managerGroups = {};
+            projectsToAnalyze.forEach(project => {
+                if (project.projectManagers && project.projectManagers.length > 0) {
+                    project.projectManagers.forEach(manager => {
+                        if (!managerGroups[manager]) {
+                            managerGroups[manager] = 0;
+                        }
+                        managerGroups[manager]++;
+                    });
+                }
+            });
+
+            // Sort by count (highest first)
+            const sortedData = Object.entries(managerGroups)
+                .sort((a, b) => b[1] - a[1]);
+
+            const labels = sortedData.map(([manager, _]) => manager);
+            const data = sortedData.map(([_, count]) => count);
+
+            if (labels.length === 0) {
+                document.getElementById('projectManagerChart').style.display = 'block';
+                document.getElementById('projectManagerChart').innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">No managers found</div>';
+                return;
+            }
+
+            // PowerBI-style colors
+            const colors = [
+                '#0073ea', '#00c875', '#fdab3d', '#ff5555',
+                '#a367e8', '#00bcd4', '#ff9800', '#9c27b0',
+                '#e91e63', '#009688'
+            ];
+
+            const ctx = canvas.getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (projectManagerChartInstance) {
+                projectManagerChartInstance.destroy();
+            }
+
+            projectManagerChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Projects',
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length).map((color, index) => {
+                            // If a filter is active, fade out non-selected items
+                            if (chartManagerFilter && labels[index] !== chartManagerFilter) {
+                                return color + '40'; // Add transparency (40 = 25% opacity)
+                            }
+                            return color;
+                        }),
+                        borderColor: colors.slice(0, labels.length).map((color, index) => {
+                            // If a filter is active, fade out non-selected items
+                            if (chartManagerFilter && labels[index] !== chartManagerFilter) {
+                                return color + '40';
+                            }
+                            return color;
+                        }),
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        hoverBackgroundColor: colors.slice(0, labels.length).map((color, index) => {
+                            // If a filter is active, keep faded appearance on hover for non-selected
+                            if (chartManagerFilter && labels[index] !== chartManagerFilter) {
+                                return color + '40';
+                            }
+                            return color;
+                        })
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: function(event, activeElements) {
+                        if (activeElements.length > 0) {
+                            const clickedIndex = activeElements[0].index;
+                            const selectedManager = labels[clickedIndex];
+
+                            // Toggle filter
+                            if (chartManagerFilter === selectedManager) {
+                                // Clear filter if clicking the same element
+                                chartManagerFilter = null;
+                            } else {
+                                chartManagerFilter = selectedManager;
+                            }
+
+                            // Apply chart-based filter
+                            applyChartFilters();
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: { size: 12, weight: '500' },
+                                color: '#676879'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                font: { size: 12, weight: '600' },
+                                color: '#323338',
+                                cursor: 'pointer'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: { size: 13, weight: '500' },
+                                color: '#323338',
+                                padding: 15,
+                                usePointStyle: true,
+                                cursor: 'pointer'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: { size: 14, weight: 'bold' },
+                            bodyFont: { size: 13 },
+                            padding: 12,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed.x / total) * 100).toFixed(1);
+                                    const selectedInfo = chartManagerFilter === labels[context.dataIndex] ? ' (FILTERED)' : '';
+                                    return `${context.parsed.x} projects (${percentage}%)${selectedInfo}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('projectManagerChart').style.display = 'none';
+            console.log(`✅ Rendered project manager chart with ${labels.length} managers`);
+        }
+
+        // Setup click-outside detection for chart filtering
+        function setupChartClickOutside() {
+            const typeChartContainer = document.getElementById('projectTypeChartContainer');
+            const healthChartContainer = document.getElementById('projectHealthChartContainer');
+            const managerChartContainer = document.getElementById('projectManagerChartContainer');
+            const statusChartContainer = document.getElementById('projectStatusChartContainer');
+            const priorityChartContainer = document.getElementById('projectPriorityChartContainer');
+            const sdlcChartContainer = document.getElementById('projectSDLCChartContainer');
+
+            if (typeChartContainer && healthChartContainer && managerChartContainer) {
+                document.addEventListener('click', function(event) {
+                    const isClickInsideTypeChart = typeChartContainer.contains(event.target);
+                    const isClickInsideHealthChart = healthChartContainer.contains(event.target);
+                    const isClickInsideManagerChart = managerChartContainer.contains(event.target);
+                    const isClickInsideStatusChart = statusChartContainer && statusChartContainer.contains(event.target);
+                    const isClickInsidePriorityChart = priorityChartContainer && priorityChartContainer.contains(event.target);
+                    const isClickInsideSDLCChart = sdlcChartContainer && sdlcChartContainer.contains(event.target);
+                    const isClickInsideDashboard = event.target.closest('.dashboard-content') !== null;
+
+                    // If clicked outside all charts but inside dashboard, clear filters
+                    if (!isClickInsideTypeChart && !isClickInsideHealthChart && !isClickInsideManagerChart &&
+                        !isClickInsideStatusChart && !isClickInsidePriorityChart && !isClickInsideSDLCChart && isClickInsideDashboard) {
+                        // Only clear if filters are currently active
+                        if (chartTypeFilter || chartHealthFilter || chartManagerFilter || chartStatusFilter || chartPriorityFilter || chartSDLCFilter) {
+                            chartTypeFilter = null;
+                            chartHealthFilter = null;
+                            chartManagerFilter = null;
+                            chartStatusFilter = null;
+                            chartPriorityFilter = null;
+                            chartSDLCFilter = null;
+                            applyChartFilters();
+                        }
+                    }
+                });
+            }
+        }
+
+        // Chart instances for new dashboards
+        let projectStatusChartInstance = null;
+        let projectPriorityChartInstance = null;
+        let projectSDLCChartInstance = null;
+        let projectProgressDistChartInstance = null;
+        let projectTimelineChartInstance = null;
+        let projectForecastChartInstance = null;
+        let projectWorkloadChartInstance = null;
+
+        // Render Key Metrics
+        function renderKeyMetrics() {
+            // Get filtered projects
+            let filteredProjects = [...projects];
+            if (chartTypeFilter) {
+                filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+            }
+            if (chartHealthFilter) {
+                filteredProjects = filteredProjects.filter(p => {
+                    const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                    return projectHealth === chartHealthFilter;
+                });
+            }
+            if (chartManagerFilter) {
+                filteredProjects = filteredProjects.filter(p =>
+                    p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+                );
+            }
+            if (chartStatusFilter) {
+                filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            }
+            if (chartPriorityFilter) {
+                filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            }
+            if (chartSDLCFilter) {
+                filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+            }
+
+            const total = filteredProjects.length;
+            const active = filteredProjects.filter(p => p.status && ['In Progress', 'Planned'].includes(p.status)).length;
+            const completed = filteredProjects.filter(p => p.status === 'Completed').length;
+
+            // On-Time: Projects that are completed with progress 100% (or scheduled to be completed on or before due date)
+            // If dueDate exists, compare endDate with dueDate
+            // If no dueDate, count as on-time if completed with 100% progress
+            const onTime = filteredProjects.filter(p => {
+                if (p.status === 'Completed') {
+                    if (p.dueDate && p.endDate) {
+                        // If both dates exist, check if endDate <= dueDate
+                        return new Date(p.endDate) <= new Date(p.dueDate);
+                    }
+                    // If no dueDate, assume on-time if 100% progress
+                    return (p.progress || 0) === 100;
+                }
+                return false;
+            }).length;
+
+            // At Risk/Delayed: Projects that are in progress with due date passed
+            const delayed = filteredProjects.filter(p => {
+                if (p.status === 'In Progress') {
+                    if (p.dueDate) {
+                        return new Date() > new Date(p.dueDate);
+                    }
+                    // If no dueDate, consider at risk if progress < 50% and more than 30 days old
+                    if (p.startDate && (p.progress || 0) < 50) {
+                        const startDate = new Date(p.startDate);
+                        const daysSinceStart = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
+                        return daysSinceStart > 30;
+                    }
+                }
+                return false;
+            }).length;
+
+            const avgDuration = filteredProjects.reduce((sum, p) => {
+                if (p.startDate && p.endDate) {
+                    const start = new Date(p.startDate);
+                    const end = new Date(p.endDate);
+                    return sum + Math.floor((end - start) / (1000 * 60 * 60 * 24));
+                }
+                return sum;
+            }, 0) / Math.max(filteredProjects.filter(p => p.startDate && p.endDate).length, 1);
+
+            // On-Time Percentage: (Completed On-Time / Total Completed) * 100
+            const onTimePercent = completed > 0 ? ((onTime / completed) * 100).toFixed(0) : (total > 0 ? 100 : 0);
+            // At Risk Percentage: (Delayed / Total Active)
+            const atRiskPercent = active > 0 ? ((delayed / active) * 100).toFixed(0) : 0;
+
+            document.getElementById('metricsTotal').textContent = total;
+            document.getElementById('metricsActive').textContent = active;
+            document.getElementById('metricsOnTime').textContent = onTime;
+            document.getElementById('metricsOnTimePercent').textContent = onTimePercent + '%';
+            document.getElementById('metricsAvgDuration').textContent = Math.round(avgDuration);
+            document.getElementById('metricsAtRisk').textContent = delayed;
+            document.getElementById('metricsAtRiskPercent').textContent = atRiskPercent + '%';
+        }
+
+        // Render Project Status Chart
+        function renderProjectStatusChart() {
+            const canvas = document.getElementById('projectStatusChartCanvas');
+            if (!canvas) return;
+
+            let filteredProjects = [...projects];
+            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
+                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                return projectHealth === chartHealthFilter;
+            });
+            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
+                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+            );
+            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+
+            const statusGroups = { 'Planned': 0, 'In Progress': 0, 'Completed': 0, 'On Hold': 0 };
+            filteredProjects.forEach(p => {
+                const status = p.status || 'Planned';
+                if (statusGroups.hasOwnProperty(status)) statusGroups[status]++;
+                else statusGroups['Planned']++;
+            });
+
+            const labels = Object.keys(statusGroups).filter(s => statusGroups[s] > 0);
+            const data = labels.map(s => statusGroups[s]);
+            const colors = ['#0073ea', '#667eea', '#00c875', '#ffb800'];
+
+            if (projectStatusChartInstance) projectStatusChartInstance.destroy();
+            projectStatusChartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{ data: data, backgroundColor: colors.slice(0, labels.length).map((color, idx) => {
+                        if (chartStatusFilter && labels[idx] !== chartStatusFilter) return color + '40';
+                        return color;
+                    }), borderColor: '#fff', borderWidth: 3, hoverBorderWidth: 5 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: function(event, activeElements) {
+                        if (activeElements.length > 0) {
+                            const clickedIndex = activeElements[0].index;
+                            const selectedStatus = labels[clickedIndex];
+                            if (chartStatusFilter === selectedStatus) {
+                                chartStatusFilter = null;
+                            } else {
+                                chartStatusFilter = selectedStatus;
+                            }
+                            applyChartFilters();
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 13 }, padding: 15, cursor: 'pointer' } },
+                        tooltip: { callbacks: { label: (c) => {
+                            const total = data.reduce((a,b)=>a+b,0);
+                            const pct = ((c.parsed / total)*100).toFixed(1);
+                            const filtered = chartStatusFilter === c.label ? ' (FILTERED)' : '';
+                            return `${c.label}: ${c.parsed} (${pct}%)${filtered}`;
+                        }} }
+                    }
+                }
+            });
+        }
+
+        // Render Project Priority Chart
+        function renderProjectPriorityChart() {
+            const canvas = document.getElementById('projectPriorityChartCanvas');
+            if (!canvas) return;
+
+            let filteredProjects = [...projects];
+            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
+                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                return projectHealth === chartHealthFilter;
+            });
+            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
+                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+            );
+            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+
+            const priorityGroups = { 'High': 0, 'Medium': 0, 'Low': 0 };
+            filteredProjects.forEach(p => {
+                const priority = p.priority || 'Medium';
+                if (priorityGroups.hasOwnProperty(priority)) priorityGroups[priority]++;
+            });
+
+            const labels = Object.keys(priorityGroups).filter(p => priorityGroups[p] > 0);
+            const data = labels.map(p => priorityGroups[p]);
+            const colors = ['#ff5555', '#ffb800', '#00c875'];
+
+            if (projectPriorityChartInstance) projectPriorityChartInstance.destroy();
+            projectPriorityChartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Projects', data: data, backgroundColor: colors.slice(0, labels.length).map((color, idx) => {
+                        if (chartPriorityFilter && labels[idx] !== chartPriorityFilter) return color + '40';
+                        return color;
+                    }), borderRadius: 6, borderWidth: 2, borderColor: colors.slice(0, labels.length) }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: function(event, activeElements) {
+                        if (activeElements.length > 0) {
+                            const clickedIndex = activeElements[0].index;
+                            const selectedPriority = labels[clickedIndex];
+                            if (chartPriorityFilter === selectedPriority) {
+                                chartPriorityFilter = null;
+                            } else {
+                                chartPriorityFilter = selectedPriority;
+                            }
+                            applyChartFilters();
+                        }
+                    },
+                    scales: { x: { beginAtZero: true } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: {
+                            label: (c) => {
+                                const total = data.reduce((a,b)=>a+b,0);
+                                const pct = ((c.parsed.x / total)*100).toFixed(1);
+                                const filtered = chartPriorityFilter === c.label ? ' (FILTERED)' : '';
+                                return `${c.parsed.x} projects (${pct}%)${filtered}`;
+                            }
+                        }}
+                    }
+                }
+            });
+        }
+
+        // Render SDLC Phase Chart
+        function renderProjectSDLCChart() {
+            const canvas = document.getElementById('projectSDLCChartCanvas');
+            if (!canvas) return;
+
+            let filteredProjects = [...projects];
+            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
+                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                return projectHealth === chartHealthFilter;
+            });
+            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
+                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+            );
+            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+
+            const sdlcGroups = { 'Requirement': 0, 'Design': 0, 'Development': 0, 'Testing': 0, 'UAT': 0, 'Deployment': 0 };
+            filteredProjects.forEach(p => {
+                const sdlc = p.sdlcPhase || 'Development';
+                if (sdlcGroups.hasOwnProperty(sdlc)) sdlcGroups[sdlc]++;
+            });
+
+            const labels = Object.keys(sdlcGroups).filter(s => sdlcGroups[s] > 0);
+            const data = labels.map(s => sdlcGroups[s]);
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'];
+
+            if (projectSDLCChartInstance) projectSDLCChartInstance.destroy();
+            projectSDLCChartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Projects', data: data, backgroundColor: colors.slice(0, labels.length).map((color, idx) => {
+                        if (chartSDLCFilter && labels[idx] !== chartSDLCFilter) return color + '40';
+                        return color;
+                    }), borderRadius: 6, borderWidth: 2, borderColor: colors.slice(0, labels.length) }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: function(event, activeElements) {
+                        if (activeElements.length > 0) {
+                            const clickedIndex = activeElements[0].index;
+                            const selectedSDLC = labels[clickedIndex];
+                            if (chartSDLCFilter === selectedSDLC) {
+                                chartSDLCFilter = null;
+                            } else {
+                                chartSDLCFilter = selectedSDLC;
+                            }
+                            applyChartFilters();
+                        }
+                    },
+                    scales: { y: { beginAtZero: true } },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: {
+                            label: (c) => {
+                                const total = data.reduce((a,b)=>a+b,0);
+                                const pct = ((c.parsed.y / total)*100).toFixed(1);
+                                const filtered = chartSDLCFilter === c.label ? ' (FILTERED)' : '';
+                                return `${c.parsed.y} projects (${pct}%)${filtered}`;
+                            }
+                        }}
+                    }
+                }
+            });
+        }
+
+        // Render Progress Distribution Chart
+        function renderProjectProgressDistChart() {
+            const canvas = document.getElementById('projectProgressDistChartCanvas');
+            if (!canvas) return;
+
+            let filteredProjects = [...projects];
+            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
+                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                return projectHealth === chartHealthFilter;
+            });
+            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
+                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+            );
+            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+
+            const ranges = { '0-25%': 0, '25-50%': 0, '50-75%': 0, '75-100%': 0 };
+            filteredProjects.forEach(p => {
+                const progress = p.progress || 0;
+                if (progress < 25) ranges['0-25%']++;
+                else if (progress < 50) ranges['25-50%']++;
+                else if (progress < 75) ranges['50-75%']++;
+                else ranges['75-100%']++;
+            });
+
+            const labels = Object.keys(ranges).filter(r => ranges[r] > 0);
+            const data = labels.map(r => ranges[r]);
+            const colors = ['#ff5555', '#ffb800', '#667eea', '#00c875'];
+
+            if (projectProgressDistChartInstance) projectProgressDistChartInstance.destroy();
+            projectProgressDistChartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Projects', data: data, backgroundColor: colors.slice(0, labels.length), borderRadius: 6 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // Render Timeline Analytics Chart
+        function renderProjectTimelineChart() {
+            const canvas = document.getElementById('projectTimelineChartCanvas');
+            if (!canvas) return;
+
+            let filteredProjects = [...projects];
+            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
+                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                return projectHealth === chartHealthFilter;
+            });
+            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
+                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+            );
+            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+
+            const monthData = {};
+            filteredProjects.forEach(p => {
+                if (p.startDate) {
+                    const date = new Date(p.startDate);
+                    const month = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                    monthData[month] = (monthData[month] || 0) + 1;
+                }
+            });
+
+            const labels = Object.keys(monthData).slice(-6);
+            const data = labels.map(l => monthData[l] || 0);
+
+            if (projectTimelineChartInstance) projectTimelineChartInstance.destroy();
+            projectTimelineChartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Projects Started', data: data, borderColor: '#0073ea', backgroundColor: 'rgba(0,115,234,0.1)', tension: 0.4, fill: true }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { legend: { display: true } }
+                }
+            });
+        }
+
+        // Render Completion Forecast Chart
+        function renderProjectForecastChart() {
+            const canvas = document.getElementById('projectForecastChartCanvas');
+            if (!canvas) return;
+
+            let filteredProjects = [...projects];
+            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
+                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                return projectHealth === chartHealthFilter;
+            });
+            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
+                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+            );
+            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+
+            const inProgress = filteredProjects.filter(p => p.status === 'In Progress' && p.progress < 100);
+            const avgRemainingDays = inProgress.reduce((sum, p) => sum + ((100 - (p.progress || 0)) / 100 * 30), 0) / Math.max(inProgress.length, 1);
+
+            const forecastData = [
+                inProgress.length,
+                Math.round(inProgress.filter(p => (p.progress || 0) >= 75).length),
+                Math.round(inProgress.filter(p => (p.progress || 0) >= 50 && (p.progress || 0) < 75).length),
+                Math.round(inProgress.filter(p => (p.progress || 0) < 50).length)
+            ];
+
+            if (projectForecastChartInstance) projectForecastChartInstance.destroy();
+            projectForecastChartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Total In Progress', 'On Track (75%+)', 'Medium Progress (50-75%)', 'Early Stage (<50%)'],
+                    datasets: [{ data: forecastData, backgroundColor: ['#0073ea', '#00c875', '#667eea', '#ffb800'], borderColor: '#fff', borderWidth: 3 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 15 } } }
+                }
+            });
+        }
+
+        // Render Team Workload Chart
+        function renderProjectWorkloadChart() {
+            const canvas = document.getElementById('projectWorkloadChartCanvas');
+            if (!canvas) return;
+
+            let filteredProjects = [...projects];
+            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
+                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                return projectHealth === chartHealthFilter;
+            });
+            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
+                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+            );
+            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+
+            const managerWorkload = {};
+            filteredProjects.forEach(p => {
+                if (p.projectManagers && p.projectManagers.length > 0) {
+                    p.projectManagers.forEach(m => {
+                        managerWorkload[m] = (managerWorkload[m] || 0) + 1;
+                    });
+                }
+            });
+
+            const sortedManagers = Object.entries(managerWorkload).sort((a, b) => b[1] - a[1]);
+            const labels = sortedManagers.map(m => m[0]);
+            const data = sortedManagers.map(m => m[1]);
+            const colors = ['#0073ea', '#00c875', '#fdab3d', '#ff5555', '#667eea', '#00bcd4'];
+
+            if (projectWorkloadChartInstance) projectWorkloadChartInstance.destroy();
+            projectWorkloadChartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Projects', data: data, backgroundColor: colors.slice(0, labels.length), borderRadius: 6 }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { x: { beginAtZero: true } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // Render Bottleneck Alerts
+        function renderBottleneckAlerts() {
+            const alertsList = document.getElementById('bottleneckAlertsList');
+            if (!alertsList) return;
+
+            let filteredProjects = [...projects];
+            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
+                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                return projectHealth === chartHealthFilter;
+            });
+            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
+                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+            );
+            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+
+            const alerts = [];
+
+            // High priority projects
+            filteredProjects.filter(p => p.priority === 'High').forEach(p => {
+                alerts.push({ type: '🔴', title: `High Priority: ${p.name}`, color: '#ff5555' });
+            });
+
+            // Overdue projects
+            filteredProjects.filter(p => p.status === 'In Progress' && p.dueDate && new Date() > new Date(p.dueDate)).forEach(p => {
+                alerts.push({ type: '⏰', title: `Overdue: ${p.name}`, color: '#ffb800' });
+            });
+
+            // Low progress projects
+            filteredProjects.filter(p => p.status === 'In Progress' && (p.progress || 0) < 25).forEach(p => {
+                alerts.push({ type: '⚠️', title: `Slow Progress: ${p.name} (${p.progress}%)`, color: '#667eea' });
+            });
+
+            // High health risk
+            filteredProjects.filter(p => p.projectHealth === 'red').forEach(p => {
+                alerts.push({ type: '🚨', title: `Health Risk: ${p.name}`, color: '#ff5555' });
+            });
+
+            if (alerts.length === 0) {
+                alertsList.innerHTML = '<li style="text-align: center; padding: 20px; color: #999;">✅ No alerts</li>';
+                return;
+            }
+
+            alertsList.innerHTML = alerts.map(a => `
+                <li style="padding: 12px; margin: 8px 0; background: ${a.color}20; border-left: 4px solid ${a.color}; border-radius: 4px; color: #323338;">
+                    <span style="font-size: 16px;">${a.type}</span> <strong>${a.title}</strong>
+                </li>
+            `).join('');
+        }
+
         // Render recent activity on dashboard
         function renderRecentActivity() {
             const activityList = document.getElementById('recentActivityList');
             if (!activityList) return;
 
-            // Get recent tasks (sorted by updatedAt or createdAt)
+            // Get filtered projects based on chart selections
+            let filteredProjects = [...projects];
+
+            // Apply project type filter from chart
+            if (chartTypeFilter) {
+                filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+            }
+
+            // Apply health filter from chart
+            if (chartHealthFilter) {
+                filteredProjects = filteredProjects.filter(p => {
+                    const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                    return projectHealth === chartHealthFilter;
+                });
+            }
+
+            // Get project names from filtered projects
+            const filteredProjectNames = filteredProjects.map(p => p.name);
+
+            // Get recent tasks (sorted by updatedAt or createdAt) - filter by selected projects
             const recentTasks = [...tasks]
-                .filter(t => t.name && t.personName)
+                .filter(t => t.name && t.personName && (!chartTypeFilter && !chartHealthFilter || filteredProjectNames.includes(t.project)))
                 .sort((a, b) => {
                     const aTime = a.updatedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0;
                     const bTime = b.updatedAt?.toMillis?.() || b.createdAt?.toMillis?.() || 0;
@@ -7408,6 +8723,12 @@
         let currentProjectView = 'grid';
         let currentTimelineScale = 'month';
         let currentFilteredProjects = null; // Store filtered projects when filters are applied
+        let chartTypeFilter = null; // Selected project type from chart
+        let chartHealthFilter = null; // Selected health status from chart
+        let chartManagerFilter = null; // Selected project manager from chart
+        let chartStatusFilter = null; // Selected project status from chart
+        let chartPriorityFilter = null; // Selected project priority from chart
+        let chartSDLCFilter = null; // Selected SDLC phase from chart
 
         function switchProjectView(viewType) {
             currentProjectView = viewType;
@@ -7561,13 +8882,6 @@
                     pixelsPerUnit = Math.max(60, 1200 / totalMonths);
                     headerFormat = 'month';
                     incrementFunction = 'Month';
-                } else if (currentTimelineScale === 'quarter') {
-                    // For quarter view: scale based on total months (since quarter = 3 months)
-                    // pixelsPerUnit represents 1 month, and quarter uses 3 months
-                    const totalMonths = Math.max(totalDays / 30, 1);
-                    pixelsPerUnit = Math.max(60, 1200 / totalMonths) / 3; // Divide by 3 since quarter = 3 months
-                    headerFormat = 'quarter';
-                    incrementFunction = 'Quarter';
                 } else if (currentTimelineScale === '6month') {
                     // For 6-month view: scale based on 6-month periods, minimum 65px per 6-month
                     const total6Months = Math.max(totalDays / 180, 1);
@@ -7647,30 +8961,6 @@
                         currentDate.setMonth(currentDate.getMonth() + 1);
                         currentDate.setDate(1);
                     }
-                } else if (currentTimelineScale === 'quarter') {
-                    // Major: Quarter (3 months), Minor: Month - Show only quarters containing data
-                    minorPixelWidth = pixelsPerUnit / 30; // Each month = 30 days
-
-                    currentDate = new Date(minDate);
-                    while (currentDate <= maxDate) {
-                        const year = currentDate.getFullYear();
-                        const currentMonth = currentDate.getMonth();
-                        const quarterNum = Math.floor(currentMonth / 3) + 1;
-                        const quarterStartMonth = (quarterNum - 1) * 3; // 0, 3, 6, 9
-
-                        // Calculate days in quarter (sum of days in 3 months of this quarter)
-                        let daysInQuarter = 0;
-                        for (let i = 0; i < 3; i++) {
-                            const monthStart = new Date(year, quarterStartMonth + i, 1);
-                            const monthEnd = new Date(year, quarterStartMonth + i + 1, 0);
-                            daysInQuarter += monthEnd.getDate();
-                        }
-
-                        const majorPixelWidth = minorPixelWidth * daysInQuarter;
-                        const quarterLabel = `Q${quarterNum} '${year.toString().slice(-2)}`;
-                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${quarterLabel}</div>`;
-                        currentDate = new Date(year, quarterStartMonth + 3, 1);
-                    }
                 } else if (currentTimelineScale === '6month') {
                     // Major: 6-Month periods - Fits with 6th and 12th month
                     minorPixelWidth = pixelsPerUnit / 30; // Each month = 30 days
@@ -7741,22 +9031,6 @@
                         ganttHTML += `<div style="flex: 0 0 ${minorPixels}px; text-align: center; font-size: 10px; color: #676879; border-right: 1px solid #e6e9ef;">${day}</div>`;
                         currentDate.setDate(currentDate.getDate() + 1);
                     }
-                } else if (currentTimelineScale === 'quarter') {
-                    // Minor: Month (3 months per quarter) - Show only months in quarters containing data
-                    const minorPixels = pixelsPerUnit / 30;
-
-                    currentDate = new Date(minDate);
-                    while (currentDate <= maxDate) {
-                        const month = currentDate.toLocaleDateString('en-US', { month: 'short' });
-                        // Calculate days in this month
-                        const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-                        const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-                        const daysInMonth = monthEnd.getDate();
-                        const monthPixelWidth = minorPixels * daysInMonth;
-
-                        ganttHTML += `<div style="flex: 0 0 ${monthPixelWidth}px; text-align: center; font-size: 10px; color: #676879; border-right: 1px solid #e6e9ef;">${month}</div>`;
-                        currentDate.setMonth(currentDate.getMonth() + 1);
-                    }
                 } else if (currentTimelineScale === '6month') {
                     // Minor: Month (6 months) - Start from minDate
                     const minorPixels = pixelsPerUnit / 6;
@@ -7815,10 +9089,11 @@
                         barWidth = Math.max((durationDays / 365) * pixelsPerUnit, 20);
                     }
 
-                    // Determine bar color based on status
-                    let barColor = '#667eea';
-                    if (project.status === 'completed') barColor = '#65d814';
-                    if (project.status === 'on-hold') barColor = '#ffb800';
+                    // Determine bar color based on project health
+                    let barColor = '#e6e9ef'; // Default color (none/gray)
+                    if (project.projectHealth === 'green') barColor = '#65d814';
+                    if (project.projectHealth === 'amber') barColor = '#ffb800';
+                    if (project.projectHealth === 'red') barColor = '#ff5555';
 
                     ganttHTML += `
                         <div style="display: flex; align-items: center; margin-bottom: 15px; padding: 10px 0; border-bottom: 1px solid #f0f0f0;">
@@ -8499,6 +9774,146 @@
                 filterPanel.style.display = 'block';
             } else {
                 filterPanel.style.display = 'none';
+            }
+        }
+
+        // Apply filters from chart selections (click-to-filter)
+        function applyChartFilters() {
+            let filteredProjects = [...projects];
+
+            // Apply project type filter from chart
+            if (chartTypeFilter) {
+                filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+            }
+
+            // Apply health filter from chart
+            if (chartHealthFilter) {
+                filteredProjects = filteredProjects.filter(p => {
+                    const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                    return projectHealth === chartHealthFilter;
+                });
+            }
+
+            // Apply project manager filter from chart
+            if (chartManagerFilter) {
+                filteredProjects = filteredProjects.filter(p =>
+                    p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+                );
+            }
+
+            // Apply project status filter from chart
+            if (chartStatusFilter) {
+                filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            }
+
+            // Apply project priority filter from chart
+            if (chartPriorityFilter) {
+                filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            }
+
+            // Apply SDLC phase filter from chart
+            if (chartSDLCFilter) {
+                filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
+            }
+
+            // Render filtered projects
+            renderFilteredProjects(filteredProjects);
+
+            // Re-render all charts to show selection state
+            renderProjectTypeChart();
+            renderProjectHealthChart();
+            renderProjectManagerChart();
+            renderProjectStatusChart();
+            renderProjectPriorityChart();
+            renderProjectSDLCChart();
+
+            // Update filter labels
+            const typeFilterLabel = document.getElementById('typeChartFilterLabel');
+            const typeFilterValue = document.getElementById('typeChartFilterValue');
+            if (typeFilterLabel && typeFilterValue) {
+                if (chartTypeFilter) {
+                    typeFilterLabel.style.display = 'inline';
+                    typeFilterValue.textContent = chartTypeFilter;
+                } else {
+                    typeFilterLabel.style.display = 'none';
+                }
+            }
+
+            const healthFilterLabel = document.getElementById('healthChartFilterLabel');
+            const healthFilterValue = document.getElementById('healthChartFilterValue');
+            if (healthFilterLabel && healthFilterValue) {
+                if (chartHealthFilter) {
+                    healthFilterLabel.style.display = 'inline';
+                    healthFilterValue.textContent = chartHealthFilter;
+                } else {
+                    healthFilterLabel.style.display = 'none';
+                }
+            }
+
+            const managerFilterLabel = document.getElementById('managerChartFilterLabel');
+            const managerFilterValue = document.getElementById('managerChartFilterValue');
+            if (managerFilterLabel && managerFilterValue) {
+                if (chartManagerFilter) {
+                    managerFilterLabel.style.display = 'inline';
+                    managerFilterValue.textContent = chartManagerFilter;
+                } else {
+                    managerFilterLabel.style.display = 'none';
+                }
+            }
+
+            const statusFilterLabel = document.getElementById('statusChartFilterLabel');
+            const statusFilterValue = document.getElementById('statusChartFilterValue');
+            if (statusFilterLabel && statusFilterValue) {
+                if (chartStatusFilter) {
+                    statusFilterLabel.style.display = 'inline';
+                    statusFilterValue.textContent = chartStatusFilter;
+                } else {
+                    statusFilterLabel.style.display = 'none';
+                }
+            }
+
+            const priorityFilterLabel = document.getElementById('priorityChartFilterLabel');
+            const priorityFilterValue = document.getElementById('priorityChartFilterValue');
+            if (priorityFilterLabel && priorityFilterValue) {
+                if (chartPriorityFilter) {
+                    priorityFilterLabel.style.display = 'inline';
+                    priorityFilterValue.textContent = chartPriorityFilter;
+                } else {
+                    priorityFilterLabel.style.display = 'none';
+                }
+            }
+
+            const sdlcFilterLabel = document.getElementById('sdlcChartFilterLabel');
+            const sdlcFilterValue = document.getElementById('sdlcChartFilterValue');
+            if (sdlcFilterLabel && sdlcFilterValue) {
+                if (chartSDLCFilter) {
+                    sdlcFilterLabel.style.display = 'inline';
+                    sdlcFilterValue.textContent = chartSDLCFilter;
+                } else {
+                    sdlcFilterLabel.style.display = 'none';
+                }
+            }
+
+            // Update clear button visibility
+            updateChartFilterClearButton();
+        }
+
+        // Clear chart filters
+        function clearChartFilters() {
+            chartTypeFilter = null;
+            chartHealthFilter = null;
+            chartManagerFilter = null;
+            chartStatusFilter = null;
+            chartPriorityFilter = null;
+            chartSDLCFilter = null;
+            applyChartFilters();
+        }
+
+        // Update clear button visibility
+        function updateChartFilterClearButton() {
+            const clearBtn = document.getElementById('clearChartFiltersBtn');
+            if (clearBtn) {
+                clearBtn.style.display = (chartTypeFilter || chartHealthFilter || chartManagerFilter || chartStatusFilter || chartPriorityFilter || chartSDLCFilter) ? 'inline-block' : 'none';
             }
         }
 
