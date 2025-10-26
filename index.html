@@ -2576,8 +2576,8 @@
                             <div style="font-size: 32px; font-weight: bold;" id="metricsAvgDuration">0</div>
                             <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;">days</div>
                         </div>
-                        <div style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">At Risk</div>
+                        <div onclick="showAtRiskDetails()" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';">
+                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">At Risk (Click for details)</div>
                             <div style="font-size: 32px; font-weight: bold;" id="metricsAtRisk">0</div>
                             <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;" id="metricsAtRiskPercent">0%</div>
                             <div style="font-size: 10px; opacity: 0.85; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.3);">
@@ -3219,6 +3219,19 @@
                     </div>
                 </div>
             </main>
+
+            <!-- At Risk Details Modal -->
+            <div id="atRiskModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+                <div style="background: white; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                    <div style="padding: 24px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: white;">
+                        <h2 style="margin: 0; color: #323338;">At Risk Projects</h2>
+                        <button onclick="closeAtRiskModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">×</button>
+                    </div>
+                    <div id="atRiskDetailsContent" style="padding: 24px;">
+                        Loading...
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Initialize Data Button -->
@@ -5523,6 +5536,116 @@
             return priority.charAt(0).toUpperCase() + priority.slice(1);
         }
 
+        // Store at-risk project details for modal
+        let atRiskDetails = {
+            overdue: [],
+            behindSchedule: [],
+            noProgress: [],
+            slow: []
+        };
+
+        // Show At Risk Details Modal
+        function showAtRiskDetails() {
+            const modal = document.getElementById('atRiskModal');
+            const content = document.getElementById('atRiskDetailsContent');
+
+            // Build the display content
+            let html = '';
+
+            // Overdue section
+            if (atRiskDetails.overdue.length > 0) {
+                html += `
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #d32f2f; margin: 0 0 12px 0; font-size: 16px;">
+                            ⏰ Overdue (${atRiskDetails.overdue.length})
+                        </h3>
+                        <div style="background: #ffebee; border-left: 4px solid #d32f2f; padding: 12px; border-radius: 4px;">
+                            ${atRiskDetails.overdue.map(p => `
+                                <div style="margin-bottom: 8px; color: #323338;">
+                                    • <strong>${p.name}</strong> (${p.daysOverdue} days overdue)
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Behind Schedule section
+            if (atRiskDetails.behindSchedule.length > 0) {
+                html += `
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #ff7043; margin: 0 0 12px 0; font-size: 16px;">
+                            📉 Behind Schedule (${atRiskDetails.behindSchedule.length})
+                        </h3>
+                        <div style="background: #ffe0b2; border-left: 4px solid #ff7043; padding: 12px; border-radius: 4px;">
+                            ${atRiskDetails.behindSchedule.map(p => `
+                                <div style="margin-bottom: 8px; color: #323338;">
+                                    • <strong>${p.name}</strong> (Expected: ${p.expectedProgress}%, Actual: ${p.actualProgress}%)
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // No Progress section
+            if (atRiskDetails.noProgress.length > 0) {
+                html += `
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #d32f2f; margin: 0 0 12px 0; font-size: 16px;">
+                            🚫 No Progress (${atRiskDetails.noProgress.length})
+                        </h3>
+                        <div style="background: #ffcdd2; border-left: 4px solid #d32f2f; padding: 12px; border-radius: 4px;">
+                            ${atRiskDetails.noProgress.map(p => `
+                                <div style="margin-bottom: 8px; color: #323338;">
+                                    • <strong>${p.name}</strong> (${p.daysElapsed} days, 0% progress)
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Slow Progress section (for context)
+            if (atRiskDetails.slow.length > 0) {
+                html += `
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #667eea; margin: 0 0 12px 0; font-size: 16px;">
+                            ⚠️ Slow Progress (${atRiskDetails.slow.length})
+                        </h3>
+                        <div style="background: #e8eaf6; border-left: 4px solid #667eea; padding: 12px; border-radius: 4px;">
+                            ${atRiskDetails.slow.map(p => `
+                                <div style="margin-bottom: 8px; color: #323338;">
+                                    • <strong>${p.name}</strong> (${p.actualProgress}% progress)
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (html === '') {
+                html = '<div style="text-align: center; color: #999; padding: 20px;">✅ No at-risk projects</div>';
+            }
+
+            content.innerHTML = html;
+            modal.style.display = 'flex';
+        }
+
+        // Close At Risk Modal
+        function closeAtRiskModal() {
+            const modal = document.getElementById('atRiskModal');
+            modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('atRiskModal');
+            if (modal && event.target === modal) {
+                closeAtRiskModal();
+            }
+        });
+
         // Render Key Metrics
         function renderKeyMetrics() {
             // Get filtered projects
@@ -5579,46 +5702,49 @@
             // At Risk/Delayed: Projects that are in progress with due date passed
             let overduCount = 0;
             let behindScheduleCount = 0;
+            atRiskDetails = { overdue: [], behindSchedule: [], noProgress: [], slow: [] };
 
             const delayed = filteredProjects.filter(p => {
                 if (normalizeStatus(p.status) === 'In Progress') {
                     // Case 1: Overdue - today is past the due date
                     if (p.dueDate) {
-                        if (new Date() > new Date(p.dueDate)) {
+                        const dueDate = new Date(p.dueDate);
+                        const today = new Date();
+
+                        if (today > dueDate) {
                             overduCount++;
+                            const daysOverdue = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
+                            atRiskDetails.overdue.push({ name: p.name, daysOverdue });
                             return true;  // Overdue
                         }
 
                         // Case 3 & 4: Progress behind schedule
                         if (p.startDate) {
                             const startDate = new Date(p.startDate);
-                            const dueDate = new Date(p.dueDate);
-                            const today = new Date();
-
-                            // Calculate total project duration in days
                             const totalDays = Math.floor((dueDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-
-                            // Calculate days elapsed since start
                             const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
                             // Only check if project has started
                             if (daysElapsed > 0) {
                                 // Expected progress: (days elapsed / total days) * 100
                                 const expectedProgress = Math.min((daysElapsed / totalDays) * 100, 100);
-
-                                // Actual progress
                                 const actualProgress = p.progress || 0;
 
                                 // Case 3: At risk if expected progress exceeds actual progress by more than 10%
                                 if (expectedProgress > actualProgress + 10) {
                                     behindScheduleCount++;
+                                    atRiskDetails.behindSchedule.push({
+                                        name: p.name,
+                                        expectedProgress: Math.round(expectedProgress),
+                                        actualProgress: Math.round(actualProgress)
+                                    });
                                     return true;  // Behind schedule
                                 }
 
                                 // Case 4: No progress yet but days have passed (0% after days started)
                                 if (actualProgress === 0 && daysElapsed >= 5) {
-                                    // Project started 5+ days ago but still 0% progress = red flag
                                     behindScheduleCount++;
+                                    atRiskDetails.noProgress.push({ name: p.name, daysElapsed });
                                     return true;  // No progress made
                                 }
                             }
@@ -5630,7 +5756,10 @@
                     if (p.startDate && (p.progress || 0) < 50) {
                         const startDate = new Date(p.startDate);
                         const daysSinceStart = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
-                        return daysSinceStart > 30;
+                        if (daysSinceStart > 30) {
+                            atRiskDetails.slow.push({ name: p.name, actualProgress: p.progress || 0 });
+                            return true;
+                        }
                     }
                 }
                 return false;
