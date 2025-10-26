@@ -5504,6 +5504,17 @@
             return project.sdlc || project.sdlcPhase || 'Development';
         }
 
+        // Helper function to normalize priority values from Firebase format
+        function normalizePriority(priority) {
+            if (!priority) return 'Medium';
+            const lowerPriority = priority.toLowerCase();
+            if (lowerPriority === 'high') return 'High';
+            if (lowerPriority === 'medium') return 'Medium';
+            if (lowerPriority === 'low') return 'Low';
+            // Return title-cased version for unknown priorities
+            return priority.charAt(0).toUpperCase() + priority.slice(1);
+        }
+
         // Render Key Metrics
         function renderKeyMetrics() {
             // Get filtered projects
@@ -5526,7 +5537,7 @@
                 filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
             }
             if (chartPriorityFilter) {
-                filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+                filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
             }
             if (chartSDLCFilter) {
                 filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
@@ -5610,7 +5621,7 @@
             if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
             if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
             const statusGroups = { 'Planned': 0, 'In Progress': 0, 'Completed': 0, 'On Hold': 0 };
@@ -5681,7 +5692,7 @@
 
             const priorityGroups = { 'High': 0, 'Medium': 0, 'Low': 0 };
             filteredProjects.forEach(p => {
-                const priority = p.priority || 'Medium';
+                const priority = normalizePriority(p.priority);
                 if (priorityGroups.hasOwnProperty(priority)) priorityGroups[priority]++;
             });
 
@@ -5746,9 +5757,9 @@
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
             if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
 
-            const sdlcGroups = { 'Requirement': 0, 'Design': 0, 'Development': 0, 'Smoke Test': 0, 'SIT': 0, 'Testing': 0, 'UAT': 0, 'Implemented': 0, 'Deployment': 0 };
+            const sdlcGroups = { 'Requirement': 0, 'Design': 0, 'Development': 0, 'Smoke Test': 0, 'SIT': 0, 'Testing': 0, 'UAT': 0, 'Implemented': 0};
             filteredProjects.forEach(p => {
                 const sdlc = getSDLCPhase(p);
                 if (sdlcGroups.hasOwnProperty(sdlc)) sdlcGroups[sdlc]++;
@@ -5819,7 +5830,7 @@
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
             if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
             if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
             const ranges = { '0-25%': 0, '25-50%': 0, '50-75%': 0, '75-100%': 0 };
@@ -5866,7 +5877,7 @@
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
             if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
             if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
             const monthData = {};
@@ -5912,7 +5923,7 @@
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
             if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
             if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
             const inProgress = filteredProjects.filter(p => normalizeStatus(p.status) === 'In Progress' && p.progress < 100);
@@ -5955,7 +5966,7 @@
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
             if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
             if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
             const managerWorkload = {};
@@ -6004,13 +6015,13 @@
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
             if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
             if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
             const alerts = [];
 
             // High priority projects
-            filteredProjects.filter(p => p.priority === 'High').forEach(p => {
+            filteredProjects.filter(p => normalizePriority(p.priority) === 'High').forEach(p => {
                 alerts.push({ type: '🔴', title: `High Priority: ${p.name}`, color: '#ff5555' });
             });
 
@@ -9836,7 +9847,7 @@
 
             // Apply project priority filter from chart
             if (chartPriorityFilter) {
-                filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+                filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
             }
 
             // Apply SDLC phase filter from chart
