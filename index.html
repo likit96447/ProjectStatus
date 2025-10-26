@@ -5748,15 +5748,20 @@
             if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
 
-            const sdlcGroups = { 'Requirement': 0, 'Design': 0, 'Development': 0, 'Testing': 0, 'UAT': 0, 'Deployment': 0 };
+            const sdlcGroups = { 'Requirement': 0, 'Design': 0, 'Development': 0, 'Smoke Test': 0, 'SIT': 0, 'Testing': 0, 'UAT': 0, 'Implemented': 0, 'Deployment': 0 };
             filteredProjects.forEach(p => {
                 const sdlc = getSDLCPhase(p);
                 if (sdlcGroups.hasOwnProperty(sdlc)) sdlcGroups[sdlc]++;
+                else if (sdlc && sdlc !== 'Development') {
+                    // Handle any other SDLC phases by adding them dynamically
+                    sdlcGroups[sdlc] = (sdlcGroups[sdlc] || 0) + 1;
+                }
             });
 
             const labels = Object.keys(sdlcGroups).filter(s => sdlcGroups[s] > 0);
             const data = labels.map(s => sdlcGroups[s]);
-            const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'];
+            // Colors for SDLC phases: Requirement, Design, Development, Smoke Test, SIT, Testing, UAT, Implemented, Deployment
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#00bcd4', '#ff9800', '#ff6b6b'];
 
             if (projectSDLCChartInstance) projectSDLCChartInstance.destroy();
             projectSDLCChartInstance = new Chart(canvas.getContext('2d'), {
