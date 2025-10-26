@@ -5665,7 +5665,7 @@
                 );
             }
             if (chartStatusFilter) {
-                filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+                filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             }
             if (chartPriorityFilter) {
                 filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
@@ -5688,7 +5688,7 @@
             // If dueDate exists, compare endDate with dueDate
             // If no dueDate, count as on-time if completed with 100% progress
             const onTime = filteredProjects.filter(p => {
-                if (p.status === 'Completed') {
+                if (normalizeStatus(p.status) === 'Completed') {
                     if (p.dueDate && p.endDate) {
                         // If both dates exist, check if endDate <= dueDate
                         return new Date(p.endDate) <= new Date(p.dueDate);
