@@ -2478,9 +2478,6 @@
             }
         }
     </style>
-
-    <!-- Gantt Chart Integration Module -->
-    <script src="gantt-integration.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -9274,7 +9271,7 @@
             `).join('');
         }
 
-        // Render Gantt chart using new GANTT module
+        // Render Gantt chart
         function renderGanttChart(filteredProjects) {
             try {
                 const ganttContainer = document.getElementById('ganttChart');
@@ -9292,24 +9289,611 @@
                     return;
                 }
 
-                // Create the required HTML structure for GANTT module
-                ganttContainer.innerHTML = `
-                    <div id="timeline-header" style="overflow-x: hidden; border-bottom: 1px solid #e6e9ef;"></div>
-                    <div id="gantt-container" style="overflow-x: auto; display: flex;">
-                        <div id="task-list-body" style="flex: 0 0 250px; border-right: 1px solid #e6e9ef; overflow-y: auto;"></div>
-                        <div style="flex: 1; position: relative;">
-                            <div id="gantt-grid" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div>
-                            <div id="gantt-bars" style="position: relative; min-height: 300px;"></div>
-                        </div>
-                    </div>
+                // Get date range for the chart
+                let minDate = new Date();
+                let maxDate = new Date();
+
+                projectsToDisplay.forEach(project => {
+                    if (project.startDate) {
+                        const start = parseDate(project.startDate);
+                        if (start < minDate) minDate = start;
+                    }
+                    if (project.endDate) {
+                        const end = parseDate(project.endDate);
+                        if (end > maxDate) maxDate = end;
+                    }
+                });
+
+                // Set minDate to start of day (00:00:00) and maxDate to end of day (23:59:59)
+                minDate.setHours(0, 0, 0, 0);
+                maxDate.setHours(23, 59, 59, 999);
+
+                // Calculate total days and scale based on currentTimelineScale
+                const totalDays = Math.max((maxDate - minDate) / (1000 * 60 * 60 * 24), 1);
+                let pixelsPerUnit = 50;
+                let headerFormat = '';
+                let incrementFunction = '';
+
+                if (currentTimelineScale === 'day') {
+                    // For day view: scale based on total days, minimum 30px per day
+                    pixelsPerUnit = Math.max(30, 1200 / Math.max(totalDays, 1));
+                    headerFormat = 'day';
+                    incrementFunction = 'Day';
+                } else if (currentTimelineScale === 'week') {
+                    // For week view: scale based on total weeks, minimum 50px per week
+                    const totalWeeks = Math.max(totalDays / 7, 1);
+                    pixelsPerUnit = Math.max(50, 1200 / totalWeeks);
+                    headerFormat = 'week';
+                    incrementFunction = 'Week';
+                } else if (currentTimelineScale === 'month') {
+                    // For month view: scale based on total months, minimum 60px per month
+                    const totalMonths = Math.max(totalDays / 30, 1);
+                    pixelsPerUnit = Math.max(60, 1200 / totalMonths);
+                    headerFormat = 'month';
+                    incrementFunction = 'Month';
+                } else if (currentTimelineScale === '6month') {
+                    // For 6-month view: scale based on 6-month periods, minimum 65px per 6-month
+                    const total6Months = Math.max(totalDays / 180, 1);
+                    pixelsPerUnit = Math.max(65, 1200 / total6Months);
+                    headerFormat = '6month';
+                    incrementFunction = '6Month';
+                } else if (currentTimelineScale === 'year') {
+                    // For year view: scale based on total years, minimum 70px per year
+                    const totalYears = Math.max(totalDays / 365, 1);
+                    pixelsPerUnit = Math.max(70, 1200 / totalYears);
+                    headerFormat = 'year';
+                    incrementFunction = 'Year';
+                }
+
+                // Calculate total timeline width to ensure bars don't get clipped
+                let totalTimelineWidth = 0;
+                if (currentTimelineScale === 'day') {
+                    const totalDaysInTimeline = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24));
+                    totalTimelineWidth = totalDaysInTimeline * pixelsPerUnit;
+                } else if (currentTimelineScale === 'week') {
+                    const totalWeeksInTimeline = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24 * 7));
+                    totalTimelineWidth = totalWeeksInTimeline * pixelsPerUnit;
+                } else if (currentTimelineScale === 'month') {
+                    // Calculate total width using fixed 30 days per month
+                    let currentDate = new Date(minDate);
+                    totalTimelineWidth = 0;
+                    const minorPixelWidthTemp = pixelsPerUnit / 30;
+                    while (currentDate <= maxDate) {
+                        totalTimelineWidth += 30 * minorPixelWidthTemp;  // Fixed 30 days per month
+                        currentDate.setMonth(currentDate.getMonth() + 1);
+                    }
+                } else if (currentTimelineScale === '6month') {
+                    const total6Months = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24 * 180));
+                    totalTimelineWidth = total6Months * pixelsPerUnit;
+                } else if (currentTimelineScale === 'year') {
+                    const totalYearsInTimeline = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24 * 365));
+                    totalTimelineWidth = totalYearsInTimeline * pixelsPerUnit;
+                }
+
+                // Render timeline header with Major and Minor scales
+                let ganttHTML = `
+                <div style="display: flex; margin-bottom: 0;">
+                    <div style="flex: 0 0 250px; padding: 10px; font-weight: 600; border-bottom: 2px solid #e6e9ef;">Project Name</div>
+                    <div style="min-width: ${totalTimelineWidth}px; padding: 0; border-bottom: 2px solid #e6e9ef;">
+                        <!-- Major Scale Header -->
+                        <div style="display: flex; height: 25px; margin-bottom: 0; border-bottom: 1px solid #e6e9ef;">
                 `;
 
-                // Call the new GANTT module
-                if (typeof GANTT !== 'undefined' && GANTT.renderChart) {
-                    GANTT.renderChart(projectsToDisplay);
-                } else {
-                    console.error('GANTT module not loaded');
-                    ganttContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: #e44258;">Error loading Gantt chart. Please check the console for details.</div>';
+                // Add Major scale headers based on selected scale
+                // Calculate minor pixel widths first to derive major widths
+                let minorPixelWidth = 0;
+                let majorUnitMultiplier = 1;
+                let currentDate = new Date(minDate);
+
+                if (currentTimelineScale === 'day') {
+                    // Major: Day by day starting from minDate
+                    minorPixelWidth = pixelsPerUnit;
+                    currentDate = new Date(minDate);
+                    while (currentDate < maxDate) {  // Changed to < to include final day
+                        const day = currentDate.toLocaleDateString('en-US', { day: 'numeric' });
+                        ganttHTML += `<div style="flex: 0 0 ${minorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${day}</div>`;
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                    // Add final day
+                    const day = currentDate.toLocaleDateString('en-US', { day: 'numeric' });
+                    ganttHTML += `<div style="flex: 0 0 ${minorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${day}</div>`;
+                } else if (currentTimelineScale === 'week') {
+                    // Major: Week (7 days), Minor: Day - Start from minDate exactly
+                    minorPixelWidth = pixelsPerUnit / 7;
+
+                    currentDate = new Date(minDate);
+                    while (currentDate < maxDate) {  // Changed to < to continue until we pass maxDate
+                        const majorPixelWidth = minorPixelWidth * 7;
+                        const weekStart = new Date(currentDate);
+                        const weekEnd = new Date(currentDate);
+                        weekEnd.setDate(weekEnd.getDate() + 6);
+
+                        const startDay = String(weekStart.getDate()).padStart(2, '0');
+                        const startMonth = String(weekStart.getMonth() + 1).padStart(2, '0');
+                        const endDay = String(weekEnd.getDate()).padStart(2, '0');
+                        const endMonth = String(weekEnd.getMonth() + 1).padStart(2, '0');
+
+                        const weekLabel = `${startDay}/${startMonth}-${endDay}/${endMonth}`;
+
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${weekLabel}</div>`;
+                        currentDate.setDate(currentDate.getDate() + 7);
+                    }
+                    // Add final week if needed
+                    if (currentDate >= maxDate && currentDate > minDate) {
+                        const majorPixelWidth = minorPixelWidth * 7;
+                        const weekStart = currentDate;
+                        weekStart.setDate(weekStart.getDate() - 7);
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekEnd.getDate() + 6);
+
+                        const startDay = String(weekStart.getDate()).padStart(2, '0');
+                        const startMonth = String(weekStart.getMonth() + 1).padStart(2, '0');
+                        const endDay = String(weekEnd.getDate()).padStart(2, '0');
+                        const endMonth = String(weekEnd.getMonth() + 1).padStart(2, '0');
+
+                        const weekLabel = `${startDay}/${startMonth}-${endDay}/${endMonth}`;
+
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${weekLabel}</div>`;
+                    }
+                } else if (currentTimelineScale === 'month') {
+                    // Major: Month, Minor: Day - Start from minDate exactly
+                    // Use fixed 30 days per month for consistent alignment
+                    minorPixelWidth = pixelsPerUnit / 30;
+
+                    currentDate = new Date(minDate);
+                    while (currentDate < maxDate) {  // Changed to < to continue until we pass maxDate
+                        const majorPixelWidth = minorPixelWidth * 30;
+                        const month = currentDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${month}</div>`;
+                        currentDate.setMonth(currentDate.getMonth() + 1);
+                    }
+                    // Add final month
+                    const majorPixelWidth = minorPixelWidth * 30;
+                    const month = currentDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+                    ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${month}</div>`;
+                } else if (currentTimelineScale === '6month') {
+                    // Major: 6-Month periods - Use fixed 30 days per month (180 days per 6-month)
+                    minorPixelWidth = pixelsPerUnit / 30; // Each month = 30 days
+
+                    currentDate = new Date(minDate);
+                    while (currentDate < maxDate) {  // Changed to < to continue until we pass maxDate
+                        const halfYear = Math.floor(currentDate.getMonth() / 6) + 1;
+                        const year = currentDate.getFullYear();
+
+                        const daysIn6Month = 6 * 30;
+                        const majorPixelWidth = minorPixelWidth * daysIn6Month;
+                        const halfYearLabel = `H${halfYear} '${year.toString().slice(-2)}`;
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${halfYearLabel}</div>`;
+                        currentDate.setMonth(currentDate.getMonth() + 6);
+                    }
+                    // Add final 6-month period if needed
+                    if (currentDate >= maxDate && currentDate > minDate) {
+                        const halfYear = Math.floor(currentDate.getMonth() / 6) + 1;
+                        const year = currentDate.getFullYear();
+                        const daysIn6Month = 6 * 30;
+                        const majorPixelWidth = minorPixelWidth * daysIn6Month;
+                        const halfYearLabel = `H${halfYear} '${year.toString().slice(-2)}`;
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${halfYearLabel}</div>`;
+                    }
+                } else if (currentTimelineScale === 'year') {
+                    // Major: Year, Minor: Month - Use fixed 30 days per month (360 days per year)
+                    minorPixelWidth = pixelsPerUnit / 30; // Each month = 30 days
+
+                    currentDate = new Date(minDate);
+                    while (currentDate < maxDate) {  // Changed to < to continue until we pass maxDate
+                        const year = currentDate.getFullYear();
+                        const daysInYear = 12 * 30;
+                        const majorPixelWidth = minorPixelWidth * daysInYear;
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${year}</div>`;
+                        currentDate.setFullYear(currentDate.getFullYear() + 1);
+                    }
+                    // Add final year if needed
+                    if (currentDate >= maxDate && currentDate > minDate) {
+                        const year = currentDate.getFullYear();
+                        const daysInYear = 12 * 30;
+                        const majorPixelWidth = minorPixelWidth * daysInYear;
+                        ganttHTML += `<div style="flex: 0 0 ${majorPixelWidth}px; text-align: center; font-size: 12px; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef;">${year}</div>`;
+                    }
+                }
+
+                ganttHTML += `</div>
+                        <!-- Minor Scale Header -->
+                        <div style="display: flex; height: 25px;">
+                `;
+
+                // Add Minor scale headers - Start from minDate exactly
+                currentDate = new Date(minDate);
+                if (currentTimelineScale === 'day') {
+                    // Minor scale not shown for day view (same as major)
+                } else if (currentTimelineScale === 'week') {
+                    // Minor: Day (7 days per week) - Start from minDate
+                    const minorPixels = pixelsPerUnit / 7;
+                    while (currentDate <= maxDate) {
+                        const day = currentDate.toLocaleDateString('en-US', { day: 'numeric' });
+                        ganttHTML += `<div style="flex: 0 0 ${minorPixels}px; text-align: center; font-size: 10px; color: #676879; border-right: 1px solid #e6e9ef;">${day}</div>`;
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                } else if (currentTimelineScale === 'month') {
+                    // Minor: Day (showing dates) - Each day gets equal width within month view
+                    // Use same calculation as major scale: pixelsPerUnit / 30 = width per day
+                    currentDate = new Date(minDate);
+                    while (currentDate <= maxDate) {
+                        const minorPixels = pixelsPerUnit / 30;  // Same as in major scale calculation
+                        const day = String(currentDate.getDate()).padStart(2, '0');
+                        ganttHTML += `<div style="flex: 0 0 ${minorPixels}px; text-align: center; font-size: 10px; color: #676879; border-right: 1px solid #e6e9ef;">${day}</div>`;
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                } else if (currentTimelineScale === '6month') {
+                    // Minor: Month (6 months) - Start from minDate
+                    const minorPixels = pixelsPerUnit / 6;
+                    currentDate = new Date(minDate);
+                    while (currentDate <= maxDate) {
+                        const month = currentDate.toLocaleDateString('en-US', { month: 'short' });
+                        ganttHTML += `<div style="flex: 0 0 ${minorPixels}px; text-align: center; font-size: 10px; color: #676879; border-right: 1px solid #e6e9ef;">${month}</div>`;
+                        currentDate.setMonth(currentDate.getMonth() + 1);
+                    }
+                } else if (currentTimelineScale === 'year') {
+                    // Minor: Month (12 months per year) - Start from minDate
+                    const minorPixels = pixelsPerUnit / 12;
+                    currentDate = new Date(minDate);
+                    while (currentDate <= maxDate) {
+                        const month = currentDate.toLocaleDateString('en-US', { month: 'short' });
+                        ganttHTML += `<div style="flex: 0 0 ${minorPixels}px; text-align: center; font-size: 10px; color: #676879; border-right: 1px solid #e6e9ef;">${month}</div>`;
+                        currentDate.setMonth(currentDate.getMonth() + 1);
+                    }
+                }
+
+                ganttHTML += `</div></div></div>`;
+
+                // Render project timeline bars
+                // Helper function to calculate pixel position based on scale
+                function calculatePixelPosition(dateFrom, dateTo, minDateRef, pixelsPerUnitRef, scale) {
+                    let pixelPos = 0;
+
+                    if (scale === 'day') {
+                        const daysDiff = (dateFrom - minDateRef) / (1000 * 60 * 60 * 24);
+                        pixelPos = daysDiff * pixelsPerUnitRef;
+                    } else if (scale === 'week') {
+                        const daysDiff = (dateFrom - minDateRef) / (1000 * 60 * 60 * 24);
+                        pixelPos = (daysDiff / 7) * pixelsPerUnitRef;
+                    } else if (scale === 'month') {
+                        // For month view, calculate pixel position using fixed 30 days per month
+                        let currentDate = new Date(minDateRef);
+                        pixelPos = 0;
+                        const minorPixelWidth = pixelsPerUnitRef / 30;
+
+                        // Count full months
+                        while (currentDate.getFullYear() < dateFrom.getFullYear() ||
+                               (currentDate.getFullYear() === dateFrom.getFullYear() && currentDate.getMonth() < dateFrom.getMonth())) {
+                            pixelPos += 30 * minorPixelWidth;  // Fixed 30 days per month
+                            currentDate.setMonth(currentDate.getMonth() + 1);
+                        }
+
+                        // Add partial month days
+                        if (currentDate.getMonth() === dateFrom.getMonth()) {
+                            const daysInPartialMonth = dateFrom.getDate() - minDateRef.getDate();
+                            pixelPos += daysInPartialMonth * minorPixelWidth;
+                        }
+                    } else if (scale === '6month') {
+                        const daysDiff = (dateFrom - minDateRef) / (1000 * 60 * 60 * 24);
+                        pixelPos = (daysDiff / 180) * pixelsPerUnitRef;
+                    } else if (scale === 'year') {
+                        const daysDiff = (dateFrom - minDateRef) / (1000 * 60 * 60 * 24);
+                        pixelPos = (daysDiff / 365) * pixelsPerUnitRef;
+                    }
+
+                    return pixelPos;
+                }
+
+                // Create SVG canvas for dependency lines
+                const svgCanvas = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svgCanvas.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    left: 250px;
+                    width: ${totalTimelineWidth}px;
+                    height: 100%;
+                    pointer-events: none;
+                    z-index: 5;
+                `;
+
+                // Store task references for dependencies and interactions
+                const taskBars = {};
+                const taskPositions = {}; // Store task bar positions for drawing dependencies
+
+                projectsToDisplay.forEach(project => {
+                    const startDate = project.startDate ? parseDate(project.startDate) : minDate;
+                    const endDate = project.endDate ? parseDate(project.endDate) : maxDate;
+
+                    // Set start date to start of day and end date to end of day
+                    startDate.setHours(0, 0, 0, 0);
+                    endDate.setHours(23, 59, 59, 999);
+
+                    // Calculate offset and width using accurate positioning
+                    let offsetPixels = calculatePixelPosition(startDate, startDate, minDate, pixelsPerUnit, currentTimelineScale);
+                    let endPixels = calculatePixelPosition(endDate, endDate, minDate, pixelsPerUnit, currentTimelineScale);
+                    let barWidth = Math.max(endPixels - offsetPixels, 20);
+
+                    // Determine bar color based on project health
+                    let barColor = '#e6e9ef'; // Default color (none/gray)
+                    if (project.projectHealth === 'green') barColor = '#65d814';
+                    if (project.projectHealth === 'amber') barColor = '#ffb800';
+                    if (project.projectHealth === 'red') barColor = '#ff5555';
+
+                    // Check if this is a milestone (0 day duration or marked as milestone)
+                    const isMilestone = barWidth <= 20 && project.isMilestone;
+
+                    // Build tooltip with full project details
+                    const tooltipText = `
+                        Project: ${project.name}
+                        Status: ${normalizeStatus(project.status)}
+                        Progress: ${project.progress || 0}%
+                        Start: ${project.startDate}
+                        End: ${project.endDate}
+                        Priority: ${normalizePriority(project.priority)}
+                        Health: ${project.projectHealth || 'None'}
+                        Manager: ${project.projectManagers?.join(', ') || 'Unassigned'}
+                    `.trim();
+
+                    // Create bar element with drag-drop support
+                    const barId = `bar-${project.id || project.name.replace(/\s+/g, '-')}`;
+                    const barClass = isMilestone ? 'gantt-milestone' : 'gantt-bar';
+
+                    // Render milestone as diamond or bar as rectangle
+                    let barHTML = '';
+                    if (isMilestone) {
+                        // Milestone diamond
+                        barHTML = `<div style="position: absolute; left: ${offsetPixels - 8}px; width: 16px; height: 16px; background: #ffb800; transform: rotate(45deg); cursor: pointer; border-radius: 2px;"
+                                       class="${barClass}"
+                                       id="${barId}"
+                                       data-project-id="${project.id}"
+                                       title="${tooltipText}"></div>`;
+                    } else {
+                        // Regular task bar with progress indicator
+                        const progressWidth = Math.max((barWidth * (project.progress || 0)) / 100, 2);
+                        barHTML = `<div style="position: absolute; left: ${offsetPixels}px; width: ${barWidth}px; height: 28px; background: ${barColor}; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600; cursor: grab; border: 2px solid transparent; transition: all 0.2s ease;"
+                                       class="${barClass}"
+                                       id="${barId}"
+                                       data-project-id="${project.id}"
+                                       data-start-date="${project.startDate}"
+                                       data-end-date="${project.endDate}"
+                                       data-offset="${offsetPixels}"
+                                       data-width="${barWidth}"
+                                       title="${tooltipText}"
+                                       onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'; this.style.borderColor='#323338';"
+                                       onmouseout="this.style.boxShadow='none'; this.style.borderColor='transparent';">
+                                    ${project.progress || 0}%
+                                    <div style="position: absolute; left: 2px; top: 0; height: 100%; width: ${progressWidth - 4}px; background: rgba(0,0,0,0.2); border-radius: 2px;"></div>
+                                </div>`;
+                    }
+
+                    ganttHTML += `
+                        <div style="display: flex; align-items: center; margin-bottom: 15px; padding: 10px 0; border-bottom: 1px solid #f0f0f0;" class="gantt-row" data-project-id="${project.id}">
+                            <div style="flex: 0 0 250px; padding: 10px; font-weight: 500; color: #323338; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${project.name}">
+                                ${project.name}
+                            </div>
+                            <div style="min-width: ${totalTimelineWidth}px; padding: 0; position: relative; height: 30px;">
+                                ${barHTML}
+                            </div>
+                        </div>
+                    `;
+
+                    // Store bar reference for later manipulation
+                    taskBars[barId] = {
+                        projectId: project.id,
+                        element: null, // Will be set after DOM creation
+                        offsetPixels,
+                        barWidth,
+                        startDate,
+                        endDate,
+                        isMilestone,
+                        dependencies: project.dependencies || [] // Array of project IDs this task depends on
+                    };
+
+                    // Store position info for drawing dependency lines
+                    const rowIndex = projectsToDisplay.indexOf(project);
+                    taskPositions[project.id] = {
+                        barId,
+                        rowIndex,
+                        offsetPixels,
+                        barWidth,
+                        endPixels
+                    };
+                });
+
+                // Calculate today's position and add today indicator line using accurate positioning
+                const today = getTodayMidnight();
+                let todayPixels = calculatePixelPosition(today, today, minDate, pixelsPerUnit, currentTimelineScale);
+
+                ganttContainer.innerHTML = ganttHTML;
+
+                // Function to draw dependency lines
+                function drawDependencies() {
+                    const rowHeight = 45;
+
+                    // Draw lines for each dependency
+                    projectsToDisplay.forEach((project) => {
+                        const deps = project.dependencies || [];
+                        if (!deps || deps.length === 0) return;
+
+                        const currentPos = taskPositions[project.id];
+                        if (!currentPos) return;
+
+                        deps.forEach((depProjectId) => {
+                            const depPos = taskPositions[depProjectId];
+                            if (!depPos) return;
+
+                            // Get row centers for line drawing
+                            const fromY = (depPos.rowIndex * rowHeight) + 30 + 15; // Center of bar
+                            const toY = (currentPos.rowIndex * rowHeight) + 30 + 15;
+                            const fromX = depPos.offsetPixels + depPos.barWidth; // End of dependency bar
+                            const toX = currentPos.offsetPixels; // Start of dependent bar
+
+                            // Create SVG path for the dependency line
+                            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                            const controlX = (fromX + toX) / 2;
+
+                            // Create curved connector line
+                            const d = `M ${fromX} ${fromY} C ${controlX} ${fromY}, ${controlX} ${toY}, ${toX} ${toY}`;
+
+                            path.setAttribute('d', d);
+                            path.setAttribute('stroke', '#667eea');
+                            path.setAttribute('stroke-width', '2');
+                            path.setAttribute('fill', 'none');
+                            path.setAttribute('stroke-dasharray', '5,5');
+                            path.setAttribute('opacity', '0.6');
+
+                            // Add arrowhead
+                            path.setAttribute('marker-end', 'url(#arrowhead)');
+
+                            svgCanvas.appendChild(path);
+                        });
+                    });
+                }
+
+                // Add arrowhead marker
+                const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+                marker.setAttribute('id', 'arrowhead');
+                marker.setAttribute('markerWidth', '10');
+                marker.setAttribute('markerHeight', '10');
+                marker.setAttribute('refX', '9');
+                marker.setAttribute('refY', '3');
+                marker.setAttribute('orient', 'auto');
+
+                const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                polygon.setAttribute('points', '0 0, 10 3, 0 6');
+                polygon.setAttribute('fill', '#667eea');
+
+                marker.appendChild(polygon);
+                defs.appendChild(marker);
+                svgCanvas.appendChild(defs);
+
+                // Append SVG canvas to gantt container
+                ganttContainer.style.position = 'relative';
+                ganttContainer.insertBefore(svgCanvas, ganttContainer.firstChild);
+
+                // Draw dependencies after DOM is ready
+                setTimeout(() => {
+                    drawDependencies();
+                }, 0);
+
+                // Attach event listeners to bars for drag-and-drop
+                const bars = ganttContainer.querySelectorAll('.gantt-bar');
+                bars.forEach(bar => {
+                    const barId = bar.id;
+                    const barData = taskBars[barId];
+                    if (!barData) return;
+
+                    let isDragging = false;
+                    let startX = 0;
+                    let startLeft = 0;
+
+                    // Drag start
+                    bar.addEventListener('mousedown', (e) => {
+                        if (e.button !== 0) return; // Only left click
+                        isDragging = true;
+                        startX = e.clientX;
+                        startLeft = parseInt(bar.style.left) || barData.offsetPixels;
+                        bar.style.cursor = 'grabbing';
+                        e.preventDefault();
+                    });
+
+                    // Drag move
+                    document.addEventListener('mousemove', (e) => {
+                        if (!isDragging) return;
+
+                        const deltaX = e.clientX - startX;
+                        const newLeft = Math.max(0, startLeft + deltaX);
+                        bar.style.left = newLeft + 'px';
+                    });
+
+                    // Drag end
+                    document.addEventListener('mouseup', () => {
+                        if (!isDragging) return;
+                        isDragging = false;
+                        bar.style.cursor = 'grab';
+
+                        // Convert pixel position back to date
+                        const newOffset = parseInt(bar.style.left);
+                        const daysDiff = (newOffset / (pixelsPerUnit / 30)); // Approximate
+
+                        // TODO: Reschedule project in database
+                        // For now, just provide visual feedback
+                    });
+                });
+
+                // Add tooltip styling
+                const style = document.createElement('style');
+                style.textContent = `
+                    .gantt-bar, .gantt-milestone {
+                        transition: all 0.2s ease;
+                    }
+                    .gantt-bar:hover {
+                        filter: brightness(1.1);
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+                    }
+                    .gantt-milestone:hover {
+                        filter: brightness(1.1);
+                    }
+                    .gantt-row {
+                        transition: background-color 0.2s ease;
+                    }
+                    .gantt-row:hover {
+                        background-color: #f9f9f9;
+                    }
+                `;
+                document.head.appendChild(style);
+
+                // Add today indicator line after content is rendered
+                if (todayPixels >= 0) {
+                    const todayLine = document.createElement('div');
+                    const projectNameWidth = 250;
+                    const lineLeft = projectNameWidth + todayPixels;
+
+                    // Calculate the height of the timeline body
+                    // Height = (row height + 30px) × number of rows
+                    const rowHeight = 45;
+                    const totalBodyHeight = (rowHeight + 30) * projectsToDisplay.length;
+                    const lineStartOffset = 90 - 10 - 5; // -15px from original position
+
+                    todayLine.style.cssText = `
+                        position: absolute;
+                        left: ${lineLeft}px;
+                        top: ${lineStartOffset}px;
+                        width: 2px;
+                        height: ${totalBodyHeight}px;
+                        background: #e44258;
+                        border-left: none;
+                        z-index: 10;
+                        pointer-events: none;
+                        opacity: 0.8;
+                    `;
+
+                    // Add "Today" label
+                    const todayLabel = document.createElement('div');
+                    todayLabel.style.cssText = `
+                        position: absolute;
+                        left: ${lineLeft}px;
+                        top: -20px;
+                        transform: translateX(-50%);
+                        background: #e44258;
+                        color: white;
+                        padding: 2px 8px;
+                        border-radius: 3px;
+                        font-size: 11px;
+                        font-weight: 600;
+                        white-space: nowrap;
+                        z-index: 11;
+                        pointer-events: none;
+                    `;
+                    todayLabel.textContent = 'Today';
+
+                    // Make the container position relative so the line positions correctly
+                    ganttContainer.style.position = 'relative';
+                    ganttContainer.style.overflow = 'visible';
+                    ganttContainer.appendChild(todayLine);
+                    ganttContainer.appendChild(todayLabel);
                 }
             } catch (error) {
                 console.error('Error rendering Gantt chart:', error);
@@ -9366,17 +9950,14 @@
                 activeBtn.classList.add('active');
             }
 
-            // Call GANTT module to change scale
-            if (typeof GANTT !== 'undefined' && GANTT.setScale) {
-                GANTT.setScale(scale);
-            } else {
-                // Fallback: re-render the gantt chart with new scale, respecting active filters
-                const ganttContainer = document.getElementById('ganttChart');
-                if (ganttContainer) {
-                    ganttContainer.innerHTML = '';
-                }
-                renderGanttChart(currentFilteredProjects);
+            // Clear the old gantt chart completely
+            const ganttContainer = document.getElementById('ganttChart');
+            if (ganttContainer) {
+                ganttContainer.innerHTML = '';
             }
+
+            // Re-render the gantt chart with new scale, respecting active filters
+            renderGanttChart(currentFilteredProjects);
         }
 
         // Gantt Chart Zoom Control
