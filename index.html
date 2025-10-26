@@ -2581,11 +2581,17 @@
                             <div style="font-size: 32px; font-weight: bold;" id="metricsAtRisk">0</div>
                             <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;" id="metricsAtRiskPercent">0%</div>
                             <div style="font-size: 10px; opacity: 0.85; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.3);">
-                                <div style="margin-bottom: 4px;">
+                                <div style="margin-bottom: 3px;">
                                     <span id="metricsAtRiskOverdue">⏰ Overdue: 0</span>
                                 </div>
-                                <div>
+                                <div style="margin-bottom: 3px;">
                                     <span id="metricsAtRiskBehind">📉 Behind: 0</span>
+                                </div>
+                                <div style="margin-bottom: 3px;">
+                                    <span id="metricsAtRiskNoProgress">🚫 No Progress: 0</span>
+                                </div>
+                                <div>
+                                    <span id="metricsAtRiskSlow">⚠️ Slow: 0</span>
                                 </div>
                             </div>
                         </div>
@@ -5702,6 +5708,7 @@
             // At Risk/Delayed: Projects that are in progress with due date passed
             let overduCount = 0;
             let behindScheduleCount = 0;
+            let slowProgressCount = 0;
             atRiskDetails = { overdue: [], behindSchedule: [], noProgress: [], slow: [] };
 
             const delayed = filteredProjects.filter(p => {
@@ -5757,6 +5764,7 @@
                         const startDate = new Date(p.startDate);
                         const daysSinceStart = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
                         if (daysSinceStart > 30) {
+                            slowProgressCount++;
                             atRiskDetails.slow.push({ name: p.name, actualProgress: p.progress || 0 });
                             return true;
                         }
@@ -5788,6 +5796,8 @@
             document.getElementById('metricsAtRiskPercent').textContent = atRiskPercent + '%';
             document.getElementById('metricsAtRiskOverdue').textContent = `⏰ Overdue: ${overduCount}`;
             document.getElementById('metricsAtRiskBehind').textContent = `📉 Behind: ${behindScheduleCount}`;
+            document.getElementById('metricsAtRiskNoProgress').textContent = `🚫 No Progress: ${atRiskDetails.noProgress.length}`;
+            document.getElementById('metricsAtRiskSlow').textContent = `⚠️ Slow: ${slowProgressCount}`;
         }
 
         // Render Project Status Chart
