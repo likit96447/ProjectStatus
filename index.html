@@ -5551,9 +5551,7 @@
             if (parts.length === 3) {
                 const [year, month, day] = parts.map(p => parseInt(p, 10));
                 // Create date at midnight to avoid timezone issues
-                const parsed = new Date(year, month - 1, day, 0, 0, 0, 0);
-                console.log(`parseDate('${dateStr}') -> ${parsed.toISOString()}`);
-                return parsed;
+                return new Date(year, month - 1, day, 0, 0, 0, 0);
             }
             return new Date(dateStr);
         }
@@ -5712,16 +5710,15 @@
                 return status === 'Completed';
             }).length;
 
-            // On-Time: Projects that are completed with progress 100% (or scheduled to be completed on or before due date)
-            // If dueDate exists, compare endDate with dueDate
-            // If no dueDate, count as on-time if completed with 100% progress
+            // On-Time: Projects that are completed with progress 100% (or scheduled to be completed on or before end date)
+            // If endDate exists and project is completed, count as on-time if completed
             const onTime = filteredProjects.filter(p => {
                 if (normalizeStatus(p.status) === 'Completed') {
-                    if (p.dueDate && p.endDate) {
-                        // If both dates exist, check if endDate <= dueDate
-                        return parseDate(p.endDate) <= parseDate(p.dueDate);
+                    // If endDate exists and project is completed, assume on-time
+                    if (p.endDate) {
+                        return (p.progress || 0) === 100;
                     }
-                    // If no dueDate, assume on-time if 100% progress
+                    // Otherwise, assume on-time if 100% progress
                     return (p.progress || 0) === 100;
                 }
                 return false;
@@ -5735,18 +5732,15 @@
 
             const delayed = filteredProjects.filter(p => {
                 const normalizedStatus = normalizeStatus(p.status);
-                console.log(`renderKeyMetrics - ${p.name}: status='${p.status}' -> normalized='${normalizedStatus}', dueDate='${p.dueDate}'`);
                 if (normalizedStatus === 'In Progress') {
-                    // Case 1: Overdue - today is past the due date
-                    if (p.dueDate) {
-                        const dueDate = parseDate(p.dueDate);
+                    // Case 1: Overdue - today is past the end date
+                    if (p.endDate) {
+                        const endDate = parseDate(p.endDate);
                         const today = getTodayMidnight();
-                        console.log(`Checking overdue for ${p.name}: today=${today.toISOString()} vs dueDate=${dueDate.toISOString()}, today > dueDate? ${today > dueDate}`);
 
-                        if (today > dueDate) {
+                        if (today > endDate) {
                             overduCount++;
-                            const daysOverdue = Math.floor((today - dueDate) / (1000 * 60 * 60 * 24));
-                            console.log(`  -> OVERDUE: ${daysOverdue} days overdue`);
+                            const daysOverdue = Math.floor((today - endDate) / (1000 * 60 * 60 * 24));
                             atRiskDetails.overdue.push({ name: p.name, daysOverdue });
                             return true;  // Overdue
                         }
@@ -5754,7 +5748,7 @@
                         // Case 3 & 4: Progress behind schedule
                         if (p.startDate) {
                             const startDate = parseDate(p.startDate);
-                            const totalDays = Math.floor((dueDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                            const totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
                             const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
                             // Only check if project has started
@@ -5785,7 +5779,7 @@
                         return false;
                     }
 
-                    // Case 2: No dueDate - consider at risk if progress < 50% and more than 30 days old
+                    // Case 2: No endDate - consider at risk if progress < 50% and more than 30 days old
                     if (p.startDate && (p.progress || 0) < 50) {
                         const startDate = parseDate(p.startDate);
                         const today = getTodayMidnight();
@@ -6246,20 +6240,20 @@
             });
 
             // Overdue projects
-            filteredProjects.filter(p => normalizeStatus(p.status) === 'In Progress' && p.dueDate && new Date() > new Date(p.dueDate)).forEach(p => {
+            filteredProjects.filter(p => normalizeStatus(p.status) === 'In Progress' && p.endDate && getTodayMidnight() > parseDate(p.endDate)).forEach(p => {
                 alerts.push({ type: '⏰', title: `Overdue: ${p.name}`, color: '#ffb800' });
             });
 
             // Behind schedule projects (expected progress > actual progress by 10%+)
             filteredProjects.filter(p => {
-                if (normalizeStatus(p.status) === 'In Progress' && p.startDate && p.dueDate) {
-                    const startDate = new Date(p.startDate);
-                    const dueDate = new Date(p.dueDate);
-                    const today = new Date();
+                if (normalizeStatus(p.status) === 'In Progress' && p.startDate && p.endDate) {
+                    const startDate = parseDate(p.startDate);
+                    const endDate = parseDate(p.endDate);
+                    const today = getTodayMidnight();
 
                     // Only check if not already overdue (avoid duplicate alerts)
-                    if (today <= dueDate) {
-                        const totalDays = Math.floor((dueDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                    if (today <= endDate) {
+                        const totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
                         const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
                         const expectedProgress = Math.min((daysElapsed / totalDays) * 100, 100);
                         const actualProgress = p.progress || 0;
@@ -6269,10 +6263,10 @@
                 }
                 return false;
             }).forEach(p => {
-                const startDate = new Date(p.startDate);
-                const dueDate = new Date(p.dueDate);
-                const totalDays = Math.floor((dueDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
-                const today = new Date();
+                const startDate = parseDate(p.startDate);
+                const endDate = parseDate(p.endDate);
+                const totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                const today = getTodayMidnight();
                 const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
                 const expectedProgress = Math.min((daysElapsed / totalDays) * 100, 100).toFixed(0);
                 const actualProgress = (p.progress || 0).toFixed(0);
@@ -6282,14 +6276,16 @@
             // No progress yet projects (0% after 5+ days started)
             filteredProjects.filter(p => {
                 if (normalizeStatus(p.status) === 'In Progress' && p.startDate && (p.progress || 0) === 0) {
-                    const startDate = new Date(p.startDate);
-                    const daysElapsed = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
+                    const startDate = parseDate(p.startDate);
+                    const today = getTodayMidnight();
+                    const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
                     return daysElapsed >= 5;  // 5+ days with 0% progress
                 }
                 return false;
             }).forEach(p => {
-                const startDate = new Date(p.startDate);
-                const daysElapsed = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
+                const startDate = parseDate(p.startDate);
+                const today = getTodayMidnight();
+                const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
                 alerts.push({ type: '🚫', title: `No Progress: ${p.name} (${daysElapsed} days, 0%)`, color: '#d32f2f' });
             });
 
