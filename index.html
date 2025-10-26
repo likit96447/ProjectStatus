@@ -3003,33 +3003,30 @@
                     </div>
 
                     <!-- Projects Timeline View (Gantt Chart) -->
-                    <div id="projectsTimelineView" style="display: none;">
-                        <div style="padding: 20px; background: white; border-radius: 12px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #323338;">Project Timeline - Gantt Chart</h3>
-                                <div style="display: flex; gap: 12px; align-items: center;">
-                                    <!-- Zoom Controls -->
-                                    <div style="display: flex; gap: 4px; padding: 4px 8px; background: #f5f5f5; border-radius: 6px; border: 1px solid #e0e0e0;">
-                                        <button onclick="zoomGanttChart(0.8)" style="padding: 4px 8px; font-size: 12px; border: none; background: none; cursor: pointer; color: #676879;" title="Zoom Out">−</button>
-                                        <span id="zoomLevel" style="padding: 4px 8px; font-size: 12px; color: #676879; min-width: 40px; text-align: center;">100%</span>
-                                        <button onclick="zoomGanttChart(1.2)" style="padding: 4px 8px; font-size: 12px; border: none; background: none; cursor: pointer; color: #676879;" title="Zoom In">+</button>
-                                    </div>
-
-                                    <!-- Scale Buttons -->
-                                    <div style="display: flex; gap: 4px;">
-                                        <button class="timeline-scale-btn" id="scaleDay" onclick="setTimelineScale('day')">Day</button>
-                                        <button class="timeline-scale-btn" id="scaleWeek" onclick="setTimelineScale('week')">Week</button>
-                                        <button class="timeline-scale-btn active" id="scaleMonth" onclick="setTimelineScale('month')">Month</button>
-                                        <button class="timeline-scale-btn" id="scale6Month" onclick="setTimelineScale('6month')">6 Month</button>
-                                        <button class="timeline-scale-btn" id="scaleYear" onclick="setTimelineScale('year')">Year</button>
-                                    </div>
-
-                                    <!-- Export & More Options -->
-                                    <button onclick="exportGanttChart()" style="padding: 6px 12px; font-size: 12px; border: 1px solid #e0e0e0; background: white; border-radius: 6px; cursor: pointer; color: #676879;" title="Export Gantt Chart">📥 Export</button>
+                    <div id="projectsTimelineView" style="display: none; height: 100%; display: flex; flex-direction: column;">
+                        <!-- Timeline Header Bar -->
+                        <div style="padding: 16px 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e6e9ef;">
+                            <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: #323338;">Project Timeline - Gantt Chart</h2>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 13px; color: #676879;">Scale:</span>
+                                    <select id="ganttScaleSelector" onchange="setTimelineScale(this.value)" style="padding: 6px 10px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 13px; background: white; color: #323338; cursor: pointer;">
+                                        <option value="day">Day</option>
+                                        <option value="week">Week</option>
+                                        <option value="month" selected>Month</option>
+                                        <option value="6month">6 Month</option>
+                                        <option value="year">Year</option>
+                                    </select>
                                 </div>
+                                <button onclick="renderGanttChart(currentFilteredProjects)" style="padding: 6px 12px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s;">Refresh View</button>
                             </div>
-                            <div id="ganttChart" style="overflow-x: auto; padding: 20px 0;">
-                                <!-- Gantt chart will be rendered here -->
+                        </div>
+                        <!-- Gantt Chart Container -->
+                        <div style="flex: 1; overflow-y: auto; background: white;">
+                            <div style="padding: 20px 0;">
+                                <div id="ganttChart" style="overflow-x: auto;">
+                                    <!-- Gantt chart will be rendered here -->
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -9938,16 +9935,10 @@
         function setTimelineScale(scale) {
             currentTimelineScale = scale;
 
-            // Update button styles
-            const buttons = document.querySelectorAll('.timeline-scale-btn');
-            buttons.forEach(btn => {
-                btn.classList.remove('active');
-            });
-
-            // Highlight the active button
-            const activeBtn = document.getElementById('scale' + scale.charAt(0).toUpperCase() + scale.slice(1));
-            if (activeBtn) {
-                activeBtn.classList.add('active');
+            // Update dropdown selector
+            const selector = document.getElementById('ganttScaleSelector');
+            if (selector) {
+                selector.value = scale;
             }
 
             // Clear the old gantt chart completely
