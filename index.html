@@ -5581,7 +5581,7 @@
             let behindScheduleCount = 0;
 
             const delayed = filteredProjects.filter(p => {
-                if (p.status === 'In Progress') {
+                if (normalizeStatus(p.status) === 'In Progress') {
                     // Case 1: Overdue - today is past the due date
                     if (p.dueDate) {
                         if (new Date() > new Date(p.dueDate)) {
