@@ -5710,17 +5710,36 @@
                 return status === 'Completed';
             }).length;
 
-            // On-Time: Projects that are completed with progress 100% (or scheduled to be completed on or before end date)
-            // If endDate exists and project is completed, count as on-time if completed
+            // On-Time: Completed projects with 100% progress, OR In-Progress projects that are on schedule
             const onTime = filteredProjects.filter(p => {
-                if (normalizeStatus(p.status) === 'Completed') {
-                    // If endDate exists and project is completed, assume on-time
-                    if (p.endDate) {
-                        return (p.progress || 0) === 100;
-                    }
-                    // Otherwise, assume on-time if 100% progress
+                const status = normalizeStatus(p.status);
+
+                // Completed projects: count as on-time if 100% progress
+                if (status === 'Completed') {
                     return (p.progress || 0) === 100;
                 }
+
+                // In-Progress projects: count as on-time if not behind schedule
+                if (status === 'In Progress' && p.startDate && p.endDate) {
+                    const startDate = parseDate(p.startDate);
+                    const endDate = parseDate(p.endDate);
+                    const today = getTodayMidnight();
+
+                    // If not yet past end date, check if on track
+                    if (today <= endDate) {
+                        const totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+                        const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+                        if (daysElapsed > 0) {
+                            const expectedProgress = Math.min((daysElapsed / totalDays) * 100, 100);
+                            const actualProgress = p.progress || 0;
+
+                            // On-time if actual progress >= expected progress (within 10% tolerance)
+                            return actualProgress >= expectedProgress - 10;
+                        }
+                    }
+                }
+
                 return false;
             }).length;
 
@@ -5803,8 +5822,8 @@
                 return sum;
             }, 0) / Math.max(filteredProjects.filter(p => p.startDate && p.endDate).length, 1);
 
-            // On-Time Percentage: (Completed On-Time / Total Completed) * 100
-            const onTimePercent = completed > 0 ? ((onTime / completed) * 100).toFixed(0) : (total > 0 ? 100 : 0);
+            // On-Time Percentage: (On-Time / Total Projects) * 100
+            const onTimePercent = total > 0 ? ((onTime / total) * 100).toFixed(0) : 0;
             // At Risk Percentage: (Delayed / Total Active)
             const atRiskPercent = active > 0 ? ((delayed / active) * 100).toFixed(0) : 0;
 
