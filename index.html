@@ -5589,7 +5589,7 @@
                             return true;  // Overdue
                         }
 
-                        // Case 3: Progress behind schedule - if today's expected progress > actual progress by 10%+
+                        // Case 3 & 4: Progress behind schedule
                         if (p.startDate) {
                             const startDate = new Date(p.startDate);
                             const dueDate = new Date(p.dueDate);
@@ -5601,16 +5601,26 @@
                             // Calculate days elapsed since start
                             const daysElapsed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24)) + 1;
 
-                            // Expected progress: (days elapsed / total days) * 100
-                            const expectedProgress = Math.min((daysElapsed / totalDays) * 100, 100);
+                            // Only check if project has started
+                            if (daysElapsed > 0) {
+                                // Expected progress: (days elapsed / total days) * 100
+                                const expectedProgress = Math.min((daysElapsed / totalDays) * 100, 100);
 
-                            // Actual progress
-                            const actualProgress = p.progress || 0;
+                                // Actual progress
+                                const actualProgress = p.progress || 0;
 
-                            // At risk if expected progress exceeds actual progress by more than 10%
-                            if (expectedProgress > actualProgress + 10) {
-                                behindScheduleCount++;
-                                return true;  // Behind schedule
+                                // Case 3: At risk if expected progress exceeds actual progress by more than 10%
+                                if (expectedProgress > actualProgress + 10) {
+                                    behindScheduleCount++;
+                                    return true;  // Behind schedule
+                                }
+
+                                // Case 4: No progress yet but days have passed (0% after days started)
+                                if (actualProgress === 0 && daysElapsed >= 5) {
+                                    // Project started 5+ days ago but still 0% progress = red flag
+                                    behindScheduleCount++;
+                                    return true;  // No progress made
+                                }
                             }
                         }
                         return false;
@@ -6103,8 +6113,22 @@
                 alerts.push({ type: '📉', title: `Behind Schedule: ${p.name} (Expected: ${expectedProgress}%, Actual: ${actualProgress}%)`, color: '#ff7043' });
             });
 
+            // No progress yet projects (0% after 5+ days started)
+            filteredProjects.filter(p => {
+                if (normalizeStatus(p.status) === 'In Progress' && p.startDate && (p.progress || 0) === 0) {
+                    const startDate = new Date(p.startDate);
+                    const daysElapsed = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
+                    return daysElapsed >= 5;  // 5+ days with 0% progress
+                }
+                return false;
+            }).forEach(p => {
+                const startDate = new Date(p.startDate);
+                const daysElapsed = Math.floor((new Date() - startDate) / (1000 * 60 * 60 * 24));
+                alerts.push({ type: '🚫', title: `No Progress: ${p.name} (${daysElapsed} days, 0%)`, color: '#d32f2f' });
+            });
+
             // Low progress projects
-            filteredProjects.filter(p => normalizeStatus(p.status) === 'In Progress' && (p.progress || 0) < 25).forEach(p => {
+            filteredProjects.filter(p => normalizeStatus(p.status) === 'In Progress' && (p.progress || 0) < 25 && (p.progress || 0) > 0).forEach(p => {
                 alerts.push({ type: '⚠️', title: `Slow Progress: ${p.name} (${p.progress}%)`, color: '#667eea' });
             });
 
