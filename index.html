@@ -5487,6 +5487,18 @@
         let projectForecastChartInstance = null;
         let projectWorkloadChartInstance = null;
 
+        // Helper function to normalize status values from Firebase format
+        function normalizeStatus(status) {
+            if (!status) return 'Planned';
+            const lowerStatus = status.toLowerCase();
+            if (lowerStatus === 'in-progress' || lowerStatus === 'inprogress') return 'In Progress';
+            if (lowerStatus === 'completed') return 'Completed';
+            if (lowerStatus === 'on-hold' || lowerStatus === 'onhold') return 'On Hold';
+            if (lowerStatus === 'planned') return 'Planned';
+            // Return title-cased version for unknown statuses
+            return status.charAt(0).toUpperCase() + status.slice(1);
+        }
+
         // Render Key Metrics
         function renderKeyMetrics() {
             // Get filtered projects
@@ -5516,8 +5528,14 @@
             }
 
             const total = filteredProjects.length;
-            const active = filteredProjects.filter(p => p.status && ['In Progress', 'Planned'].includes(p.status)).length;
-            const completed = filteredProjects.filter(p => p.status === 'Completed').length;
+            const active = filteredProjects.filter(p => {
+                const status = normalizeStatus(p.status);
+                return ['In Progress', 'Planned'].includes(status);
+            }).length;
+            const completed = filteredProjects.filter(p => {
+                const status = normalizeStatus(p.status);
+                return status === 'Completed';
+            }).length;
 
             // On-Time: Projects that are completed with progress 100% (or scheduled to be completed on or before due date)
             // If dueDate exists, compare endDate with dueDate
@@ -5592,7 +5610,7 @@
 
             const statusGroups = { 'Planned': 0, 'In Progress': 0, 'Completed': 0, 'On Hold': 0 };
             filteredProjects.forEach(p => {
-                const status = p.status || 'Planned';
+                const status = normalizeStatus(p.status);
                 if (statusGroups.hasOwnProperty(status)) statusGroups[status]++;
                 else statusGroups['Planned']++;
             });
@@ -5653,7 +5671,7 @@
             if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
 
             const priorityGroups = { 'High': 0, 'Medium': 0, 'Low': 0 };
@@ -5722,7 +5740,7 @@
             if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
 
             const sdlcGroups = { 'Requirement': 0, 'Design': 0, 'Development': 0, 'Testing': 0, 'UAT': 0, 'Deployment': 0 };
@@ -5790,7 +5808,7 @@
             if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
             if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
 
@@ -5837,7 +5855,7 @@
             if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
             if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
 
@@ -5883,11 +5901,11 @@
             if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
             if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
 
-            const inProgress = filteredProjects.filter(p => p.status === 'In Progress' && p.progress < 100);
+            const inProgress = filteredProjects.filter(p => normalizeStatus(p.status) === 'In Progress' && p.progress < 100);
             const avgRemainingDays = inProgress.reduce((sum, p) => sum + ((100 - (p.progress || 0)) / 100 * 30), 0) / Math.max(inProgress.length, 1);
 
             const forecastData = [
@@ -5926,7 +5944,7 @@
             if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
             if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
 
@@ -5975,7 +5993,7 @@
             if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
                 p.projectManagers && p.projectManagers.includes(chartManagerFilter)
             );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
             if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => (p.sdlcPhase || 'Development') === chartSDLCFilter);
 
@@ -5987,12 +6005,12 @@
             });
 
             // Overdue projects
-            filteredProjects.filter(p => p.status === 'In Progress' && p.dueDate && new Date() > new Date(p.dueDate)).forEach(p => {
+            filteredProjects.filter(p => normalizeStatus(p.status) === 'In Progress' && p.dueDate && new Date() > new Date(p.dueDate)).forEach(p => {
                 alerts.push({ type: '⏰', title: `Overdue: ${p.name}`, color: '#ffb800' });
             });
 
             // Low progress projects
-            filteredProjects.filter(p => p.status === 'In Progress' && (p.progress || 0) < 25).forEach(p => {
+            filteredProjects.filter(p => normalizeStatus(p.status) === 'In Progress' && (p.progress || 0) < 25).forEach(p => {
                 alerts.push({ type: '⚠️', title: `Slow Progress: ${p.name} (${p.progress}%)`, color: '#667eea' });
             });
 
@@ -9803,7 +9821,7 @@
 
             // Apply project status filter from chart
             if (chartStatusFilter) {
-                filteredProjects = filteredProjects.filter(p => (p.status || 'Planned') === chartStatusFilter);
+                filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
             }
 
             // Apply project priority filter from chart
