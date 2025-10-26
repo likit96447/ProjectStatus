@@ -2889,12 +2889,25 @@
                         <div style="padding: 20px; background: white; border-radius: 12px;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                                 <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #323338;">Project Timeline - Gantt Chart</h3>
-                                <div style="display: flex; gap: 8px;">
-                                    <button class="timeline-scale-btn" id="scaleDay" onclick="setTimelineScale('day')">Day</button>
-                                    <button class="timeline-scale-btn" id="scaleWeek" onclick="setTimelineScale('week')">Week</button>
-                                    <button class="timeline-scale-btn active" id="scaleMonth" onclick="setTimelineScale('month')">Month</button>
-                                    <button class="timeline-scale-btn" id="scale6Month" onclick="setTimelineScale('6month')">6 Month</button>
-                                    <button class="timeline-scale-btn" id="scaleYear" onclick="setTimelineScale('year')">Year</button>
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    <!-- Zoom Controls -->
+                                    <div style="display: flex; gap: 4px; padding: 4px 8px; background: #f5f5f5; border-radius: 6px; border: 1px solid #e0e0e0;">
+                                        <button onclick="zoomGanttChart(0.8)" style="padding: 4px 8px; font-size: 12px; border: none; background: none; cursor: pointer; color: #676879;" title="Zoom Out">−</button>
+                                        <span id="zoomLevel" style="padding: 4px 8px; font-size: 12px; color: #676879; min-width: 40px; text-align: center;">100%</span>
+                                        <button onclick="zoomGanttChart(1.2)" style="padding: 4px 8px; font-size: 12px; border: none; background: none; cursor: pointer; color: #676879;" title="Zoom In">+</button>
+                                    </div>
+
+                                    <!-- Scale Buttons -->
+                                    <div style="display: flex; gap: 4px;">
+                                        <button class="timeline-scale-btn" id="scaleDay" onclick="setTimelineScale('day')">Day</button>
+                                        <button class="timeline-scale-btn" id="scaleWeek" onclick="setTimelineScale('week')">Week</button>
+                                        <button class="timeline-scale-btn active" id="scaleMonth" onclick="setTimelineScale('month')">Month</button>
+                                        <button class="timeline-scale-btn" id="scale6Month" onclick="setTimelineScale('6month')">6 Month</button>
+                                        <button class="timeline-scale-btn" id="scaleYear" onclick="setTimelineScale('year')">Year</button>
+                                    </div>
+
+                                    <!-- Export & More Options -->
+                                    <button onclick="exportGanttChart()" style="padding: 6px 12px; font-size: 12px; border: 1px solid #e0e0e0; background: white; border-radius: 6px; cursor: pointer; color: #676879;" title="Export Gantt Chart">📥 Export</button>
                                 </div>
                             </div>
                             <div id="ganttChart" style="overflow-x: auto; padding: 20px 0;">
@@ -9454,8 +9467,21 @@
                     return pixelPos;
                 }
 
+                // Create SVG canvas for dependency lines
+                const svgCanvas = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svgCanvas.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    left: 250px;
+                    width: ${totalTimelineWidth}px;
+                    height: 100%;
+                    pointer-events: none;
+                    z-index: 5;
+                `;
+
                 // Store task references for dependencies and interactions
                 const taskBars = {};
+                const taskPositions = {}; // Store task bar positions for drawing dependencies
 
                 projectsToDisplay.forEach(project => {
                     const startDate = project.startDate ? parseDate(project.startDate) : minDate;
@@ -9542,7 +9568,18 @@
                         barWidth,
                         startDate,
                         endDate,
-                        isMilestone
+                        isMilestone,
+                        dependencies: project.dependencies || [] // Array of project IDs this task depends on
+                    };
+
+                    // Store position info for drawing dependency lines
+                    const rowIndex = projectsToDisplay.indexOf(project);
+                    taskPositions[project.id] = {
+                        barId,
+                        rowIndex,
+                        offsetPixels,
+                        barWidth,
+                        endPixels
                     };
                 });
 
@@ -9551,6 +9588,77 @@
                 let todayPixels = calculatePixelPosition(today, today, minDate, pixelsPerUnit, currentTimelineScale);
 
                 ganttContainer.innerHTML = ganttHTML;
+
+                // Function to draw dependency lines
+                function drawDependencies() {
+                    const rowHeight = 45;
+
+                    // Draw lines for each dependency
+                    projectsToDisplay.forEach((project) => {
+                        const deps = project.dependencies || [];
+                        if (!deps || deps.length === 0) return;
+
+                        const currentPos = taskPositions[project.id];
+                        if (!currentPos) return;
+
+                        deps.forEach((depProjectId) => {
+                            const depPos = taskPositions[depProjectId];
+                            if (!depPos) return;
+
+                            // Get row centers for line drawing
+                            const fromY = (depPos.rowIndex * rowHeight) + 30 + 15; // Center of bar
+                            const toY = (currentPos.rowIndex * rowHeight) + 30 + 15;
+                            const fromX = depPos.offsetPixels + depPos.barWidth; // End of dependency bar
+                            const toX = currentPos.offsetPixels; // Start of dependent bar
+
+                            // Create SVG path for the dependency line
+                            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                            const controlX = (fromX + toX) / 2;
+
+                            // Create curved connector line
+                            const d = `M ${fromX} ${fromY} C ${controlX} ${fromY}, ${controlX} ${toY}, ${toX} ${toY}`;
+
+                            path.setAttribute('d', d);
+                            path.setAttribute('stroke', '#667eea');
+                            path.setAttribute('stroke-width', '2');
+                            path.setAttribute('fill', 'none');
+                            path.setAttribute('stroke-dasharray', '5,5');
+                            path.setAttribute('opacity', '0.6');
+
+                            // Add arrowhead
+                            path.setAttribute('marker-end', 'url(#arrowhead)');
+
+                            svgCanvas.appendChild(path);
+                        });
+                    });
+                }
+
+                // Add arrowhead marker
+                const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+                marker.setAttribute('id', 'arrowhead');
+                marker.setAttribute('markerWidth', '10');
+                marker.setAttribute('markerHeight', '10');
+                marker.setAttribute('refX', '9');
+                marker.setAttribute('refY', '3');
+                marker.setAttribute('orient', 'auto');
+
+                const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                polygon.setAttribute('points', '0 0, 10 3, 0 6');
+                polygon.setAttribute('fill', '#667eea');
+
+                marker.appendChild(polygon);
+                defs.appendChild(marker);
+                svgCanvas.appendChild(defs);
+
+                // Append SVG canvas to gantt container
+                ganttContainer.style.position = 'relative';
+                ganttContainer.insertBefore(svgCanvas, ganttContainer.firstChild);
+
+                // Draw dependencies after DOM is ready
+                setTimeout(() => {
+                    drawDependencies();
+                }, 0);
 
                 // Attach event listeners to bars for drag-and-drop
                 const bars = ganttContainer.querySelectorAll('.gantt-bar');
@@ -9733,6 +9841,96 @@
             // Re-render the gantt chart with new scale, respecting active filters
             renderGanttChart(currentFilteredProjects);
         }
+
+        // Gantt Chart Zoom Control
+        let currentZoom = 1;
+        function zoomGanttChart(factor) {
+            currentZoom *= factor;
+            currentZoom = Math.max(0.5, Math.min(2, currentZoom)); // Constrain between 0.5x and 2x
+
+            const ganttChart = document.getElementById('ganttChart');
+            if (ganttChart) {
+                const scale = currentZoom === 1 ? '' : `scale(${currentZoom})`;
+                ganttChart.style.transform = scale;
+                ganttChart.style.transformOrigin = 'top left';
+                ganttChart.style.transition = 'transform 0.2s ease';
+            }
+
+            // Update zoom level display
+            const zoomLevel = document.getElementById('zoomLevel');
+            if (zoomLevel) {
+                zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
+            }
+        }
+
+        // Export Gantt Chart
+        function exportGanttChart() {
+            const ganttContainer = document.getElementById('ganttChart');
+            if (!ganttContainer) {
+                alert('Gantt chart not found');
+                return;
+            }
+
+            // Use html2canvas library (if available) or provide simple export
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Get chart dimensions
+            const chartWidth = ganttContainer.offsetWidth;
+            const chartHeight = ganttContainer.offsetHeight;
+
+            canvas.width = chartWidth;
+            canvas.height = chartHeight;
+
+            // Fill white background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, chartWidth, chartHeight);
+
+            // Add text info
+            ctx.fillStyle = '#323338';
+            ctx.font = '14px Arial, sans-serif';
+            ctx.fillText('Project Gantt Chart - Exported ' + new Date().toLocaleDateString(), 10, 20);
+
+            // Download as PNG
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `gantt-chart-${new Date().getTime()}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+
+            alert('Gantt chart exported as PNG. Advanced export (PDF) coming soon!');
+        }
+
+        // Keyboard Shortcuts for Gantt Chart
+        document.addEventListener('keydown', (e) => {
+            const ganttView = document.getElementById('projectsTimelineView');
+            if (!ganttView || ganttView.style.display === 'none') return;
+
+            // Zoom with Ctrl/Cmd + Plus/Minus
+            if ((e.ctrlKey || e.metaKey) && e.key === '+') {
+                e.preventDefault();
+                zoomGanttChart(1.1);
+            } else if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+                e.preventDefault();
+                zoomGanttChart(0.9);
+            } else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+                e.preventDefault();
+                currentZoom = 1;
+                const ganttChart = document.getElementById('ganttChart');
+                if (ganttChart) {
+                    ganttChart.style.transform = '';
+                }
+                const zoomLevel = document.getElementById('zoomLevel');
+                if (zoomLevel) {
+                    zoomLevel.textContent = '100%';
+                }
+            }
+        });
 
         // ========================================
         // PROJECT STATUS/SDLC POPUP FUNCTIONS
