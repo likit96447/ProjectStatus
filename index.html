@@ -9372,6 +9372,53 @@
                 ganttHTML += `</div></div></div>`;
 
                 // Render project timeline bars
+                // Helper function to calculate pixel position based on scale
+                function calculatePixelPosition(dateFrom, dateTo, minDateRef, pixelsPerUnitRef, scale) {
+                    let pixelPos = 0;
+
+                    if (scale === 'day') {
+                        const daysDiff = (dateFrom - minDateRef) / (1000 * 60 * 60 * 24);
+                        pixelPos = daysDiff * pixelsPerUnitRef;
+                    } else if (scale === 'week') {
+                        const daysDiff = (dateFrom - minDateRef) / (1000 * 60 * 60 * 24);
+                        pixelPos = (daysDiff / 7) * pixelsPerUnitRef;
+                    } else if (scale === 'month') {
+                        // For month view, calculate pixel position by summing actual days in each month
+                        let currentDate = new Date(minDateRef);
+                        pixelPos = 0;
+                        const minorPixelWidth = pixelsPerUnitRef / 30;
+
+                        while (currentDate < dateFrom) {
+                            const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+                            const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+                            const daysInMonth = monthEnd.getDate();
+
+                            const nextMonth = new Date(currentDate);
+                            nextMonth.setMonth(nextMonth.getMonth() + 1);
+                            nextMonth.setDate(1);
+
+                            if (nextMonth > dateFrom) {
+                                // Partial month - calculate days within this month
+                                const daysInPartialMonth = dateFrom.getDate() - currentDate.getDate();
+                                pixelPos += daysInPartialMonth * minorPixelWidth;
+                                break;
+                            } else {
+                                // Full month
+                                pixelPos += daysInMonth * minorPixelWidth;
+                                currentDate = nextMonth;
+                            }
+                        }
+                    } else if (scale === '6month') {
+                        const daysDiff = (dateFrom - minDateRef) / (1000 * 60 * 60 * 24);
+                        pixelPos = (daysDiff / 180) * pixelsPerUnitRef;
+                    } else if (scale === 'year') {
+                        const daysDiff = (dateFrom - minDateRef) / (1000 * 60 * 60 * 24);
+                        pixelPos = (daysDiff / 365) * pixelsPerUnitRef;
+                    }
+
+                    return pixelPos;
+                }
+
                 projectsToDisplay.forEach(project => {
                     const startDate = project.startDate ? parseDate(project.startDate) : minDate;
                     const endDate = project.endDate ? parseDate(project.endDate) : maxDate;
@@ -9380,32 +9427,10 @@
                     startDate.setHours(0, 0, 0, 0);
                     endDate.setHours(23, 59, 59, 999);
 
-                    const offsetDays = (startDate - minDate) / (1000 * 60 * 60 * 24);
-                    const durationDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
-
-                    // Calculate offset and width based on scale
-                    let offsetPixels = 0;
-                    let barWidth = 50;
-
-                    if (currentTimelineScale === 'day') {
-                        offsetPixels = offsetDays * pixelsPerUnit;
-                        barWidth = Math.max(durationDays * pixelsPerUnit, 20);
-                    } else if (currentTimelineScale === 'week') {
-                        offsetPixels = (offsetDays / 7) * pixelsPerUnit;
-                        barWidth = Math.max((durationDays / 7) * pixelsPerUnit, 20);
-                    } else if (currentTimelineScale === 'month') {
-                        offsetPixels = (offsetDays / 30) * pixelsPerUnit;
-                        barWidth = Math.max((durationDays / 30) * pixelsPerUnit, 20);
-                    } else if (currentTimelineScale === 'quarter') {
-                        offsetPixels = (offsetDays / 90) * pixelsPerUnit;
-                        barWidth = Math.max((durationDays / 90) * pixelsPerUnit, 20);
-                    } else if (currentTimelineScale === '6month') {
-                        offsetPixels = (offsetDays / 180) * pixelsPerUnit;
-                        barWidth = Math.max((durationDays / 180) * pixelsPerUnit, 20);
-                    } else if (currentTimelineScale === 'year') {
-                        offsetPixels = (offsetDays / 365) * pixelsPerUnit;
-                        barWidth = Math.max((durationDays / 365) * pixelsPerUnit, 20);
-                    }
+                    // Calculate offset and width using accurate positioning
+                    let offsetPixels = calculatePixelPosition(startDate, startDate, minDate, pixelsPerUnit, currentTimelineScale);
+                    let endPixels = calculatePixelPosition(endDate, endDate, minDate, pixelsPerUnit, currentTimelineScale);
+                    let barWidth = Math.max(endPixels - offsetPixels, 20);
 
                     // Determine bar color based on project health
                     let barColor = '#e6e9ef'; // Default color (none/gray)
@@ -9427,24 +9452,9 @@
                     `;
                 });
 
-                // Calculate today's position and add today indicator line
-                const today = new Date();
-                const todayDays = (today - minDate) / (1000 * 60 * 60 * 24);
-                let todayPixels = 0;
-
-                if (currentTimelineScale === 'day') {
-                    todayPixels = todayDays * pixelsPerUnit;
-                } else if (currentTimelineScale === 'week') {
-                    todayPixels = (todayDays / 7) * pixelsPerUnit;
-                } else if (currentTimelineScale === 'month') {
-                    todayPixels = (todayDays / 30) * pixelsPerUnit;
-                } else if (currentTimelineScale === 'quarter') {
-                    todayPixels = (todayDays / 90) * pixelsPerUnit;
-                } else if (currentTimelineScale === '6month') {
-                    todayPixels = (todayDays / 180) * pixelsPerUnit;
-                } else if (currentTimelineScale === 'year') {
-                    todayPixels = (todayDays / 365) * pixelsPerUnit;
-                }
+                // Calculate today's position and add today indicator line using accurate positioning
+                const today = getTodayMidnight();
+                let todayPixels = calculatePixelPosition(today, today, minDate, pixelsPerUnit, currentTimelineScale);
 
                 ganttContainer.innerHTML = ganttHTML;
 
