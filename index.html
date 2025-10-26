@@ -11,6 +11,12 @@
 
     <!-- Chart.js for interactive charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+
+    <!-- Day.js for advanced date handling -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/isBetween.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/advancedFormat.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/weekOfYear.min.js"></script>
     
     <style>
         * {
@@ -2358,6 +2364,118 @@
         .inline-edit-wrapper {
             position: relative;
             width: 100%;
+        }
+
+        /* ===== GANTT CHART STYLES (from ganttchart.html) ===== */
+        :root {
+            --row-height: 48px;
+        }
+
+        .gantt-row {
+            height: var(--row-height);
+        }
+
+        .gantt-cell {
+            min-width: 40px;
+        }
+
+        .gantt-timeline-header {
+            height: 60px;
+        }
+
+        /* Hide scrollbars while keeping functionality */
+        .gantt-container::-webkit-scrollbar,
+        .task-list-body::-webkit-scrollbar {
+            display: none;
+        }
+
+        .gantt-container,
+        .task-list-body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Today line styling */
+        .today-line {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background-color: #ef4444;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* Task bar styling */
+        .task-bar {
+            position: absolute;
+            height: 28px;
+            top: 10px;
+            border-radius: 6px;
+            cursor: grab;
+            transition: box-shadow 0.1s;
+            z-index: 5;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-bar:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .task-bar:active {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            cursor: grabbing;
+        }
+
+        /* Resize Handle Styles */
+        .resize-handle {
+            position: absolute;
+            top: -4px;
+            bottom: -4px;
+            width: 10px;
+            z-index: 20;
+            background-color: rgba(255, 255, 255, 0.5);
+            border: 1px solid #ffffff;
+            border-radius: 4px;
+            cursor: col-resize;
+            transition: opacity 0.1s;
+            opacity: 0.5;
+        }
+
+        .resize-handle:hover {
+            opacity: 1;
+        }
+
+        .resize-handle-left {
+            left: -5px;
+        }
+
+        .resize-handle-right {
+            right: -5px;
+        }
+
+        .task-list-panel {
+            min-width: 250px;
+            border-right: 1px solid #e0e0e0;
+            background: white;
+        }
+
+        .gantt-chart-panel {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            background: white;
+        }
+
+        @media (min-width: 1024px) {
+            .task-list-panel {
+                min-width: 300px;
+                max-width: 350px;
+            }
+            .gantt-chart-panel {
+                flex-grow: 1;
+            }
         }
     </style>
 </head>

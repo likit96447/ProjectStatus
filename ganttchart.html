@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Gantt Chart</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Day.js for easy date handling -->
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/isBetween.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/advancedFormat.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/weekOfYear.min.js"></script>
+    <style>
+        /* Custom styles for the Gantt Grid */
+        :root {
+            /* These are defaults; actual sizes are dynamic in JS */
+            --row-height: 48px; 
+        }
+        .gantt-row {
+            height: var(--row-height);
+        }
+        .gantt-cell {
+            /* Width is set dynamically by JS */
+            min-width: 40px; 
+        }
+        .gantt-timeline-header {
+            height: 60px;
+        }
+
+        /* Hide the scrollbar for aesthetics, while keeping functionality */
+        .gantt-container::-webkit-scrollbar, .task-list-body::-webkit-scrollbar {
+            display: none;
+        }
+        .gantt-container, .task-list-body {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        /* Today line styling */
+        .today-line {
+            position: absolute;
+            width: 2px;
+            height: 100%;
+            background-color: #ef4444; /* red-500 */
+            z-index: 10;
+            pointer-events: none; /* Allows clicks to pass through */
+        }
+
+        /* Task bar styling */
+        .task-bar {
+            position: absolute;
+            height: 28px; 
+            top: 10px; 
+            border-radius: 6px;
+            cursor: grab;
+            transition: box-shadow 0.1s;
+            z-index: 5;
+            /* Added for relative positioning of handles */
+            position: relative; 
+        }
+        .task-bar:active {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Resize Handle Styles */
+        .resize-handle {
+            position: absolute;
+            top: -4px;
+            bottom: -4px;
+            width: 10px; /* Target size */
+            z-index: 20;
+            background-color: rgba(255, 255, 255, 0.5);
+            border: 1px solid #ffffff;
+            border-radius: 4px;
+            cursor: col-resize;
+            transition: opacity 0.1s;
+            opacity: 0.5;
+        }
+        .resize-handle:hover {
+            opacity: 1;
+        }
+        .resize-handle-left {
+            left: -5px;
+        }
+        .resize-handle-right {
+            right: -5px;
+        }
+
+        /* Responsive Breakpoints for Task List */
+        @media (min-width: 1024px) { /* lg breakpoint */
+            .task-list-panel {
+                min-width: 300px;
+                max-width: 350px;
+            }
+            .gantt-chart-panel {
+                flex-grow: 1;
+            }
+        }
+
+    </style>
+</head>
+<body class="bg-gray-50 font-sans h-screen flex flex-col antialiased text-gray-800">
+
+    <div class="p-4 bg-white shadow-md flex justify-between items-center z-20">
+        <h1 class="text-xl font-bold text-indigo-600">Project Timeline (Gantt)</h1>
+        <div class="flex items-center space-x-3">
+            <span class="text-sm text-gray-500">Scale:</span>
+            <select id="scale-selector" class="p-1 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                <option value="day">Day</option>
+                <option value="week">Week</option>
+                <option value="month">Month</option>
+            </select>
+            <button onclick="renderChart()" class="px-3 py-1 bg-indigo-500 text-white text-sm rounded-lg hover:bg-indigo-600 transition-colors">
+                Refresh View
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Chart Container -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- 1. Task List Panel (Left) -->
+        <div class="task-list-panel flex flex-col border-r bg-white w-full lg:w-1/4 max-w-sm">
+            <div class="gantt-timeline-header px-4 py-3 border-b text-sm font-semibold text-gray-600 sticky top-0 bg-white z-10">
+                Task Name
+            </div>
+            <div id="task-list-body" class="task-list-body overflow-y-scroll divide-y">
+                <!-- Task rows will be inserted here by JS -->
+            </div>
+        </div>
+
+        <!-- 2. Gantt Chart Panel (Right) -->
+        <div class="gantt-chart-panel flex flex-col flex-1 overflow-hidden relative">
+            <!-- Timeline Header (Dates/Months) -->
+            <div id="timeline-header" class="gantt-timeline-header flex-none border-b bg-gray-100 overflow-x-hidden sticky top-0 z-10" style="padding-left: 0;">
+                <!-- Date headers will be injected here -->
+            </div>
+
+            <!-- Gantt Grid and Bars Container -->
+            <div id="gantt-container" class="gantt-container overflow-scroll flex-1 relative bg-white">
+                <!-- Today Line will be injected here -->
+                <div id="today-line-container"></div>
+                <!-- Vertical Grid Lines will be injected here -->
+                <div id="gantt-grid" class="absolute inset-0 z-0"></div>
+                <!-- Task Bars will be injected here -->
+                <div id="gantt-bars" class="absolute inset-0 z-10"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    dayjs.extend(dayjs_plugin_isBetween);
+    dayjs.extend(dayjs_plugin_advancedFormat);
+    dayjs.extend(dayjs_plugin_weekOfYear);
+
+    // --- CONFIGURATION AND DATA ---
+    // Defined widths for different scales (pixel width per unit of time)
+    const DAY_CELL_WIDTH = 40;
+    const WEEK_CELL_WIDTH = 80;
+    const MONTH_CELL_WIDTH = 120; 
+    const ROW_HEIGHT = 48;
+
+    // Global state for calculations
+    let projectStartDate = null;
+    let projectEndDate = null;
+    let totalProjectUnits = 0; // The total number of columns needed (days, weeks, or months)
+    let currentScale = 'day'; 
+
+    // Mock Task Data (Use Date format YYYY-MM-DD for consistency)
+    const MOCK_TASKS = [
+        { id: 't1', name: "Project Kickoff & Planning", start: "2025-10-25", end: "2025-10-25", color: "bg-blue-500", progress: 100 },
+        { id: 't2', name: "Wireframe Design & Review", start: "2025-10-26", end: "2025-10-28", color: "bg-purple-500", progress: 75 },
+        { id: 't3', name: "Backend API Development", start: "2025-10-28", end: "2025-11-03", color: "bg-red-500", progress: 50 },
+        { id: 't4', name: "Front-end Development (Phase 1)", start: "2025-11-01", end: "2025-11-10", color: "bg-green-500", progress: 20 },
+        { id: 't5', name: "User Testing & QA", start: "2025-11-12", end: "2025-11-15", color: "bg-yellow-500", progress: 0 },
+        { id: 't6', name: "Deployment & Launch", start: "2025-11-18", end: "2025-11-20", color: "bg-indigo-500", progress: 0 },
+    ];
+
+    // --- SCALING HELPER ---
+
+    /**
+     * Returns configuration parameters based on the current scale.
+     */
+    const getScaleParams = () => {
+        if (currentScale === 'week') {
+            return {
+                unit: 'week', 
+                width: WEEK_CELL_WIDTH,
+                format: 'W', // Week number
+                secondaryFormat: 'MMM D', // Week start date
+                groupUnit: 'month', 
+                groupFormat: 'MMMM YYYY',
+            };
+        } else if (currentScale === 'month') {
+            return {
+                unit: 'month', 
+                width: MONTH_CELL_WIDTH,
+                format: 'MMM', // Month abbreviation
+                secondaryFormat: 'YYYY', // Year
+                groupUnit: 'year', 
+                groupFormat: 'YYYY',
+            };
+        } else { // default 'day'
+            return {
+                unit: 'day',
+                width: DAY_CELL_WIDTH,
+                format: 'D', // Day of month
+                secondaryFormat: 'ddd', // Day of week abbreviation
+                groupUnit: 'month',
+                groupFormat: 'MMM YYYY',
+            };
+        }
+    };
+
+    // --- CORE LOGIC FUNCTIONS ---
+
+    /**
+     * Calculates the difference in days inclusive (including start and end day).
+     * @param {string} start Date string YYYY-MM-DD
+     * @param {string} end Date string YYYY-MM-DD
+     * @returns {number} Number of days
+     */
+    const getTaskDurationDays = (start, end) => {
+        const startDay = dayjs(start);
+        const endDay = dayjs(end);
+        return endDay.diff(startDay, 'day') + 1;
+    };
+
+    /**
+     * Determines the overall project date range and calculates the total units needed.
+     */
+    const calculateProjectRange = () => {
+        let minDate = dayjs();
+        let maxDate = dayjs().add(10, 'day'); // Default end date
+        const params = getScaleParams();
+
+        if (MOCK_TASKS.length > 0) {
+            // Find the earliest start date using Math.min on timestamps
+            const startTimestamps = MOCK_TASKS.map(t => dayjs(t.start).valueOf());
+            const minTimestamp = Math.min(...startTimestamps);
+            minDate = dayjs(minTimestamp);
+
+            // Find the latest end date using Math.max on timestamps
+            const endTimestamps = MOCK_TASKS.map(t => dayjs(t.end).valueOf());
+            const maxTimestamp = Math.max(...endTimestamps);
+            maxDate = dayjs(maxTimestamp);
+        }
+
+        // Pad the range slightly (e.g., 5 units before start, 5 units after end)
+        projectStartDate = minDate.subtract(5, params.unit).startOf(params.unit);
+        projectEndDate = maxDate.add(5, params.unit).endOf(params.unit);
+
+        // Calculate total units (days, weeks, or months)
+        let units = projectEndDate.diff(projectStartDate, params.unit, true);
+        totalProjectUnits = Math.ceil(units) + 1;
+    };
+
+    // --- RENDERING FUNCTIONS ---
+
+    /**
+     * Renders the task names in the left-hand panel.
+     */
+    const renderTaskList = () => {
+        const listBody = document.getElementById('task-list-body');
+        listBody.innerHTML = '';
+
+        MOCK_TASKS.forEach((task, index) => {
+            const row = document.createElement('div');
+            row.id = `task-row-${task.id}`;
+            row.className = `gantt-row flex items-center px-4 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`;
+            row.innerHTML = `
+                <span class="text-sm truncate">${task.name}</span>
+            `;
+            listBody.appendChild(row);
+        });
+    };
+
+    /**
+     * Renders the timeline header (dates and month grouping) based on the current scale.
+     */
+    const renderTimelineHeader = () => {
+        const headerContainer = document.getElementById('timeline-header');
+        headerContainer.innerHTML = '';
+        const params = getScaleParams();
+        const { unit, width, format, secondaryFormat, groupFormat, groupUnit } = params;
+
+        const totalWidthPx = totalProjectUnits * width;
+        
+        // Use groupMap to track the higher level grouping (Month for days/weeks, Year for months)
+        const headerGroups = new Map();
+        
+        // 1. Calculate Grouping for the Top Header Row
+        for (let i = 0; i < totalProjectUnits; i++) {
+            const date = projectStartDate.clone().add(i, unit);
+            // Get the grouping label (e.g., Year for the Month scale)
+            const groupingLabel = date.format(groupFormat);
+
+            if (!headerGroups.has(groupingLabel)) {
+                headerGroups.set(groupingLabel, { count: 0, label: groupingLabel });
+            }
+            headerGroups.get(groupingLabel).count++;
+        }
+        
+        // 2. Render Top Header (Groups)
+        const groupBar = document.createElement('div');
+        groupBar.className = 'flex border-b border-gray-300';
+        groupBar.style.width = `${totalWidthPx}px`;
+
+        headerGroups.forEach(data => {
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'text-center font-bold text-sm text-gray-700 py-1 border-r border-gray-300 truncate';
+            groupDiv.style.width = `${data.count * width}px`;
+            groupDiv.textContent = data.label;
+            groupBar.appendChild(groupDiv);
+        });
+        headerContainer.appendChild(groupBar);
+
+        // 3. Render Bottom Header (Units)
+        const unitBar = document.createElement('div');
+        unitBar.className = 'flex';
+        unitBar.style.width = `${totalWidthPx}px`;
+        
+        for (let i = 0; i < totalProjectUnits; i++) {
+            const date = projectStartDate.clone().add(i, unit);
+            let unitLabel = unit === 'week' ? `W${date.week()}` : date.format(format);
+            let secondaryLabel = date.format(secondaryFormat);
+            let cellClasses = 'bg-white text-gray-800';
+
+            if (unit === 'day') {
+                secondaryLabel = secondaryLabel.charAt(0); // 'M' for Monday, 'T' for Tuesday
+                const isWeekend = date.day() === 0 || date.day() === 6;
+                if (isWeekend) cellClasses = 'bg-gray-200/50 text-gray-400';
+            } else if (unit === 'week') {
+                // For week scale, show day of month range
+                secondaryLabel = `${date.format('MMM D')} - ${date.clone().add(6, 'day').format('D')}`;
+            }
+
+            unitBar.innerHTML += `
+                <div class="gantt-cell text-center text-xs flex flex-col justify-center items-center p-0 border-r border-gray-200 ${cellClasses}" style="width: ${width}px;">
+                    <span class="font-semibold">${unitLabel}</span>
+                    <span class="text-gray-500">${secondaryLabel}</span>
+                </div>
+            `;
+        }
+        headerContainer.appendChild(unitBar);
+    };
+
+    /**
+     * Renders the vertical grid lines (for units) and the Today line.
+     */
+    const renderGanttGrid = () => {
+        const gridContainer = document.getElementById('gantt-grid');
+        const todayLineContainer = document.getElementById('today-line-container');
+        gridContainer.innerHTML = '';
+        todayLineContainer.innerHTML = '';
+
+        const params = getScaleParams();
+        const { unit, width, groupUnit } = params;
+        const totalWidthPx = totalProjectUnits * width;
+
+        // Set the total width of the inner container to match the timeline header
+        const ganttContainer = document.getElementById('gantt-container');
+        ganttContainer.style.width = `${totalWidthPx}px`;
+
+        // 1. Draw Vertical Lines for Units (and backgrounds)
+        for (let i = 0; i <= totalProjectUnits; i++) {
+            const date = projectStartDate.clone().add(i, unit);
+            
+            // Highlight group boundaries (e.g., month start, year start)
+            let isMajorLine = date.isSame(date.startOf(groupUnit), unit);
+
+            let cellClasses = '';
+            if (unit === 'day' && (date.day() === 0 || date.day() === 6)) {
+                cellClasses = 'bg-gray-200/50';
+            } else if (i % 2 !== 0 && unit !== 'day') {
+                 // Alternate background color for weeks/months
+                cellClasses = 'bg-gray-50/50';
+            }
+
+            const line = document.createElement('div');
+            line.className = `absolute top-0 bottom-0 border-l ${isMajorLine ? 'border-gray-400' : 'border-gray-200'} ${cellClasses}`;
+            line.style.left = `${i * width}px`;
+            line.style.width = `${width}px`;
+            gridContainer.appendChild(line);
+        }
+
+        // 2. Draw Today Line
+        const today = dayjs().startOf('day');
+        // Check if today is within the rendered range (inclusive of start, exclusive of end+1 day)
+        if (today.isBetween(projectStartDate, projectEndDate.add(1, 'day'), 'day', '[)')) {
+            let leftPos = 0;
+            
+            if (unit === 'day') {
+                const daysFromStart = today.diff(projectStartDate, 'day');
+                leftPos = daysFromStart * width + (width / 2); // Center on the day
+            } else {
+                // Calculate position based on proportional offset within the current unit
+                const unitIndex = today.diff(projectStartDate.startOf(unit), unit);
+                const dayIndexInUnit = today.diff(today.startOf(unit), 'day');
+                const daysInUnit = unit === 'week' ? 7 : today.daysInMonth();
+                
+                // Position is (unit index * unit width) + (day position within unit)
+                leftPos = unitIndex * width + (dayIndexInUnit / daysInUnit) * width;
+            }
+            
+            const todayLine = document.createElement('div');
+            todayLine.className = 'today-line';
+            todayLine.style.left = `${leftPos}px`;
+            todayLineContainer.appendChild(todayLine);
+        }
+
+        // 3. Draw Horizontal Lines (for rows) - remains the same.
+        for (let i = 0; i < MOCK_TASKS.length; i++) {
+            const rowLine = document.createElement('div');
+            // Background is handled by the vertical line divs, just draw the separator
+            rowLine.className = `absolute left-0 right-0 border-b border-gray-100`;
+            rowLine.style.top = `${i * ROW_HEIGHT}px`;
+            rowLine.style.height = `${ROW_HEIGHT}px`;
+            gridContainer.appendChild(rowLine);
+        }
+    };
+
+    /**
+     * Renders the draggable task bars, calculating position and width based on the current scale.
+     */
+    const renderGanttBars = () => {
+        const barsContainer = document.getElementById('gantt-bars');
+        barsContainer.innerHTML = '';
+        const params = getScaleParams();
+        const { unit, width } = params;
+
+        MOCK_TASKS.forEach((task, index) => {
+            const taskStart = dayjs(task.start).startOf('day');
+            const taskEnd = dayjs(task.end).endOf('day');
+
+            // 1. Calculate Start Position (Left)
+            // Number of fractional units from project start to task start
+            const unitsFromStart = taskStart.diff(projectStartDate, unit, true);
+            const leftPosition = unitsFromStart * width;
+            
+            // 2. Calculate Width
+            // Duration is measured from task start to task end in days, then normalized to the unit width
+            const durationDays = getTaskDurationDays(task.start, task.end);
+            
+            let durationUnits;
+            if (unit === 'day') {
+                durationUnits = durationDays;
+            } else if (unit === 'week') {
+                durationUnits = durationDays / 7;
+            } else if (unit === 'month') {
+                durationUnits = taskEnd.diff(taskStart.startOf('day'), 'month', true);
+            }
+            
+            const barWidth = durationUnits * width;
+            
+            const bar = document.createElement('div');
+            // The bar itself is the container for movement and resizing.
+            bar.id = `task-bar-${task.id}`;
+            bar.className = `task-bar ${task.color} shadow-lg hover:shadow-xl transition-shadow text-white text-xs font-medium`;
+            bar.dataset.taskId = task.id;
+            bar.dataset.taskIndex = index;
+            bar.style.width = `${barWidth}px`;
+            bar.style.left = `${leftPosition}px`;
+            bar.style.top = `${index * ROW_HEIGHT + 10}px`; // 10px padding from top of row
+            
+            // Progress bar and text content, preventing pointer events on text to allow drag-start detection
+            bar.innerHTML = `
+                <div class="resize-handle resize-handle-left" data-mode="resize-left" title="Drag to adjust start date"></div>
+                <div class="truncate flex items-center w-full h-full relative z-10 p-2 pointer-events-none">
+                    <span>${task.name}</span>
+                    <div class="ml-auto text-white bg-black/20 px-1 rounded-full">${task.progress}%</div>
+                </div>
+                <div style="width: ${task.progress}%;" class="absolute left-0 top-0 h-full ${task.color} bg-opacity-70 rounded-l-md transition-all pointer-events-none"></div>
+                <div class="resize-handle resize-handle-right" data-mode="resize-right" title="Drag to adjust end date"></div>
+            `;
+            barsContainer.appendChild(bar);
+
+            // Add drag listeners to the entire bar
+            bar.addEventListener('mousedown', handleDragStart);
+            bar.addEventListener('touchstart', handleDragStart);
+        });
+    };
+
+    // --- DRAGGING AND RESIZING LOGIC ---
+
+    let isDragging = false;
+    let currentTask = null;
+    let initialX = 0;
+    let initialLeft = 0;
+    let initialWidth = 0; // New state for resizing
+    let dragMode = 'move'; // 'move', 'resize-left', 'resize-right'
+
+    const findTaskById = (taskId) => MOCK_TASKS.find(t => t.id === taskId);
+
+    const handleDragStart = (e) => {
+        e.preventDefault();
+        
+        // Determine drag mode based on the target element's data-mode attribute
+        const targetMode = e.target.dataset.mode;
+        const bar = e.currentTarget; // The task-bar div
+
+        currentTask = findTaskById(bar.dataset.taskId);
+        if (!currentTask) return;
+
+        dragMode = targetMode || 'move'; // Default to 'move' if clicked on the bar body
+        isDragging = true;
+        
+        // Set cursor and capture initial state
+        bar.style.cursor = dragMode === 'move' ? 'grabbing' : 'col-resize';
+        const clientX = e.clientX || e.touches[0].clientX;
+        initialX = clientX;
+        initialLeft = parseFloat(bar.style.left);
+        initialWidth = parseFloat(bar.style.width); 
+
+        document.addEventListener('mousemove', handleDragMove);
+        document.addEventListener('mouseup', handleDragEnd);
+        document.addEventListener('touchmove', handleDragMove, { passive: false });
+        document.addEventListener('touchend', handleDragEnd);
+    };
+
+    const handleDragMove = (e) => {
+        if (!isDragging || !currentTask) return;
+        e.preventDefault();
+
+        const bar = document.getElementById(`task-bar-${currentTask.id}`);
+        const clientX = e.clientX || e.touches[0].clientX;
+        const dx = clientX - initialX;
+        const params = getScaleParams();
+        const snapSize = params.width; 
+        const totalProjectWidth = totalProjectUnits * snapSize;
+
+        if (dragMode === 'move') {
+            // MOVE logic: Adjust left position only
+            const newLeftPx = initialLeft + dx;
+            const snappedLeftPx = Math.round(newLeftPx / snapSize) * snapSize;
+
+            // Constrain movement within the grid
+            const maxBarWidth = parseFloat(bar.style.width);
+            const maxLeft = totalProjectWidth - maxBarWidth;
+
+            const finalLeft = Math.max(0, Math.min(maxLeft, snappedLeftPx));
+            bar.style.left = `${finalLeft}px`;
+
+        } else if (dragMode === 'resize-right') {
+            // RESIZE RIGHT logic: Adjust width, fixed left
+            const newWidth = initialWidth + dx;
+            const snappedWidth = Math.max(snapSize, Math.round(newWidth / snapSize) * snapSize);
+            
+            // Constrain right edge to the total project width
+            const currentLeft = parseFloat(bar.style.left);
+            const limitedWidth = Math.min(snappedWidth, totalProjectWidth - currentLeft);
+
+            bar.style.width = `${limitedWidth}px`;
+            
+        } else if (dragMode === 'resize-left') {
+            // RESIZE LEFT logic: Adjust left position and width, fixed right
+            const newLeftPx = initialLeft + dx;
+            // Snap the left position to the nearest unit boundary
+            // FIX: Added missing closing parenthesis here
+            const snappedLeftPx = Math.max(0, Math.round(newLeftPx / snapSize) * snapSize);
+            
+            // Calculate the fixed right edge position
+            const fixedRight = initialLeft + initialWidth;
+
+            // Calculate new width: Fixed Right - New Snapped Left
+            let newWidth = fixedRight - snappedLeftPx;
+            
+            // Minimum 1 unit width constraint
+            if (newWidth < snapSize) {
+                newWidth = snapSize;
+                // If width is minimum, the left position must be fixedRight - snapSize
+                const minLeft = fixedRight - snapSize;
+                bar.style.left = `${minLeft}px`;
+            } else {
+                bar.style.left = `${snappedLeftPx}px`;
+            }
+            
+            bar.style.width = `${newWidth}px`;
+        }
+    };
+
+    const handleDragEnd = (e) => {
+        if (!isDragging || !currentTask) return;
+
+        const bar = document.getElementById(`task-bar-${currentTask.id}`);
+        bar.style.cursor = 'grab';
+
+        const params = getScaleParams();
+        const { unit, width } = params;
+        
+        // --- Recalculate Dates based on final CSS styles ---
+        const finalLeftPx = parseFloat(bar.style.left);
+        const finalWidthPx = parseFloat(bar.style.width);
+
+        // 1. Calculate new Start Date (snapped to the unit start)
+        const unitIndexStart = Math.round(finalLeftPx / width); 
+        const newStartDate = projectStartDate.clone().add(unitIndexStart, unit).startOf('day');
+
+        // 2. Calculate new End Date
+        // Duration in units (must be at least 1)
+        const unitDuration = Math.max(1, Math.round(finalWidthPx / width));
+        let durationInDays;
+
+        if (unit === 'day') {
+             durationInDays = unitDuration;
+        } else if (unit === 'week') {
+            durationInDays = unitDuration * 7;
+        } else if (unit === 'month') {
+            // Calculate end date based on the number of full units (months) elapsed
+            // The duration in days is the difference between the new start and the new end unit date
+            const newEndUnitDate = newStartDate.clone().add(unitDuration, unit);
+            durationInDays = newEndUnitDate.diff(newStartDate, 'day');
+        }
+        
+        // The end date is (Start Date + duration - 1 day)
+        // Subtracting one day ensures the end date is inclusive
+        const newEndDate = newStartDate.clone().add(durationInDays, 'day').subtract(1, 'day').startOf('day');
+
+        // 3. Update the MOCK_TASK data
+        currentTask.start = newStartDate.format('YYYY-MM-DD');
+        currentTask.end = newEndDate.format('YYYY-MM-DD');
+
+        // 4. Re-render the bars to apply the precise floating point position based on the new dates
+        renderGanttBars(); 
+        
+        console.log(`Task ${currentTask.id} moved/resized. New Start: ${currentTask.start}, New End: ${currentTask.end}, Mode: ${dragMode}`);
+        isDragging = false;
+        currentTask = null;
+        dragMode = 'move'; // Reset mode
+
+        // Remove document listeners
+        document.removeEventListener('mousemove', handleDragMove);
+        document.removeEventListener('mouseup', handleDragEnd);
+        document.removeEventListener('touchmove', handleDragMove);
+        document.removeEventListener('touchend', handleDragEnd);
+    };
+
+    // --- MAIN INITIALIZATION ---
+
+    /**
+     * Main function to render all components of the chart.
+     */
+    const renderChart = () => {
+        // 1. Set the global scale based on the selector
+        currentScale = document.getElementById('scale-selector').value;
+        
+        // 2. Calculate project timeline range
+        calculateProjectRange();
+
+        // 3. Render Left Panel (Task List)
+        renderTaskList();
+
+        // 4. Render Right Panel (Timeline Header)
+        renderTimelineHeader();
+
+        // 5. Render Grid & Today Line
+        renderGanttGrid();
+
+        // 6. Render Task Bars
+        renderGanttBars();
+
+        // 7. Sync scrolling between header and container
+        const header = document.getElementById('timeline-header');
+        const container = document.getElementById('gantt-container');
+        
+        header.style.overflowY = 'hidden';
+
+        container.onscroll = () => {
+            header.scrollLeft = container.scrollLeft;
+        };
+
+        // Scroll to Today
+        const today = dayjs().startOf('day');
+        const params = getScaleParams();
+        // Calculate days from start in days, convert to pixels
+        const daysFromStart = today.diff(projectStartDate, 'day');
+        let scrollPosition = 0;
+        
+        if (params.unit === 'day') {
+            // Scroll to today's column, minus a few cells for context
+            scrollPosition = Math.max(0, (daysFromStart * params.width) - (params.width * 5));
+        } else if (params.unit === 'week' || params.unit === 'month') {
+            // Scroll to the start of the unit containing today
+            const unitIndex = today.diff(projectStartDate.startOf(params.unit), params.unit);
+            scrollPosition = Math.max(0, (unitIndex * params.width) - (params.width * 2));
+        }
+
+        setTimeout(() => {
+            container.scrollLeft = scrollPosition;
+        }, 50);
+
+        console.log(`Chart Rendered. Scale: ${currentScale}. Total Units: ${totalProjectUnits}. Start: ${projectStartDate.format('YYYY-MM-DD')}`);
+    };
+
+
+    // Event listener to trigger full re-render on scale change
+    document.addEventListener('DOMContentLoaded', () => {
+        // Set the initial scale from the dropdown
+        currentScale = document.getElementById('scale-selector').value;
+
+        document.getElementById('scale-selector').addEventListener('change', (e) => {
+            currentScale = e.target.value;
+            renderChart();
+        });
+
+        renderChart();
+    });
+
+</script>
+</body>
+</html>
