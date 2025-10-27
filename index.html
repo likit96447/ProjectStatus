@@ -2864,6 +2864,10 @@
                                 <span>📈</span>
                                 <span>Timeline</span>
                             </button>
+                            <button class="btn btn-secondary" onclick="openFullScreenGantt()">
+                                <span>📅</span>
+                                <span>Timeline 2</span>
+                            </button>
                             <button class="btn btn-secondary" onclick="toggleProjectFilter()">
                                 <span>🔍</span>
                                 <span>Filter</span>
@@ -3028,6 +3032,34 @@
                                     <!-- Gantt chart will be rendered here -->
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Full-Screen Gantt Timeline Modal -->
+                <div id="fullScreenGanttModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: white; z-index: 1000; overflow: hidden;">
+                    <!-- Header Bar -->
+                    <div style="padding: 16px 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e6e9ef;">
+                        <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: #323338;">Project Timeline - Full View</h2>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 13px; color: #676879;">Scale:</span>
+                                <select id="fullGanttScaleSelector" onchange="updateFullScreenGanttScale(this.value)" style="padding: 6px 10px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 13px; background: white; color: #323338; cursor: pointer;">
+                                    <option value="day">Day</option>
+                                    <option value="week">Week</option>
+                                    <option value="month" selected>Month</option>
+                                    <option value="6month">6 Month</option>
+                                    <option value="year">Year</option>
+                                </select>
+                            </div>
+                            <button onclick="refreshFullScreenGantt()" style="padding: 6px 12px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s;">Refresh View</button>
+                            <button onclick="closeFullScreenGantt()" style="padding: 6px 12px; background: #f0f0f0; color: #323338; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s;">Close</button>
+                        </div>
+                    </div>
+                    <!-- Gantt Content -->
+                    <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+                        <div id="fullScreenGanttContent" style="flex: 1; overflow-y: auto; background: white;">
+                            <!-- Gantt chart will be rendered here -->
                         </div>
                     </div>
                 </div>
@@ -10628,6 +10660,92 @@
                 filterPanel.style.display = 'block';
             } else {
                 filterPanel.style.display = 'none';
+            }
+        }
+
+        // Full-Screen Gantt Functions
+        let fullScreenGanttScale = 'month';
+
+        function openFullScreenGantt() {
+            const modal = document.getElementById('fullScreenGanttModal');
+            if (modal) {
+                modal.style.display = 'block';
+                renderFullScreenGantt();
+            }
+        }
+
+        function closeFullScreenGantt() {
+            const modal = document.getElementById('fullScreenGanttModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function refreshFullScreenGantt() {
+            renderFullScreenGantt();
+        }
+
+        function updateFullScreenGanttScale(scale) {
+            fullScreenGanttScale = scale;
+            renderFullScreenGantt();
+        }
+
+        function renderFullScreenGantt() {
+            const container = document.getElementById('fullScreenGanttContent');
+            if (!container) return;
+
+            const projectsToDisplay = currentFilteredProjects || projects;
+
+            if (projectsToDisplay.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #676879;">No projects to display</div>';
+                return;
+            }
+
+            // Render gantt with full-screen scale
+            try {
+                // Get date range for the chart
+                let minDate = new Date();
+                let maxDate = new Date();
+
+                projectsToDisplay.forEach(project => {
+                    if (project.startDate) {
+                        const start = parseDate(project.startDate);
+                        if (start < minDate) minDate = start;
+                    }
+                    if (project.endDate) {
+                        const end = parseDate(project.endDate);
+                        if (end > maxDate) maxDate = end;
+                    }
+                });
+
+                minDate.setHours(0, 0, 0, 0);
+                maxDate.setHours(23, 59, 59, 999);
+
+                // Save current scale temporarily
+                const savedScale = currentTimelineScale;
+                currentTimelineScale = fullScreenGanttScale;
+
+                // Build HTML header
+                container.innerHTML = `
+                    <div style="display: flex; height: 100%; flex-direction: column;">
+                        <div id="fullGanttChart" style="flex: 1; overflow-x: auto; overflow-y: auto;"></div>
+                    </div>
+                `;
+
+                // Temporarily replace ganttChart div
+                const originalGanttChart = document.getElementById('ganttChart');
+                const tempGanttChart = document.createElement('div');
+                tempGanttChart.id = 'ganttChart';
+                container.querySelector('#fullGanttChart').appendChild(tempGanttChart);
+
+                // Render using the existing renderGanttChart function
+                renderGanttChart(projectsToDisplay);
+
+                // Restore original scale
+                currentTimelineScale = savedScale;
+            } catch (error) {
+                console.error('Error rendering full-screen Gantt:', error);
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #e44258;">Error loading timeline. Please check the console for details.</div>';
             }
         }
 
