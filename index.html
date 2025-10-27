@@ -3058,7 +3058,7 @@
                     </div>
                     <!-- Gantt Content -->
                     <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
-                        <div id="fullScreenGanttContent" style="flex: 1; overflow-y: auto; background: white;">
+                        <div id="fullScreenGanttContent" style="flex: 1; overflow: auto; background: white;">
                             <!-- Gantt chart will be rendered here -->
                         </div>
                     </div>
@@ -10669,7 +10669,8 @@
         function openFullScreenGantt() {
             const modal = document.getElementById('fullScreenGanttModal');
             if (modal) {
-                modal.style.display = 'block';
+                modal.style.display = 'flex';
+                modal.style.flexDirection = 'column';
                 renderFullScreenGantt();
             }
         }
@@ -10703,40 +10704,12 @@
 
             // Render gantt with full-screen scale
             try {
-                // Get date range for the chart
-                let minDate = new Date();
-                let maxDate = new Date();
-
-                projectsToDisplay.forEach(project => {
-                    if (project.startDate) {
-                        const start = parseDate(project.startDate);
-                        if (start < minDate) minDate = start;
-                    }
-                    if (project.endDate) {
-                        const end = parseDate(project.endDate);
-                        if (end > maxDate) maxDate = end;
-                    }
-                });
-
-                minDate.setHours(0, 0, 0, 0);
-                maxDate.setHours(23, 59, 59, 999);
-
                 // Save current scale temporarily
                 const savedScale = currentTimelineScale;
                 currentTimelineScale = fullScreenGanttScale;
 
-                // Build HTML header
-                container.innerHTML = `
-                    <div style="display: flex; height: 100%; flex-direction: column;">
-                        <div id="fullGanttChart" style="flex: 1; overflow-x: auto; overflow-y: auto;"></div>
-                    </div>
-                `;
-
-                // Temporarily replace ganttChart div
-                const originalGanttChart = document.getElementById('ganttChart');
-                const tempGanttChart = document.createElement('div');
-                tempGanttChart.id = 'ganttChart';
-                container.querySelector('#fullGanttChart').appendChild(tempGanttChart);
+                // Create ganttChart div directly in container
+                container.innerHTML = '<div id="ganttChart" style="overflow-x: auto; padding: 20px 0;"></div>';
 
                 // Render using the existing renderGanttChart function
                 renderGanttChart(projectsToDisplay);
