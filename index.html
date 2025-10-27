@@ -3037,30 +3037,14 @@
                 </div>
 
                 <!-- Full-Screen Gantt Timeline Modal -->
-                <div id="fullScreenGanttModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: white; z-index: 1000; overflow: hidden;">
-                    <!-- Header Bar -->
-                    <div style="padding: 16px 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e6e9ef;">
-                        <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: #323338;">Project Timeline - Full View</h2>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 13px; color: #676879;">Scale:</span>
-                                <select id="fullGanttScaleSelector" onchange="updateFullScreenGanttScale(this.value)" style="padding: 6px 10px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 13px; background: white; color: #323338; cursor: pointer;">
-                                    <option value="day">Day</option>
-                                    <option value="week">Week</option>
-                                    <option value="month" selected>Month</option>
-                                    <option value="6month">6 Month</option>
-                                    <option value="year">Year</option>
-                                </select>
-                            </div>
-                            <button onclick="refreshFullScreenGantt()" style="padding: 6px 12px; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s;">Refresh View</button>
-                            <button onclick="closeFullScreenGantt()" style="padding: 6px 12px; background: #f0f0f0; color: #323338; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s;">Close</button>
-                        </div>
+                <div id="fullScreenGanttModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: white; z-index: 1000; overflow: hidden; flex-direction: column;">
+                    <!-- Close Button Bar -->
+                    <div style="padding: 16px 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; justify-content: flex-end; align-items: center; border-bottom: 1px solid #e6e9ef;">
+                        <button onclick="closeFullScreenGantt()" style="padding: 6px 12px; background: #f0f0f0; color: #323338; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s;">Close</button>
                     </div>
-                    <!-- Gantt Content -->
-                    <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
-                        <div id="fullScreenGanttContent" style="flex: 1; overflow: auto; background: white;">
-                            <!-- Gantt chart will be rendered here -->
-                        </div>
+                    <!-- Gantt Content - Using iframe to load ganttchart.html -->
+                    <div style="flex: 1; overflow: hidden; width: 100%;">
+                        <iframe id="ganttIframe" src="ganttchart.html" style="border: none; width: 100%; height: 100%;"></iframe>
                     </div>
                 </div>
 
@@ -10664,14 +10648,10 @@
         }
 
         // Full-Screen Gantt Functions
-        let fullScreenGanttScale = 'month';
-
         function openFullScreenGantt() {
             const modal = document.getElementById('fullScreenGanttModal');
             if (modal) {
                 modal.style.display = 'flex';
-                modal.style.flexDirection = 'column';
-                renderFullScreenGantt();
             }
         }
 
@@ -10679,56 +10659,6 @@
             const modal = document.getElementById('fullScreenGanttModal');
             if (modal) {
                 modal.style.display = 'none';
-            }
-        }
-
-        function refreshFullScreenGantt() {
-            renderFullScreenGantt();
-        }
-
-        function updateFullScreenGanttScale(scale) {
-            fullScreenGanttScale = scale;
-            renderFullScreenGantt();
-        }
-
-        function renderFullScreenGantt() {
-            const container = document.getElementById('fullScreenGanttContent');
-            if (!container) return;
-
-            // Use currentFilteredProjects if available and not empty, otherwise use projects array
-            let projectsToDisplay = (currentFilteredProjects && currentFilteredProjects.length > 0) ? currentFilteredProjects : projects;
-
-            // Make sure we have a valid array
-            if (!projectsToDisplay) {
-                projectsToDisplay = [];
-            }
-
-            console.log('Timeline 2 - Projects to display:', projectsToDisplay.length);
-
-            if (projectsToDisplay.length === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #676879;">No projects to display</div>';
-                return;
-            }
-
-            // Render gantt with full-screen scale
-            try {
-                // Save current scale temporarily
-                const savedScale = currentTimelineScale;
-                currentTimelineScale = fullScreenGanttScale;
-
-                // Create ganttChart div directly in container
-                container.innerHTML = '<div id="ganttChart" style="overflow-x: auto; padding: 20px 0;"></div>';
-
-                // Give DOM time to update
-                setTimeout(() => {
-                    // Render using the existing renderGanttChart function
-                    renderGanttChart(projectsToDisplay);
-                    // Restore original scale
-                    currentTimelineScale = savedScale;
-                }, 0);
-            } catch (error) {
-                console.error('Error rendering full-screen Gantt:', error);
-                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #e44258;">Error loading timeline. Please check the console for details.</div>';
             }
         }
 
