@@ -396,8 +396,9 @@
             maxDate = dayjs(maxTimestamp);
         }
 
-        // Pad the range slightly (e.g., 5 units before start, 5 units after end)
-        projectStartDate = minDate.subtract(5, params.unit).startOf(params.unit);
+        // Start from the 1st day of the month containing the earliest project start date
+        projectStartDate = minDate.startOf('month');
+        // Pad the end date slightly (add 5 units after end)
         projectEndDate = maxDate.add(5, params.unit).endOf(params.unit);
 
         // Calculate total units (days, weeks, or months)

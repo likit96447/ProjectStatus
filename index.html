@@ -9317,8 +9317,10 @@
                     }
                 });
 
-                // Set minDate to start of day (00:00:00) and maxDate to end of day (23:59:59)
+                // Set minDate to 1st day of the month containing earliest project start date
+                minDate = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
                 minDate.setHours(0, 0, 0, 0);
+                // Set maxDate to end of day (23:59:59)
                 maxDate.setHours(23, 59, 59, 999);
 
                 // Calculate total days and scale based on currentTimelineScale
