@@ -384,14 +384,14 @@
         let maxDate = dayjs().add(10, 'day'); // Default end date
         const params = getScaleParams();
 
-        if (MOCK_TASKS.length > 0) {
+        if (TASKS.length > 0) {
             // Find the earliest start date using Math.min on timestamps
-            const startTimestamps = MOCK_TASKS.map(t => dayjs(t.start).valueOf());
+            const startTimestamps = TASKS.map(t => dayjs(t.start).valueOf());
             const minTimestamp = Math.min(...startTimestamps);
             minDate = dayjs(minTimestamp);
 
             // Find the latest end date using Math.max on timestamps
-            const endTimestamps = MOCK_TASKS.map(t => dayjs(t.end).valueOf());
+            const endTimestamps = TASKS.map(t => dayjs(t.end).valueOf());
             const maxTimestamp = Math.max(...endTimestamps);
             maxDate = dayjs(maxTimestamp);
         }
@@ -414,7 +414,7 @@
         const listBody = document.getElementById('task-list-body');
         listBody.innerHTML = '';
 
-        MOCK_TASKS.forEach((task, index) => {
+        TASKS.forEach((task, index) => {
             const row = document.createElement('div');
             row.id = `task-row-${task.id}`;
             row.className = `gantt-row flex items-center px-4 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`;
@@ -560,7 +560,7 @@
         }
 
         // 3. Draw Horizontal Lines (for rows) - remains the same.
-        for (let i = 0; i < MOCK_TASKS.length; i++) {
+        for (let i = 0; i < TASKS.length; i++) {
             const rowLine = document.createElement('div');
             // Background is handled by the vertical line divs, just draw the separator
             rowLine.className = `absolute left-0 right-0 border-b border-gray-100`;
@@ -579,7 +579,7 @@
         const params = getScaleParams();
         const { unit, width } = params;
 
-        MOCK_TASKS.forEach((task, index) => {
+        TASKS.forEach((task, index) => {
             const taskStart = dayjs(task.start).startOf('day');
             const taskEnd = dayjs(task.end).endOf('day');
 
@@ -640,7 +640,7 @@
     let initialWidth = 0; // New state for resizing
     let dragMode = 'move'; // 'move', 'resize-left', 'resize-right'
 
-    const findTaskById = (taskId) => MOCK_TASKS.find(t => t.id === taskId);
+    const findTaskById = (taskId) => TASKS.find(t => t.id === taskId);
 
     const handleDragStart = (e) => {
         e.preventDefault();
