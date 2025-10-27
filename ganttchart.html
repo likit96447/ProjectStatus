@@ -166,6 +166,81 @@
     let totalProjectUnits = 0; // The total number of columns needed (days, weeks, or months)
     let currentScale = 'day'; 
 
+    // Task Data - Check if parent window passed data, otherwise use mock data
+    let TASKS = [];
+
+    // Try to get projects from parent window (when opened via Timeline 2 modal)
+    function initializeTasksFromParent() {
+        try {
+            if (window.parent !== window) {
+                // Check for filtered projects first (passed by Timeline 2 button)
+                let parentProjects = window.parent.filteredProjectsForGantt || window.parent.projects || [];
+
+                if (parentProjects.length > 0) {
+                    // Convert projects to task format expected by ganttchart
+                    TASKS = parentProjects.map((project, index) => ({
+                        id: project.id || `p${index}`,
+                        name: project.name || 'Unnamed Project',
+                        start: normalizeDate(project.startDate),
+                        end: normalizeDate(project.endDate),
+                        color: getProjectColor(project),
+                        progress: project.progress || 0
+                    })).filter(task => task.start && task.end); // Only include projects with dates
+
+                    console.log('Timeline 2 - Loaded', TASKS.length, 'projects from parent window');
+                    if (window.parent.filteredProjectsForGantt) {
+                        console.log('Timeline 2 - Using filtered projects');
+                    }
+                    return;
+                }
+            }
+        } catch (error) {
+            console.warn('Could not access parent window projects:', error);
+        }
+
+        // Fallback to mock data if parent data not available
+        TASKS = [
+            { id: 't1', name: "Project Kickoff & Planning", start: "2025-10-25", end: "2025-10-25", color: "bg-blue-500", progress: 100 },
+            { id: 't2', name: "Wireframe Design & Review", start: "2025-10-26", end: "2025-10-28", color: "bg-purple-500", progress: 75 },
+            { id: 't3', name: "Backend API Development", start: "2025-10-28", end: "2025-11-03", color: "bg-red-500", progress: 50 },
+            { id: 't4', name: "Front-end Development (Phase 1)", start: "2025-11-01", end: "2025-11-10", color: "bg-green-500", progress: 20 },
+            { id: 't5', name: "User Testing & QA", start: "2025-11-12", end: "2025-11-15", color: "bg-yellow-500", progress: 0 },
+            { id: 't6', name: "Deployment & Launch", start: "2025-11-18", end: "2025-11-20", color: "bg-indigo-500", progress: 0 },
+        ];
+        console.log('Timeline 2 - Using mock data');
+    }
+
+    // Helper function to normalize date from various formats to YYYY-MM-DD
+    function normalizeDate(dateStr) {
+        if (!dateStr) return null;
+
+        // Handle YYYY-MM-DD format
+        if (typeof dateStr === 'string' && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            return dateStr;
+        }
+
+        // Handle DD/MM/YYYY format
+        if (typeof dateStr === 'string' && dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+            const [day, month, year] = dateStr.split('/');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Handle YYYY/MM/DD format
+        if (typeof dateStr === 'string' && dateStr.match(/^\d{4}\/\d{2}\/\d{2}$/)) {
+            return dateStr.replace(/\//g, '-');
+        }
+
+        return null;
+    }
+
+    // Helper function to get color based on project health
+    function getProjectColor(project) {
+        if (project.projectHealth === 'green') return 'bg-green-500';
+        if (project.projectHealth === 'amber') return 'bg-yellow-500';
+        if (project.projectHealth === 'red') return 'bg-red-500';
+        return 'bg-blue-500'; // Default color
+    }
+
     // Mock Task Data (Use Date format YYYY-MM-DD for consistency)
     const MOCK_TASKS = [
         { id: 't1', name: "Project Kickoff & Planning", start: "2025-10-25", end: "2025-10-25", color: "bg-blue-500", progress: 100 },
@@ -695,6 +770,9 @@
 
     // Event listener to trigger full re-render on scale change
     document.addEventListener('DOMContentLoaded', () => {
+        // Initialize tasks from parent window or use mock data
+        initializeTasksFromParent();
+
         // Set the initial scale from the dropdown
         currentScale = document.getElementById('scale-selector').value;
 

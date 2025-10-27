@@ -10651,6 +10651,11 @@
         function openFullScreenGantt() {
             const modal = document.getElementById('fullScreenGanttModal');
             if (modal) {
+                // Pass filtered projects to the iframe
+                // The iframe's ganttchart.html will read from window.parent.filteredProjectsForGantt
+                window.filteredProjectsForGantt = currentFilteredProjects || projects;
+                console.log('Timeline 2 - Passing', window.filteredProjectsForGantt.length, 'filtered projects to iframe');
+
                 modal.style.display = 'flex';
             }
         }

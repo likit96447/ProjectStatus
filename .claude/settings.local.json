@@ -5,7 +5,10 @@
       "Bash(wmic datafile where \"name=''c:\\Users\\HP OMEN\\Downloads\\AI Vibe coding\\ProjectStatus\\index4.html''\" get FileSize)",
       "Bash(findstr:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(cat:*)",
+      "Bash(cd:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
