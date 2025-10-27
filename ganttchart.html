@@ -209,6 +209,7 @@
                     TASKS = tasksWithDates;
 
                     console.log('Timeline 2 - Loaded', TASKS.length, 'projects from parent window');
+                    console.log('Timeline 2 - Project names:', TASKS.map(t => t.name).join(', '));
                     if (window.parent.filteredProjectsForGantt) {
                         console.log('Timeline 2 - Using filtered projects');
                     }
@@ -229,6 +230,42 @@
             { id: 't6', name: "Deployment & Launch", start: "2025-11-18", end: "2025-11-20", color: "bg-indigo-500", progress: 0 },
         ];
         console.log('Timeline 2 - Using mock data');
+    }
+
+    // Add a mechanism to reload projects when parent data becomes available
+    function startParentDataPoller() {
+        let pollCount = 0;
+        const maxPolls = 50; // Poll for up to 5 seconds (50 * 100ms)
+
+        const poller = setInterval(() => {
+            pollCount++;
+
+            try {
+                if (window.parent !== window && window.parent.filteredProjectsForGantt) {
+                    const parentProjects = window.parent.filteredProjectsForGantt || [];
+
+                    // Check if parent data is different from current TASKS
+                    if (parentProjects.length > 0 &&
+                        TASKS.length === 0 ||
+                        (TASKS.length > 0 && TASKS[0].name !== parentProjects[0].name)) {
+
+                        console.log('✅ Timeline 2 - Parent data available! Reloading from parent...');
+                        initializeTasksFromParent();
+                        renderChart();
+                        clearInterval(poller);
+                        return;
+                    }
+                }
+            } catch (error) {
+                // Silently continue polling
+            }
+
+            // Stop polling after max attempts
+            if (pollCount >= maxPolls) {
+                console.log('⏸️ Timeline 2 - Polling timeout. Using initialized data.');
+                clearInterval(poller);
+            }
+        }, 100);
     }
 
     // Helper function to normalize date from various formats to YYYY-MM-DD
@@ -810,6 +847,9 @@
     document.addEventListener('DOMContentLoaded', () => {
         // Initialize tasks from parent window or use mock data
         initializeTasksFromParent();
+
+        // Start polling for parent data in case it becomes available after initial load
+        startParentDataPoller();
 
         // Set the initial scale from the dropdown
         currentScale = document.getElementById('scale-selector').value;
