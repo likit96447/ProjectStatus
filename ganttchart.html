@@ -176,16 +176,37 @@
                 // Check for filtered projects first (passed by Timeline 2 button)
                 let parentProjects = window.parent.filteredProjectsForGantt || window.parent.projects || [];
 
+                console.log('Timeline 2 - Found', parentProjects.length, 'projects from parent');
+
                 if (parentProjects.length > 0) {
                     // Convert projects to task format expected by ganttchart
-                    TASKS = parentProjects.map((project, index) => ({
-                        id: project.id || `p${index}`,
-                        name: project.name || 'Unnamed Project',
-                        start: normalizeDate(project.startDate),
-                        end: normalizeDate(project.endDate),
-                        color: getProjectColor(project),
-                        progress: project.progress || 0
-                    })).filter(task => task.start && task.end); // Only include projects with dates
+                    const allTasks = parentProjects.map((project, index) => {
+                        const task = {
+                            id: project.id || `p${index}`,
+                            name: project.name || 'Unnamed Project',
+                            start: normalizeDate(project.startDate),
+                            end: normalizeDate(project.endDate),
+                            color: getProjectColor(project),
+                            progress: project.progress || 0
+                        };
+
+                        // Debug: Log projects with missing dates
+                        if (!task.start || !task.end) {
+                            console.warn(`Timeline 2 - Project "${task.name}" missing dates. Start: ${task.start}, End: ${task.end}, Original: ${project.startDate} - ${project.endDate}`);
+                        }
+
+                        return task;
+                    });
+
+                    // Keep all tasks but log the ones filtered out
+                    const tasksWithDates = allTasks.filter(task => task.start && task.end);
+                    const tasksWithoutDates = allTasks.filter(task => !task.start || !task.end);
+
+                    if (tasksWithoutDates.length > 0) {
+                        console.warn(`Timeline 2 - Filtered out ${tasksWithoutDates.length} projects without valid dates`);
+                    }
+
+                    TASKS = tasksWithDates;
 
                     console.log('Timeline 2 - Loaded', TASKS.length, 'projects from parent window');
                     if (window.parent.filteredProjectsForGantt) {
@@ -214,20 +235,37 @@
     function normalizeDate(dateStr) {
         if (!dateStr) return null;
 
-        // Handle YYYY-MM-DD format
-        if (typeof dateStr === 'string' && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        // Convert to string if needed
+        dateStr = String(dateStr).trim();
+
+        // Handle YYYY-MM-DD format (already correct)
+        if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
             return dateStr;
         }
 
         // Handle DD/MM/YYYY format
-        if (typeof dateStr === 'string' && dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
-            const [day, month, year] = dateStr.split('/');
-            return `${year}-${month}-${day}`;
+        if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+            const parts = dateStr.split('/');
+            const [day, month, year] = parts;
+            return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         }
 
         // Handle YYYY/MM/DD format
-        if (typeof dateStr === 'string' && dateStr.match(/^\d{4}\/\d{2}\/\d{2}$/)) {
+        if (dateStr.match(/^\d{4}\/\d{2}\/\d{2}$/)) {
             return dateStr.replace(/\//g, '-');
+        }
+
+        // Handle other date formats - try to parse as Date
+        try {
+            const date = new Date(dateStr);
+            if (!isNaN(date.getTime())) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+        } catch (e) {
+            console.warn(`Timeline 2 - Could not parse date: ${dateStr}`);
         }
 
         return null;
