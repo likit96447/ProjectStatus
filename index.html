@@ -10695,7 +10695,15 @@
             const container = document.getElementById('fullScreenGanttContent');
             if (!container) return;
 
-            const projectsToDisplay = currentFilteredProjects || projects;
+            // Use currentFilteredProjects if available and not empty, otherwise use projects array
+            let projectsToDisplay = (currentFilteredProjects && currentFilteredProjects.length > 0) ? currentFilteredProjects : projects;
+
+            // Make sure we have a valid array
+            if (!projectsToDisplay) {
+                projectsToDisplay = [];
+            }
+
+            console.log('Timeline 2 - Projects to display:', projectsToDisplay.length);
 
             if (projectsToDisplay.length === 0) {
                 container.innerHTML = '<div style="text-align: center; padding: 40px; color: #676879;">No projects to display</div>';
@@ -10711,11 +10719,13 @@
                 // Create ganttChart div directly in container
                 container.innerHTML = '<div id="ganttChart" style="overflow-x: auto; padding: 20px 0;"></div>';
 
-                // Render using the existing renderGanttChart function
-                renderGanttChart(projectsToDisplay);
-
-                // Restore original scale
-                currentTimelineScale = savedScale;
+                // Give DOM time to update
+                setTimeout(() => {
+                    // Render using the existing renderGanttChart function
+                    renderGanttChart(projectsToDisplay);
+                    // Restore original scale
+                    currentTimelineScale = savedScale;
+                }, 0);
             } catch (error) {
                 console.error('Error rendering full-screen Gantt:', error);
                 container.innerHTML = '<div style="text-align: center; padding: 40px; color: #e44258;">Error loading timeline. Please check the console for details.</div>';
