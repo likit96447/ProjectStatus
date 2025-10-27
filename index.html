@@ -2864,7 +2864,7 @@
                                 <span>📈</span>
                                 <span>Timeline</span>
                             </button>
-                            <button class="btn btn-secondary" onclick="openFullScreenGantt()">
+                            <button class="btn btn-secondary" onclick="openFullScreenGantt().catch(e => console.error('Error opening timeline:', e))">
                                 <span>📅</span>
                                 <span>Timeline 2</span>
                             </button>
@@ -10648,16 +10648,28 @@
         }
 
         // Full-Screen Gantt Functions
-        function openFullScreenGantt() {
+        async function openFullScreenGantt() {
             const modal = document.getElementById('fullScreenGanttModal');
-            if (modal) {
-                // Pass filtered projects to the iframe
-                // The iframe's ganttchart.html will read from window.parent.filteredProjectsForGantt
-                window.filteredProjectsForGantt = currentFilteredProjects || projects;
-                console.log('Timeline 2 - Passing', window.filteredProjectsForGantt.length, 'filtered projects to iframe');
+            if (!modal) return;
 
-                modal.style.display = 'flex';
+            // Ensure we have Firebase data loaded (7 projects), not just mock data (4 projects)
+            if (projects.length <= 4) {
+                console.log('⏳ Timeline 2 - Waiting for Firebase projects to load...');
+                showSpinner('Loading timeline...');
+
+                // Wait for Firebase data to load
+                await loadProjectsFromFirebase();
+
+                hideSpinner();
             }
+
+            // Pass filtered projects to the iframe
+            // The iframe's ganttchart.html will read from window.parent.filteredProjectsForGantt
+            window.filteredProjectsForGantt = currentFilteredProjects || projects;
+            console.log('✅ Timeline 2 - Passing', window.filteredProjectsForGantt.length, 'projects to iframe');
+            console.log('📊 Project names:', window.filteredProjectsForGantt.map(p => p.name).join(', '));
+
+            modal.style.display = 'flex';
         }
 
         function closeFullScreenGantt() {
