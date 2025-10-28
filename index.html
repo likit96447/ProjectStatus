@@ -3761,8 +3761,32 @@
         // Session timeout configuration (1 hour = 3600000 milliseconds)
         const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hour in milliseconds
 
+        // ========================================
+        // GUEST MODE CONFIGURATION
+        // ========================================
+        // Check if this is a guest access link
+        function isGuestMode() {
+            const params = new URLSearchParams(window.location.search);
+            const guestToken = params.get('guest');
+            const validGuestTokens = ['dashboard-guest-2025', 'guest-view'];
+            return guestToken && validGuestTokens.includes(guestToken);
+        }
+
+        // Store guest mode in session
+        const guestMode = isGuestMode();
+        if (guestMode) {
+            sessionStorage.setItem('guestMode', 'true');
+            console.log('✅ Guest mode enabled - Dashboard view only');
+        }
+
         // Check authentication and session timeout
         function checkSession() {
+            // If guest mode, skip authentication check
+            if (guestMode) {
+                console.log('⏭️ Skipping authentication - guest mode active');
+                return true;
+            }
+
             const loggedInUser = sessionStorage.getItem('loggedInUser');
 
             if (!loggedInUser) {
@@ -4984,6 +5008,14 @@
         }
 
         function switchPage(pageName, skipFilterClear = false) {
+            // In guest mode, only allow dashboard page
+            if (guestMode && pageName !== 'dashboard') {
+                console.log('⛔ Guest mode: Cannot access ' + pageName + ' page');
+                alert('Guest access is limited to Dashboard only');
+                switchPage('dashboard');
+                return;
+            }
+
             const pages = ['dashboard', 'projectslist', 'tasks', 'team', 'reports'];
             pages.forEach(p => {
                 const page = document.getElementById(p + 'Page');
@@ -12103,6 +12135,20 @@
                 renderTasks();
                 renderProjects();
                 updateDashboardStats();
+            }
+
+            // Setup guest mode UI
+            if (guestMode) {
+                console.log('🎫 Setting up guest mode UI - hiding restricted nav buttons');
+                // Hide restricted nav buttons for guest users
+                const restrictedButtons = ['projectsNavBtn', 'tasksNavBtn', 'teamNavBtn', 'reportsNavBtn'];
+                restrictedButtons.forEach(btnId => {
+                    const btn = document.getElementById(btnId);
+                    if (btn) {
+                        btn.style.display = 'none';
+                        console.log(`  ✅ Hidden button: ${btnId}`);
+                    }
+                });
             }
 
             // Initialize project view styling
