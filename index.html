@@ -5019,11 +5019,12 @@
         }
 
         function switchPage(pageName, skipFilterClear = false) {
-            // In guest mode, only allow dashboard page
-            if (guestMode && pageName !== 'dashboard') {
+            // In guest mode, only allow dashboard and projects pages
+            const allowedGuestPages = ['dashboard', 'projectslist'];
+            if (guestMode && !allowedGuestPages.includes(pageName)) {
                 console.log('⛔ Guest mode: Cannot access ' + pageName + ' page');
-                alert('Guest access is limited to Dashboard only');
-                switchPage('dashboard');
+                alert('Guest access is limited to Dashboard and Projects only');
+                switchPage('projectslist');
                 return;
             }
 
@@ -12229,15 +12230,17 @@
                 }
             }
 
-            // Ensure dashboard page and nav button are properly activated
-            switchPage('dashboard');
-            console.log('📊 Dashboard page activated');
+            // Ensure proper page is activated (Projects for guests, Dashboard for regular users)
+            const defaultPage = guestMode ? 'projectslist' : 'dashboard';
+            switchPage(defaultPage);
+            console.log(`📊 ${guestMode ? 'Projects' : 'Dashboard'} page activated (default for ${guestMode ? 'guest' : 'user'})`);
 
             // Setup guest mode UI
             if (guestMode) {
                 console.log('🎫 Setting up guest mode UI - hiding restricted nav buttons');
-                // Hide restricted nav buttons for guest users
-                const restrictedButtons = ['projectsNavBtn', 'tasksNavBtn', 'teamNavBtn', 'reportsNavBtn'];
+                // Hide restricted nav buttons for guest users (Tasks, Team, Reports)
+                // Projects button will remain visible
+                const restrictedButtons = ['tasksNavBtn', 'teamNavBtn', 'reportsNavBtn'];
                 restrictedButtons.forEach(btnId => {
                     const btn = document.getElementById(btnId);
                     if (btn) {
