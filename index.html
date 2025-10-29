@@ -10751,6 +10751,17 @@
             console.log('📊 Project names:', window.filteredProjectsForGantt.map(p => p.name).join(', '));
 
             modal.style.display = 'flex';
+
+            // Restart the iframe's data poller to detect the new data
+            try {
+                const ganttIframe = document.getElementById('ganttIframe');
+                if (ganttIframe && ganttIframe.contentWindow && ganttIframe.contentWindow.restartTimelinePoller) {
+                    ganttIframe.contentWindow.restartTimelinePoller();
+                    console.log('✅ Timeline 2 - Restarted iframe data poller');
+                }
+            } catch (error) {
+                console.warn('Timeline 2 - Could not restart iframe poller:', error);
+            }
         }
 
         function closeFullScreenGantt() {
