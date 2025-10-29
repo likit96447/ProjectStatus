@@ -5038,8 +5038,18 @@
 
             const navTabs = document.querySelectorAll('.nav-tab');
             navTabs.forEach(tab => tab.classList.remove('active'));
-            if (event && event.currentTarget) {
-                event.currentTarget.classList.add('active');
+
+            // Find and activate the correct nav button based on pageName
+            // This works whether switchPage() is called from a click event or programmatically
+            const navButtons = Array.from(navTabs);
+            const targetButton = navButtons.find(btn => {
+                const btnText = btn.textContent.trim().toLowerCase();
+                const targetText = pageName === 'projectslist' ? 'projects' : pageName;
+                return btnText === targetText;
+            });
+            if (targetButton) {
+                targetButton.classList.add('active');
+                console.log(`✅ Activated nav button: ${targetButton.textContent.trim()}`);
             }
 
             // Reload data when switching to specific pages
@@ -12218,6 +12228,10 @@
                     console.log('📊 Dashboard load complete');
                 }
             }
+
+            // Ensure dashboard page and nav button are properly activated
+            switchPage('dashboard');
+            console.log('📊 Dashboard page activated');
 
             // Setup guest mode UI
             if (guestMode) {
