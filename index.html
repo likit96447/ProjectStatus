@@ -4742,6 +4742,7 @@
 
         // Prevent concurrent loading
         let isLoadingTasks = false;
+        let isLoadingProjects = false; // Prevent concurrent project loading
 
         // Load all tasks from Firestore
         async function loadTasksFromFirebase() {
@@ -4885,6 +4886,9 @@
         // Real-time listener for tasks
         let realtimeListenerUnsubscribe = null;
 
+        // Flag to skip initial snapshot from realtime listener
+        let isInitialSnapshot = true;
+
         function setupRealtimeListener() {
             if (!db) return;
 
@@ -4896,6 +4900,13 @@
 
             console.log("📡 Setting up real-time listener...");
             realtimeListenerUnsubscribe = db.collection('tasks').onSnapshot(async (snapshot) => {
+                // Skip the initial snapshot (data already loaded)
+                if (isInitialSnapshot) {
+                    console.log("⏭️ Skipping initial snapshot (data already loaded)");
+                    isInitialSnapshot = false;
+                    return;
+                }
+
                 // Skip if we're in the middle of a manual operation
                 if (isManualOperation) {
                     console.log("⏭️ Skipping real-time update (manual operation in progress)");
@@ -7619,28 +7630,45 @@
         let currentParentTaskId = null;
         let editingSubtaskIndex = -1;
 
-        // Load subtasks from Firestore
+        // Load subtasks from Firestore (OPTIMIZED with batch loading)
         async function loadSubtasksFromFirebase() {
             if (!db) return;
 
             try {
-                const snapshot = await db.collection('subtasks').orderBy('createdAt', 'desc').get();
+                // Fetch all data in parallel (one batch query instead of N queries)
+                const [subtasksSnapshot, membersSnapshot, projectsSnapshot] = await Promise.all([
+                    db.collection('subtasks').orderBy('createdAt', 'desc').get(),
+                    db.collection('team_members').get(),
+                    db.collection('projects').get()
+                ]);
+
+                // Create lookup maps for fast access (no more Firebase calls)
+                const membersMap = {};
+                membersSnapshot.forEach(doc => {
+                    membersMap[doc.id] = doc.data().name;
+                });
+
+                const projectsMap = {};
+                projectsSnapshot.forEach(doc => {
+                    projectsMap[doc.id] = doc.data().name;
+                });
+
                 subtasks = [];
 
-                // Process each subtask and fetch member/project names
-                for (const doc of snapshot.docs) {
+                // Process subtasks using cached data (instant lookup)
+                subtasksSnapshot.forEach(doc => {
                     const subtaskData = doc.data();
 
-                    // Get person name from member ID
+                    // Get person name from map (fast!)
                     let personName = 'Unknown';
-                    if (subtaskData.assignedTo) {
-                        personName = await getMemberNameById(subtaskData.assignedTo);
+                    if (subtaskData.assignedTo && membersMap[subtaskData.assignedTo]) {
+                        personName = membersMap[subtaskData.assignedTo];
                     }
 
-                    // Get project name from project ID
+                    // Get project name from map (fast!)
                     let projectName = '';
-                    if (subtaskData.projectId) {
-                        projectName = await getProjectNameById(subtaskData.projectId);
+                    if (subtaskData.projectId && projectsMap[subtaskData.projectId]) {
+                        projectName = projectsMap[subtaskData.projectId];
                     }
 
                     subtasks.push({
@@ -7649,9 +7677,9 @@
                         personName: personName,
                         project: projectName
                     });
-                }
+                });
 
-                console.log(`✅ Loaded ${subtasks.length} subtasks from Firestore`);
+                console.log(`✅ Loaded ${subtasks.length} subtasks from Firestore (optimized batch loading)`);
             } catch (error) {
                 console.error('❌ Error loading subtasks:', error);
             }
@@ -10312,6 +10340,13 @@
                 return;
             }
 
+            // Prevent concurrent loading
+            if (isLoadingProjects) {
+                console.log("⏭️ Project loading already in progress, skipping...");
+                return;
+            }
+
+            isLoadingProjects = true;
             showSpinner('Loading projects...');
 
             try {
@@ -10349,6 +10384,7 @@
                     console.error('❌ Fallback also failed:', fallbackError);
                 }
             } finally {
+                isLoadingProjects = false;
                 hideSpinner();
             }
         }
@@ -12124,17 +12160,63 @@
 
         // Initialize app
         window.addEventListener('load', async () => {
-            // Load from Firebase
-            if (db) {
-                await loadTasksFromFirebase();
-                await loadSubtasksFromFirebase();
-                await loadTeamMembersWithStats();
-                await loadProjectsFromFirebase();
-                setupRealtimeListener();
-            } else {
-                renderTasks();
-                renderProjects();
-                updateDashboardStats();
+            // Show single unified spinner for all initial loads
+            const overlay = document.getElementById('loadingOverlay');
+            const spinnerText = document.getElementById('spinnerText');
+
+            if (overlay && spinnerText) {
+                spinnerText.textContent = 'Loading dashboard...';
+                overlay.classList.add('active');
+                console.log('📊 Starting unified dashboard load...');
+            }
+
+            try {
+                // Load from Firebase
+                if (db) {
+                    // Temporarily override showSpinner to not show multiple spinners
+                    const originalShowSpinner = window.showSpinner;
+                    const originalHideSpinner = window.hideSpinner;
+                    let showSpinnerCount = 0;
+
+                    window.showSpinner = (text) => {
+                        showSpinnerCount++;
+                        // Update text but don't show/hide overlay for internal calls
+                        if (spinnerText && text) {
+                            spinnerText.textContent = text;
+                        }
+                    };
+
+                    window.hideSpinner = () => {
+                        showSpinnerCount--;
+                        // Only hide if all spinners are hidden
+                        if (showSpinnerCount <= 0) {
+                            showSpinnerCount = 0;
+                            // Keep showing the unified spinner until all loads complete
+                        }
+                    };
+
+                    // Load all data
+                    await loadTasksFromFirebase();
+                    await loadSubtasksFromFirebase();
+                    await loadTeamMembersWithStats();
+                    await loadProjectsFromFirebase();
+                    setupRealtimeListener();
+
+                    // Restore original spinner functions
+                    window.showSpinner = originalShowSpinner;
+                    window.hideSpinner = originalHideSpinner;
+                    console.log('✅ All data loaded successfully');
+                } else {
+                    renderTasks();
+                    renderProjects();
+                    updateDashboardStats();
+                }
+            } finally {
+                // Hide the unified spinner after all loads complete
+                if (overlay) {
+                    overlay.classList.remove('active');
+                    console.log('📊 Dashboard load complete');
+                }
             }
 
             // Setup guest mode UI
