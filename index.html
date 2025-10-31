@@ -4888,6 +4888,14 @@
             // Check createdByName field (backup)
             if (data.createdByName === currentUser.name) return true;
 
+            // Check if user is project manager (for projects)
+            if (data.projectManager === currentUser.email || data.projectManager === currentUser.name) return true;
+
+            // Check if user is in projectManagers array
+            if (data.projectManagers &&
+                (data.projectManagers.includes(currentUser.email) ||
+                 data.projectManagers.includes(currentUser.name))) return true;
+
             return false;
         }
 
@@ -10772,13 +10780,52 @@
         // PROJECT CRUD FUNCTIONS
         // ========================================
 
-        function renderProjects() {
+        async function renderProjects() {
             // Reset filtered projects when rendering all projects
             currentFilteredProjects = null;
 
             // Always render grid view (Project Card button removed)
             currentProjectView = 'grid';
-            renderProjectsGridView(projects);
+
+            // Filter projects to show only those user has access to
+            const visibleProjects = await filterProjectsByUserAccess(projects);
+            renderProjectsGridView(visibleProjects);
+        }
+
+        /**
+         * Filter projects to show only those the current user should see
+         * User sees project if:
+         * - Has show: true permission for projectslist page AND
+         * - Is project manager OR is team member
+         * @param {Array} projectsArray - Array of projects to filter
+         * @returns {Promise<Array>} Filtered projects
+         */
+        async function filterProjectsByUserAccess(projectsArray) {
+            const currentUser = getCurrentUser();
+            if (!currentUser) return [];
+
+            const hasShowPermission = await canShow('projectslist');
+            if (!hasShowPermission) return [];
+
+            return projectsArray.filter(project => {
+                // Check if user is project manager
+                const isProjectManager = project.projectManager === currentUser.email ||
+                                        project.projectManager === currentUser.name ||
+                                        (project.projectManagers &&
+                                         (project.projectManagers.includes(currentUser.email) ||
+                                          project.projectManagers.includes(currentUser.name)));
+
+                // Check if user is team member
+                const isTeamMember = project.team &&
+                                    (project.team.includes(currentUser.email) ||
+                                     project.team.includes(currentUser.name)) ||
+                                    project.teamMembers &&
+                                    (project.teamMembers.includes(currentUser.email) ||
+                                     project.teamMembers.includes(currentUser.name));
+
+                // User sees project if they are PM or team member
+                return isProjectManager || isTeamMember;
+            });
         }
 
         function renderProjectsGridOld() {
@@ -10915,12 +10962,12 @@
                         <button class="project-action-btn" onclick="viewProjectTasks('${project.id}', '${project.name}')">
                             📋 Tasks
                         </button>
-                        <button class="project-action-btn" onclick="editProject(${index})">
+                        ${canEditThis ? `<button class="project-action-btn" onclick="editProject(${index})">
                             ✏️ Edit
-                        </button>
-                        <button class="project-action-btn delete" onclick="deleteProject(${index})">
+                        </button>` : ''}
+                        ${canEditThis ? `<button class="project-action-btn delete" onclick="deleteProject(${index})">
                             🗑️ Delete
-                        </button>
+                        </button>` : ''}
                     </div>
                 </div>
             `).join('');
@@ -12224,12 +12271,12 @@
                         <button class="project-action-btn" onclick="viewProjectTasks('${project.id}', '${project.name}')">
                             📋 Tasks
                         </button>
-                        <button class="project-action-btn" onclick="editProject(${index})">
+                        ${canEditThis ? `<button class="project-action-btn" onclick="editProject(${index})">
                             ✏️ Edit
-                        </button>
-                        <button class="project-action-btn delete" onclick="deleteProject(${index})">
+                        </button>` : ''}
+                        ${canEditThis ? `<button class="project-action-btn delete" onclick="deleteProject(${index})">
                             🗑️ Delete
-                        </button>
+                        </button>` : ''}
                     </div>
                 </div>
             `}).join('');
