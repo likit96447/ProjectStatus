@@ -4889,13 +4889,20 @@
             if (data.createdByName === currentUser.name) return true;
 
             // Check if user is project manager (for projects)
-            if (data.projectManager === currentUser.email || data.projectManager === currentUser.name) return true;
+            if (data.projectManager === currentUser.email || data.projectManager === currentUser.name) {
+                console.log(`✅ User is PM (single): ${currentUser.email || currentUser.name} === ${data.projectManager}`);
+                return true;
+            }
 
             // Check if user is in projectManagers array
             if (data.projectManagers &&
                 (data.projectManagers.includes(currentUser.email) ||
-                 data.projectManagers.includes(currentUser.name))) return true;
+                 data.projectManagers.includes(currentUser.name))) {
+                console.log(`✅ User is PM (array): ${currentUser.email || currentUser.name} in [${data.projectManagers.join(', ')}]`);
+                return true;
+            }
 
+            console.log(`❌ User is NOT owner of ${data.name}: currentUser=${currentUser.email || currentUser.name}, PM=${data.projectManager}, PMs=[${data.projectManagers?.join(', ') || 'none'}]`);
             return false;
         }
 
@@ -5099,36 +5106,39 @@
             const canEditPerm = await canEdit('projectslist');
             const canDeletePerm = await canDelete('projectslist');
 
+            // Process each project individually
             for (let i = 0; i < projects.length; i++) {
                 const project = projects[i];
                 const isProjectOwner = isOwner(project);
+                const canEditThis = canEditPerm && isProjectOwner;
+                const canDeleteThis = canDeletePerm && isProjectOwner;
 
-                // Edit button for project card - use data-action attribute
-                const editBtns = document.querySelectorAll(`[data-action="edit"]`);
-                editBtns.forEach((btn) => {
-                    const parentCard = btn.closest('.project-card');
-                    if (parentCard) {
-                        const canEditThis = canEditPerm && isProjectOwner;
-                        btn.style.display = canEditThis ? '' : 'none';
-                        btn.disabled = !canEditThis;
-                        btn.title = canEditThis ? 'Edit' : 'You do not have permission to edit this project';
-                    }
-                });
+                // Find the project card for this specific project using data-project-id
+                const projectCard = document.querySelector(`.project-card[data-project-id="${project.id}"]`);
+                if (!projectCard) {
+                    console.log(`⚠️ Project card not found for: ${project.name}`);
+                    continue;
+                }
 
-                // Delete button for project card - use data-action attribute
-                const deleteBtns = document.querySelectorAll(`[data-action="delete"]`);
-                deleteBtns.forEach((btn) => {
-                    const parentCard = btn.closest('.project-card');
-                    if (parentCard) {
-                        const canDeleteThis = canDeletePerm && isProjectOwner;
-                        btn.style.display = canDeleteThis ? '' : 'none';
-                        btn.disabled = !canDeleteThis;
-                        btn.title = canDeleteThis ? 'Delete' : 'You do not have permission to delete this project';
-                    }
-                });
+                // Find and update ONLY the edit button within this card
+                const editBtn = projectCard.querySelector(`[data-action="edit"]`);
+                if (editBtn) {
+                    editBtn.style.display = canEditThis ? '' : 'none';
+                    editBtn.disabled = !canEditThis;
+                    editBtn.title = canEditThis ? 'Edit' : 'You do not have permission to edit this project';
+                    console.log(`🔘 Project "${project.name}" | Edit button: ${canEditThis ? 'visible ✅' : 'hidden ❌'}`);
+                }
+
+                // Find and update ONLY the delete button within this card
+                const deleteBtn = projectCard.querySelector(`[data-action="delete"]`);
+                if (deleteBtn) {
+                    deleteBtn.style.display = canDeleteThis ? '' : 'none';
+                    deleteBtn.disabled = !canDeleteThis;
+                    deleteBtn.title = canDeleteThis ? 'Delete' : 'You do not have permission to delete this project';
+                }
             }
 
-            console.log(`✅ Project edit/delete button visibility updated`);
+            console.log(`✅ Project edit/delete button visibility updated for all cards`);
         }
 
         /**
@@ -10834,7 +10844,7 @@
             if (!projectsGrid) return;
 
             projectsGrid.innerHTML = projects.map((project, index) => `
-                <div class="project-card" onclick="if(event.target.closest('.project-action-btn') || event.target.closest('.project-status-badge')) return; editProject(${index})">
+                <div class="project-card" data-project-id="${project.id}" onclick="if(event.target.closest('.project-action-btn') || event.target.closest('.project-status-badge')) return; editProject(${index})">
                     <div class="project-card-header">
                         <div>
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
@@ -12138,6 +12148,9 @@
                 const canEditBadges = canEditProjects;
                 // For edit/delete buttons: need both edit permission AND ownership
                 const canEditThis = canEditProjects && isProjectOwner;
+
+                // Debug logging
+                console.log(`📋 Project: ${project.name} | Edit Permission: ${canEditProjects} | Is Owner: ${isProjectOwner} | Can Edit Buttons: ${canEditThis}`);
 
                 // Build status badge - conditionally include onclick based on permission
                 const statusBadgeOnclick = canEditBadges ? `onclick="toggleProjectStatusPopup(event, '${project.id}', ${index})"` : '';
