@@ -5028,6 +5028,54 @@
             }
         }
 
+        /**
+         * Check if user can edit a specific item
+         * Must have edit permission AND be owner of item
+         */
+        async function canEditItem(item, page = 'tasks') {
+            if (!item) return false;
+            const hasEditPermission = await canEdit(page);
+            // Must have permission AND be owner
+            return hasEditPermission && isOwner(item);
+        }
+
+        /**
+         * Check if user can delete a specific item
+         * Must have delete permission AND be owner of item
+         */
+        async function canDeleteItem(item, page = 'tasks') {
+            if (!item) return false;
+            const hasDeletePermission = await canDelete(page);
+            // Must have permission AND be owner
+            return hasDeletePermission && isOwner(item);
+        }
+
+        /**
+         * Check permission before allowing edit modal to open
+         */
+        async function checkEditPermission(item, page) {
+            const canEdit = await canEditItem(item, page);
+            if (!canEdit) {
+                console.log('🔒 User does not have permission to edit this item');
+                alert('You do not have permission to edit this item');
+                return false;
+            }
+            return true;
+        }
+
+        /**
+         * Check permission before allowing delete modal to open
+         */
+        async function checkDeletePermission(item, page) {
+            const canDelete = await canDeleteItem(item, page);
+            if (!canDelete) {
+                console.log('🔒 User does not have permission to delete this item');
+                alert('You do not have permission to delete this item');
+                return false;
+            }
+            return true;
+        }
+
         // Initialize Firebase
         let db;
         try {
@@ -9599,6 +9647,12 @@
             if (subtaskIndex === -1) return;
 
             const subtask = subtasks[subtaskIndex];
+
+            // Check permission before opening modal
+            if (!await checkEditPermission(subtask, 'tasks')) {
+                return;
+            }
+
             editingSubtaskIndex = subtaskIndex;
             currentParentTaskId = subtask.parentTaskId;
 
@@ -9631,6 +9685,15 @@
 
         // Delete subtask
         async function deleteSubtask(subtaskId) {
+            // Get subtask for permission check
+            const subtask = subtasks.find(st => st.id === subtaskId);
+            if (!subtask) return;
+
+            // Check permission before allowing deletion
+            if (!await checkDeletePermission(subtask, 'tasks')) {
+                return;
+            }
+
             if (!confirm('Are you sure you want to delete this subtask?')) {
                 return;
             }
@@ -9825,6 +9888,11 @@
         async function deleteTask(index) {
             const task = tasks[index];
 
+            // Check permission before allowing deletion
+            if (!await checkDeletePermission(task, 'tasks')) {
+                return;
+            }
+
             // Show confirmation dialog with task name
             if (!confirm(`Are you sure you want to delete the task "${task.name}"?\n\nThis action cannot be undone.`)) {
                 return; // User cancelled
@@ -9864,9 +9932,15 @@
             }
         }
 
-        function editTask(index) {
+        async function editTask(index) {
             editingIndex = index;
             const task = tasks[index];
+
+            // Check permission before opening modal
+            if (!await checkEditPermission(task, 'tasks')) {
+                editingIndex = -1;
+                return;
+            }
 
             // Update modal title
             document.getElementById('modalTitle').textContent = 'Edit Task';
@@ -11317,9 +11391,15 @@
             editingProjectIndex = -1;
         }
 
-        function editProject(index) {
+        async function editProject(index) {
             editingProjectIndex = index;
             const project = projects[index];
+
+            // Check permission before opening modal
+            if (!await checkEditPermission(project, 'projectslist')) {
+                editingProjectIndex = -1;
+                return;
+            }
 
             // Update modal title and button
             document.getElementById('projectModalTitle').textContent = 'Edit Project';
@@ -11393,6 +11473,11 @@
 
         async function deleteProject(index) {
             const project = projects[index];
+
+            // Check permission before allowing deletion
+            if (!await checkDeletePermission(project, 'projectslist')) {
+                return;
+            }
 
             if (confirm(`Are you sure you want to delete "${project.name}"?`)) {
                 try {
