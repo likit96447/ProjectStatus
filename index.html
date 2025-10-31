@@ -10866,10 +10866,10 @@
                                     </div>
                                 </div>
                                 <div class="project-status-popup-wrapper">
-                                    <span class="project-status-badge ${canEditThis ? 'clickable' : 'disabled'}"
-                                          style="background: #0073ea; color: white; cursor: ${canEditThis ? 'pointer' : 'not-allowed'}; opacity: ${canEditThis ? '1' : '0.6'};"
-                                          ${canEditThis ? `onclick="toggleProjectSDLCPopup(event, '${project.id}', ${index})"` : ''}
-                                          title="${canEditThis ? 'Click to change SDLC phase' : 'You do not have permission to change the SDLC phase'}">
+                                    <span class="project-status-badge ${canEditBadges ? 'clickable' : 'disabled'}"
+                                          style="background: #0073ea; color: white; cursor: ${canEditBadges ? 'pointer' : 'not-allowed'}; opacity: ${canEditBadges ? '1' : '0.6'};"
+                                          ${canEditBadges ? `onclick="toggleProjectSDLCPopup(event, '${project.id}', ${index})"` : ''}
+                                          title="${canEditBadges ? 'Click to change SDLC phase' : 'You do not have permission to change the SDLC phase'}">
                                         ${project.sdlc || 'No Phase'}
                                     </span>
                                     <div class="project-status-popup" id="project-sdlc-popup-${project.id}">
@@ -12134,11 +12134,14 @@
             projectsGrid.innerHTML = filteredProjects.map((project) => {
                 const index = projects.indexOf(project);
                 const isProjectOwner = isOwner(project);
+                // For status/SDLC badges: only need edit permission
+                const canEditBadges = canEditProjects;
+                // For edit/delete buttons: need both edit permission AND ownership
                 const canEditThis = canEditProjects && isProjectOwner;
 
                 // Build status badge - conditionally include onclick based on permission
-                const statusBadgeOnclick = canEditThis ? `onclick="toggleProjectStatusPopup(event, '${project.id}', ${index})"` : '';
-                const statusBadgeTitle = canEditThis ? 'Click to change status' : 'You do not have permission to change the status';
+                const statusBadgeOnclick = canEditBadges ? `onclick="toggleProjectStatusPopup(event, '${project.id}', ${index})"` : '';
+                const statusBadgeTitle = canEditBadges ? 'Click to change status' : 'You do not have permission to change the status';
 
                 //editProject(${index})
                 return `
@@ -12153,9 +12156,9 @@
                             </div>
                             <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
                                 <div class="project-status-popup-wrapper">
-                                    <span class="project-status-badge ${canEditThis ? 'clickable' : 'disabled'} ${project.status}"
+                                    <span class="project-status-badge ${canEditBadges ? 'clickable' : 'disabled'} ${project.status}"
                                           ${statusBadgeOnclick}
-                                          style="cursor: ${canEditThis ? 'pointer' : 'not-allowed'}; opacity: ${canEditThis ? '1' : '0.6'};"
+                                          style="cursor: ${canEditBadges ? 'pointer' : 'not-allowed'}; opacity: ${canEditBadges ? '1' : '0.6'};"
                                           title="${statusBadgeTitle}">
                                         ${formatStatus(project.status)}
                                     </span>
@@ -12175,10 +12178,10 @@
                                     </div>
                                 </div>
                                 <div class="project-status-popup-wrapper">
-                                    <span class="project-status-badge ${canEditThis ? 'clickable' : 'disabled'}"
-                                          style="background: #0073ea; color: white; cursor: ${canEditThis ? 'pointer' : 'not-allowed'}; opacity: ${canEditThis ? '1' : '0.6'};"
-                                          ${canEditThis ? `onclick="toggleProjectSDLCPopup(event, '${project.id}', ${index})"` : ''}
-                                          title="${canEditThis ? 'Click to change SDLC phase' : 'You do not have permission to change the SDLC phase'}">
+                                    <span class="project-status-badge ${canEditBadges ? 'clickable' : 'disabled'}"
+                                          style="background: #0073ea; color: white; cursor: ${canEditBadges ? 'pointer' : 'not-allowed'}; opacity: ${canEditBadges ? '1' : '0.6'};"
+                                          ${canEditBadges ? `onclick="toggleProjectSDLCPopup(event, '${project.id}', ${index})"` : ''}
+                                          title="${canEditBadges ? 'Click to change SDLC phase' : 'You do not have permission to change the SDLC phase'}">
                                         ${project.sdlc || 'No Phase'}
                                     </span>
                                     <div class="project-status-popup" id="project-sdlc-popup-${project.id}">
