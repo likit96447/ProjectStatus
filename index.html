@@ -4895,6 +4895,46 @@
         }
 
         /**
+         * Filter data based on user permissions
+         * - Admins see all data
+         * - Other users see only data they created/own or data assigned to them
+         * - For tasks: show all tasks but filter subtasks based on ownership
+         */
+        function filterDataByOwnership(dataArray, dataType = 'generic') {
+            const currentUser = getCurrentUser();
+            if (!currentUser) return [];
+
+            // Admins see everything
+            if (isAdmin()) return dataArray;
+
+            if (!Array.isArray(dataArray)) return [];
+
+            // Filter by ownership/assignment
+            return dataArray.filter(item => {
+                // Check if user is creator
+                if (item.createdBy === currentUser.email) return true;
+                if (item.createdByName === currentUser.name) return true;
+
+                // Check if user is assigned to the item
+                if (item.assignedTo === currentUser.email) return true;
+                if (item.assignedTo === currentUser.name) return true;
+
+                // For team members - show all (public data)
+                if (dataType === 'team') return true;
+
+                // For projects - show if user is project manager or assigned
+                if (dataType === 'project') {
+                    if (item.projectManager === currentUser.email) return true;
+                    if (item.projectManager === currentUser.name) return true;
+                    if (item.team && item.team.includes(currentUser.email)) return true;
+                    if (item.team && item.team.includes(currentUser.name)) return true;
+                }
+
+                return false;
+            });
+        }
+
+        /**
          * Update menu visibility based on user permissions
          */
         async function updateMenuVisibility() {
