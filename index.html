@@ -10976,7 +10976,7 @@
                         ${canEditThis ? `<button class="project-action-btn" data-action="edit" onclick="editProject(${index})">
                             ✏️ Edit
                         </button>` : ''}
-                        ${canEditThis ? `<button class="project-action-btn delete" data-action="delete" onclick="deleteProject(${index})">
+                        ${canDeleteThis ? `<button class="project-action-btn delete" data-action="delete" onclick="deleteProject(${index})">
                             🗑️ Delete
                         </button>` : ''}
                     </div>
@@ -12128,6 +12128,7 @@
 
             // Get permissions once for all projects
             const canEditProjects = await canEdit('projectslist');
+            const canDeleteProjects = await canDelete('projectslist');
 
             if (filteredProjects.length === 0) {
                 projectsGrid.innerHTML = `
@@ -12146,11 +12147,13 @@
                 const isProjectOwner = isOwner(project);
                 // For status/SDLC badges: only need edit permission
                 const canEditBadges = canEditProjects;
-                // For edit/delete buttons: need both edit permission AND ownership
+                // For edit button: need both edit permission AND ownership
                 const canEditThis = canEditProjects && isProjectOwner;
+                // For delete button: need both delete permission AND ownership
+                const canDeleteThis = canDeleteProjects && isProjectOwner;
 
                 // Debug logging
-                console.log(`📋 Project: ${project.name} | Edit Permission: ${canEditProjects} | Is Owner: ${isProjectOwner} | Can Edit Buttons: ${canEditThis}`);
+                console.log(`📋 Project: ${project.name} | Edit Permission: ${canEditProjects} | Delete Permission: ${canDeleteProjects} | Is Owner: ${isProjectOwner} | Can Edit: ${canEditThis} | Can Delete: ${canDeleteThis}`);
 
                 // Build status badge - conditionally include onclick based on permission
                 const statusBadgeOnclick = canEditBadges ? `onclick="toggleProjectStatusPopup(event, '${project.id}', ${index})"` : '';
@@ -12291,7 +12294,7 @@
                         ${canEditThis ? `<button class="project-action-btn" data-action="edit" onclick="editProject(${index})">
                             ✏️ Edit
                         </button>` : ''}
-                        ${canEditThis ? `<button class="project-action-btn delete" data-action="delete" onclick="deleteProject(${index})">
+                        ${canDeleteThis ? `<button class="project-action-btn delete" data-action="delete" onclick="deleteProject(${index})">
                             🗑️ Delete
                         </button>` : ''}
                     </div>
