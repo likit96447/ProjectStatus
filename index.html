@@ -4291,27 +4291,47 @@
 
                 const pages = ['dashboard', 'projectslist', 'tasks', 'team', 'reports'];
                 const operations = ['show', 'add', 'edit', 'delete', 'admin'];
-                const roles = Object.keys(defaultPagePermissions);
 
-                roles.forEach(role => {
-                    const permissions = savedPermissions[role] || defaultPagePermissions[role];
+                // Fetch roles from Firebase roles collection (all roles, not just active ones)
+                let rolesFromFirebase = [];
+                try {
+                    const rolesSnapshot = await db.collection('roles').get();
+                    rolesSnapshot.forEach(doc => {
+                        rolesFromFirebase.push({
+                            id: doc.id,
+                            name: doc.data().name
+                        });
+                    });
+                    console.log(`✅ Loaded ${rolesFromFirebase.size} roles from Firebase for permissions`);
+                } catch (error) {
+                    console.warn("⚠️ Could not load roles from Firebase, using default roles:", error);
+                    rolesFromFirebase = Object.keys(defaultPagePermissions).map(name => ({ name, id: name }));
+                }
+
+                // If no roles from Firebase, use defaults
+                const rolesToDisplay = rolesFromFirebase.length > 0 ? rolesFromFirebase : Object.keys(defaultPagePermissions).map(name => ({ name, id: name }));
+
+                rolesToDisplay.forEach(roleObj => {
+                    const roleName = roleObj.name;
+                    const permissions = savedPermissions[roleName] || defaultPagePermissions[roleName] || {};
 
                     let row = `<tr style="border-bottom: 1px solid #e6e9ef;">
                         <td style="padding: 12px 16px; font-weight: 500; color: #323338; border-right: 1px solid #e6e9ef; text-align: left;">
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <span>${role}</span>
-                                <button onclick="toggleAllCheckboxesForRole('${role}')" style="padding: 4px 8px; font-size: 11px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; color: #323338; font-weight: 500;" title="Check/Uncheck all permissions for this role">✓ All</button>
+                                <span>${roleName}</span>
+                                <button onclick="toggleAllCheckboxesForRole('${roleName}')" style="padding: 4px 8px; font-size: 11px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; color: #323338; font-weight: 500;" title="Check/Uncheck all permissions for this role">✓ All</button>
                             </div>
                         </td>`;
 
                     // Iterate through each page
                     pages.forEach(page => {
-                        const pagePerms = permissions[page] || defaultPagePermissions[role][page];
+                        const pagePerms = permissions[page];
+                        const defaultPerms = defaultPagePermissions[roleName]?.[page];
 
                         // Iterate through each operation (show, add, edit, delete, admin)
                         operations.forEach(op => {
-                            const permValue = pagePerms[op];
-                            const checkboxId = `perm-${role}-${page}-${op}`;
+                            const permValue = pagePerms?.[op] !== undefined ? pagePerms[op] : (defaultPerms?.[op] ?? false);
+                            const checkboxId = `perm-${roleName}-${page}-${op}`;
 
                             // Use checkbox (checked if true, unchecked if false)
                             const isChecked = permValue === true;
@@ -4322,9 +4342,10 @@
                     });
 
                     // Add Admin page (only has admin operation)
-                    const adminPerms = permissions['admin'] || defaultPagePermissions[role]['admin'];
-                    const adminCheckboxId = `perm-${role}-admin-admin`;
-                    const adminIsChecked = adminPerms['admin'] === true;
+                    const adminPerms = permissions['admin'];
+                    const defaultAdminPerms = defaultPagePermissions[roleName]?.['admin'];
+                    const adminCheckboxId = `perm-${roleName}-admin-admin`;
+                    const adminIsChecked = adminPerms?.['admin'] !== undefined ? adminPerms['admin'] : (defaultAdminPerms?.['admin'] ?? false);
                     row += `<td style="padding: 8px 4px; text-align: center;">
                         <input type="checkbox" id="${adminCheckboxId}" ${adminIsChecked ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer;">
                     </td>`;
@@ -4333,7 +4354,7 @@
                     tableBody.insertAdjacentHTML('beforeend', row);
                 });
 
-                console.log("✅ Page permissions table rendered");
+                console.log(`✅ Page permissions table rendered with ${rolesToDisplay.length} roles`);
             } catch (error) {
                 console.error("❌ Error rendering page permissions table:", error);
             }
@@ -4346,12 +4367,21 @@
             try {
                 const pages = ['dashboard', 'projectslist', 'tasks', 'team', 'reports'];
                 const operations = ['show', 'add', 'edit', 'delete', 'admin'];
-                const roles = Object.keys(defaultPagePermissions);
                 const permissions = {};
 
-                // Collect all checkbox states
-                roles.forEach(role => {
+                // Get all role rows from the table to determine which roles have permissions
+                const tableRows = document.querySelectorAll('#permissionsTableBody tr');
+
+                tableRows.forEach(row => {
+                    // Get role name from the first cell
+                    const roleCell = row.querySelector('td:first-child span');
+                    if (!roleCell) return;
+
+                    const role = roleCell.textContent.trim();
+
                     permissions[role] = {};
+
+                    // Collect page permissions
                     pages.forEach(page => {
                         permissions[role][page] = {};
                         operations.forEach(op => {
@@ -4393,8 +4423,38 @@
             }
 
             try {
+                // Fetch current roles from Firebase
+                let rolesFromFirebase = [];
+                try {
+                    const rolesSnapshot = await db.collection('roles').get();
+                    rolesSnapshot.forEach(doc => {
+                        rolesFromFirebase.push(doc.data().name);
+                    });
+                } catch (error) {
+                    console.warn("⚠️ Could not load roles from Firebase, using default roles");
+                    rolesFromFirebase = Object.keys(defaultPagePermissions);
+                }
+
+                // Build default permissions for all current roles
+                const rolesToReset = rolesFromFirebase.length > 0 ? rolesFromFirebase : Object.keys(defaultPagePermissions);
+                const defaultPermissions = {};
+
+                rolesToReset.forEach(roleName => {
+                    // Use hardcoded defaults if available, otherwise set all to false
+                    defaultPermissions[roleName] = defaultPagePermissions[roleName] || {
+                        dashboard: { show: false, add: false, edit: false, delete: false, admin: false },
+                        projectslist: { show: false, add: false, edit: false, delete: false, admin: false },
+                        tasks: { show: false, add: false, edit: false, delete: false, admin: false },
+                        team: { show: false, add: false, edit: false, delete: false, admin: false },
+                        reports: { show: false, add: false, edit: false, delete: false, admin: false },
+                        admin: { admin: false }
+                    };
+                });
+
+                console.log("📝 Default permissions to reset:", defaultPermissions);
+
                 // Save default permissions to Firebase
-                await db.collection('page_permissions').doc('global').set(defaultPagePermissions, { merge: true });
+                await db.collection('page_permissions').doc('global').set(defaultPermissions, { merge: true });
 
                 console.log("✅ Page permissions reset to default");
                 alert("✅ Page permissions have been reset to default!");
