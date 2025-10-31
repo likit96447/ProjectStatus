@@ -2501,7 +2501,20 @@
                     🔔
                     <span class="notification-badge"></span>
                 </button>
-                <button class="icon-btn">⚙️</button>
+                <div style="position: relative;">
+                    <button class="icon-btn" id="settingsBtn" onclick="toggleSettingsMenu()">⚙️</button>
+                    <div id="settingsMenu" class="settings-menu" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e6e9ef; border-radius: 8px; min-width: 200px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000;">
+                        <div class="settings-menu-item" onclick="switchPage('adminRules'); closeSettingsMenu()" style="padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #e6e9ef; color: #323338; font-size: 14px;">
+                            📋 Admin Rules
+                        </div>
+                        <div class="settings-menu-item" onclick="switchPage('pagePermissions'); closeSettingsMenu()" style="padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #e6e9ef; color: #323338; font-size: 14px;">
+                            🔐 Page Permissions
+                        </div>
+                        <div class="settings-menu-item" onclick="switchPage('roleManagement'); closeSettingsMenu()" style="padding: 12px 16px; cursor: pointer; color: #323338; font-size: 14px;">
+                            👥 Role Management
+                        </div>
+                    </div>
+                </div>
                 <button class="icon-btn">❓</button>
                 <div class="user-info">
                     <span class="user-name" id="currentUserName">User</span>
@@ -2512,7 +2525,7 @@
         </header>
 
         <div class="main-container">
-            <aside class="sidebar" id="sidebar">
+            <aside class="sidebar collapsed" id="sidebar">
                 <button class="collapse-btn" onclick="toggleSidebar()">
                     <span id="collapseIcon">◀</span>
                 </button>
@@ -3337,6 +3350,257 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Admin Rules Page -->
+                <div id="adminRulesPage" class="page-view">
+                    <div class="board-header">
+                        <h1 class="board-title">Admin Rules</h1>
+                        <p class="board-subtitle">Manage system rules and settings</p>
+                    </div>
+
+                    <div style="padding: 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="max-width: 900px; margin: 0 auto;">
+                            <h2 style="color: #323338; margin-bottom: 20px; font-size: 18px; font-weight: 600;">System Configuration</h2>
+
+                            <div style="display: grid; gap: 16px;">
+                                <!-- Rule 1 -->
+                                <div style="padding: 16px; border: 1px solid #e6e9ef; border-radius: 8px; background: #f9fafb;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <h3 style="margin: 0; color: #323338; font-size: 14px; font-weight: 600;">Task Completion Notification</h3>
+                                        <label style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="checkbox" id="rule-task-completion" checked style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;">
+                                            <span style="font-size: 12px; color: #676879;">Enabled</span>
+                                        </label>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: #676879;">Send notifications when team members complete tasks</p>
+                                </div>
+
+                                <!-- Rule 2 -->
+                                <div style="padding: 16px; border: 1px solid #e6e9ef; border-radius: 8px; background: #f9fafb;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <h3 style="margin: 0; color: #323338; font-size: 14px; font-weight: 600;">Overdue Task Alerts</h3>
+                                        <label style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="checkbox" id="rule-overdue-alerts" checked style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;">
+                                            <span style="font-size: 12px; color: #676879;">Enabled</span>
+                                        </label>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: #676879;">Alert team members about overdue tasks</p>
+                                </div>
+
+                                <!-- Rule 3 -->
+                                <div style="padding: 16px; border: 1px solid #e6e9ef; border-radius: 8px; background: #f9fafb;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <h3 style="margin: 0; color: #323338; font-size: 14px; font-weight: 600;">Project Status Change Notifications</h3>
+                                        <label style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="checkbox" id="rule-project-notifications" checked style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;">
+                                            <span style="font-size: 12px; color: #676879;">Enabled</span>
+                                        </label>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: #676879;">Notify when project status or health changes</p>
+                                </div>
+
+                                <!-- Rule 4 -->
+                                <div style="padding: 16px; border: 1px solid #e6e9ef; border-radius: 8px; background: #f9fafb;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <h3 style="margin: 0; color: #323338; font-size: 14px; font-weight: 600;">Auto-Archive Completed Projects</h3>
+                                        <label style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="checkbox" id="rule-auto-archive" style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;">
+                                            <span style="font-size: 12px; color: #676879;">Enabled</span>
+                                        </label>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: #676879;">Automatically archive projects when all tasks are completed</p>
+                                </div>
+
+                                <!-- Rule 5 -->
+                                <div style="padding: 16px; border: 1px solid #e6e9ef; border-radius: 8px; background: #f9fafb;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <h3 style="margin: 0; color: #323338; font-size: 14px; font-weight: 600;">Subtask Auto-Sync</h3>
+                                        <label style="display: flex; align-items: center; cursor: pointer;">
+                                            <input type="checkbox" id="rule-subtask-sync" checked style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;">
+                                            <span style="font-size: 12px; color: #676879;">Enabled</span>
+                                        </label>
+                                    </div>
+                                    <p style="margin: 0; font-size: 13px; color: #676879;">Sync subtask status to parent task progress</p>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 24px; display: flex; gap: 12px;">
+                                <button class="btn btn-primary" style="padding: 10px 20px;" onclick="saveAdminRules()">
+                                    <span>💾 Save Changes</span>
+                                </button>
+                                <button class="btn btn-secondary" style="padding: 10px 20px;" onclick="resetAdminRules()">
+                                    <span>🔄 Reset to Default</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page Permissions Page -->
+                <div id="pagePermissionsPage" class="page-view">
+                    <div class="board-header">
+                        <h1 class="board-title">Page Permissions</h1>
+                        <p class="board-subtitle">Configure role-based access control for pages</p>
+                    </div>
+
+                    <div style="padding: 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="max-width: 1200px; margin: 0 auto;">
+                            <h2 style="color: #323338; margin-bottom: 20px; font-size: 18px; font-weight: 600;">Role-Based Access Control</h2>
+
+                            <div style="overflow-x: auto; border: 1px solid #e6e9ef; border-radius: 8px;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                                    <thead>
+                                        <tr style="background: #f9fafb; border-bottom: 2px solid #e6e9ef;">
+                                            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef; min-width: 120px;">Role</th>
+
+                                            <!-- Dashboard -->
+                                            <th colspan="5" style="padding: 12px 16px; text-align: center; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef; background: #f5f5f5;">Dashboard</th>
+
+                                            <!-- Project -->
+                                            <th colspan="5" style="padding: 12px 16px; text-align: center; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef; background: #f5f5f5;">Project</th>
+
+                                            <!-- Tasks -->
+                                            <th colspan="5" style="padding: 12px 16px; text-align: center; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef; background: #f5f5f5;">Tasks</th>
+
+                                            <!-- Team -->
+                                            <th colspan="5" style="padding: 12px 16px; text-align: center; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef; background: #f5f5f5;">Team</th>
+
+                                            <!-- Report -->
+                                            <th colspan="5" style="padding: 12px 16px; text-align: center; font-weight: 600; color: #323338; border-right: 1px solid #e6e9ef; background: #f5f5f5;">Report</th>
+
+                                            <!-- Admin -->
+                                            <th colspan="1" style="padding: 12px 16px; text-align: center; font-weight: 600; color: #323338; background: #f5f5f5;">Admin</th>
+                                        </tr>
+                                        <tr style="background: #fafafa; border-bottom: 1px solid #e6e9ef;">
+                                            <th style="padding: 8px 16px; border-right: 1px solid #e6e9ef;"></th>
+
+                                            <!-- Dashboard sub-headers -->
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">show</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">add</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">edit</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">delete</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">Admin</th>
+
+                                            <!-- Project sub-headers -->
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">show</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">add</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">edit</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">delete</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">Admin</th>
+
+                                            <!-- Tasks sub-headers -->
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">show</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">add</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">edit</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">delete</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">Admin</th>
+
+                                            <!-- Team sub-headers -->
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">show</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">add</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">edit</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">delete</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">Admin</th>
+
+                                            <!-- Report sub-headers -->
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">show</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">add</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">edit</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">delete</th>
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px; border-right: 1px solid #e6e9ef;">Admin</th>
+
+                                            <!-- Admin sub-headers -->
+                                            <th style="padding: 8px 4px; text-align: center; font-weight: 500; color: #676879; font-size: 11px;">admin</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="permissionsTableBody">
+                                        <!-- Will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div style="margin-top: 24px; display: flex; gap: 12px;">
+                                <button class="btn btn-primary" style="padding: 10px 20px;" onclick="savePagePermissions()">
+                                    <span>💾 Save Changes</span>
+                                </button>
+                                <button class="btn btn-secondary" style="padding: 10px 20px;" onclick="resetPagePermissionsToDefault()">
+                                    <span>🔄 Reset to Default</span>
+                                </button>
+                            </div>
+
+                            <p style="margin-top: 16px; font-size: 12px; color: #676879;">
+                                <strong>Legend:</strong>
+                                <span style="margin-left: 16px;">☑ = Allow (Checked)</span>
+                                <span style="margin-left: 16px;">☐ = Deny (Unchecked)</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role Management Page -->
+                <div id="roleManagementPage" class="page-view">
+                    <div class="board-header">
+                        <h1 class="board-title">Role Management</h1>
+                        <p class="board-subtitle">Create, edit, and manage user roles</p>
+                    </div>
+
+                    <div style="padding: 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="max-width: 1200px; margin: 0 auto;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h2 style="color: #323338; font-size: 18px; font-weight: 600; margin: 0;">Available Roles</h2>
+                                <button class="btn btn-primary" style="padding: 8px 16px;" onclick="openAddRoleModal()">
+                                    <span>➕ New Role</span>
+                                </button>
+                            </div>
+
+                            <div style="border: 1px solid #e6e9ef; border-radius: 8px; overflow: hidden;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                                    <thead>
+                                        <tr style="background: #f9fafb; border-bottom: 1px solid #e6e9ef;">
+                                            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #323338;">Role Name</th>
+                                            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #323338;">Description</th>
+                                            <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #323338;">Users Count</th>
+                                            <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #323338;">Active</th>
+                                            <th style="padding: 12px 16px; text-align: center; font-weight: 600; color: #323338;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rolesTableBody">
+                                        <!-- Will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add/Edit Role Modal -->
+                <div id="roleModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+                    <div style="background: white; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+                        <div style="padding: 24px; border-bottom: 1px solid #e0e0e0;">
+                            <h2 style="margin: 0; color: #323338;" id="roleModalTitle">Add New Role</h2>
+                        </div>
+                        <div style="padding: 24px;">
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #323338;">Role Name *</label>
+                                <input type="text" id="roleNameInput" placeholder="e.g., Manager, Supervisor" style="width: 100%; padding: 8px 12px; border: 1px solid #e6e9ef; border-radius: 4px; font-size: 14px; box-sizing: border-box;">
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #323338;">Description</label>
+                                <textarea id="roleDescriptionInput" placeholder="Describe the responsibilities of this role..." style="width: 100%; padding: 8px 12px; border: 1px solid #e6e9ef; border-radius: 4px; font-size: 14px; box-sizing: border-box; resize: vertical; height: 80px;"></textarea>
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: flex; align-items: center; cursor: pointer; gap: 8px;">
+                                    <input type="checkbox" id="roleActiveCheckbox" checked style="width: 16px; height: 16px; cursor: pointer;">
+                                    <span style="font-weight: 500; color: #323338;">Active (Available for assignment)</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div style="padding: 16px 24px; border-top: 1px solid #e0e0e0; display: flex; justify-content: flex-end; gap: 12px;">
+                            <button class="btn btn-secondary" style="padding: 8px 16px;" onclick="closeRoleModal()">Cancel</button>
+                            <button class="btn btn-primary" style="padding: 8px 16px;" onclick="saveRole()">Save Role</button>
+                        </div>
+                    </div>
+                </div>
             </main>
 
             <!-- At Risk Details Modal -->
@@ -3353,8 +3617,8 @@
             </div>
         </div>
 
-        <!-- Initialize Data Button -->
-        <button class="init-data-btn" id="initDataBtn" onclick="initializeAllSampleData()">
+        <!-- Initialize Data Button (Hidden) -->
+        <button class="init-data-btn" id="initDataBtn" onclick="initializeAllSampleData()" style="display: none;">
             <span id="initBtnIcon">📦</span>
             <span id="initBtnText">Initialize Sample Data</span>
         </button>
@@ -3517,7 +3781,10 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">Role</label>
-                        <input type="text" class="form-input" id="memberRole" placeholder="e.g., Project Manager" required>
+                        <select class="form-select" id="memberRoleSelect" required>
+                            <option value="">Select a role...</option>
+                            <!-- Will be populated by JavaScript -->
+                        </select>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Department</label>
@@ -3841,6 +4108,538 @@
         setInterval(() => {
             checkSession();
         }, 60000); // Check every 60 seconds
+
+        // Save Admin Rules to Firebase
+        async function saveAdminRules() {
+            console.log("💾 Saving admin rules...");
+
+            try {
+                // Collect all rule values
+                const adminRules = {
+                    taskCompletionNotification: document.getElementById('rule-task-completion').checked,
+                    overdueTaskAlerts: document.getElementById('rule-overdue-alerts').checked,
+                    projectStatusNotifications: document.getElementById('rule-project-notifications').checked,
+                    autoArchiveProjects: document.getElementById('rule-auto-archive').checked,
+                    subtaskAutoSync: document.getElementById('rule-subtask-sync').checked,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: sessionStorage.getItem('loggedInUser') || 'admin'
+                };
+
+                console.log("📝 Admin rules data:", adminRules);
+
+                // Save to Firebase admin_rules collection
+                // Use a document ID of "global" for system-wide settings
+                await db.collection('admin_rules').doc('global').set(adminRules, { merge: true });
+
+                console.log("✅ Admin rules saved successfully");
+                alert("✅ Admin rules saved successfully!");
+
+            } catch (error) {
+                console.error("❌ Error saving admin rules:", error);
+                alert("❌ Error saving admin rules: " + error.message);
+            }
+        }
+
+        // Reset Admin Rules to Default
+        async function resetAdminRules() {
+            console.log("🔄 Resetting admin rules to default...");
+
+            if (!confirm("Are you sure you want to reset all rules to default? This action cannot be undone.")) {
+                return;
+            }
+
+            try {
+                // Set default rules
+                document.getElementById('rule-task-completion').checked = true;
+                document.getElementById('rule-overdue-alerts').checked = true;
+                document.getElementById('rule-project-notifications').checked = true;
+                document.getElementById('rule-auto-archive').checked = false;
+                document.getElementById('rule-subtask-sync').checked = true;
+
+                const defaultRules = {
+                    taskCompletionNotification: true,
+                    overdueTaskAlerts: true,
+                    projectStatusNotifications: true,
+                    autoArchiveProjects: false,
+                    subtaskAutoSync: true,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: sessionStorage.getItem('loggedInUser') || 'admin'
+                };
+
+                // Save default rules to Firebase
+                await db.collection('admin_rules').doc('global').set(defaultRules, { merge: true });
+
+                console.log("✅ Admin rules reset to default");
+                alert("✅ Admin rules have been reset to default!");
+
+            } catch (error) {
+                console.error("❌ Error resetting admin rules:", error);
+                alert("❌ Error resetting admin rules: " + error.message);
+            }
+        }
+
+        // Load Admin Rules from Firebase on page load
+        async function loadAdminRules() {
+            console.log("📖 Loading admin rules from Firebase...");
+
+            try {
+                const doc = await db.collection('admin_rules').doc('global').get();
+
+                if (doc.exists) {
+                    const rules = doc.data();
+                    console.log("✅ Admin rules loaded:", rules);
+
+                    // Update checkboxes with saved values
+                    document.getElementById('rule-task-completion').checked = rules.taskCompletionNotification !== false;
+                    document.getElementById('rule-overdue-alerts').checked = rules.overdueTaskAlerts !== false;
+                    document.getElementById('rule-project-notifications').checked = rules.projectStatusNotifications !== false;
+                    document.getElementById('rule-auto-archive').checked = rules.autoArchiveProjects === true;
+                    document.getElementById('rule-subtask-sync').checked = rules.subtaskAutoSync !== false;
+                } else {
+                    console.log("ℹ️ No admin rules found in Firebase, using defaults");
+                }
+
+            } catch (error) {
+                console.error("❌ Error loading admin rules:", error);
+            }
+        }
+
+        // Default page permissions configuration
+        const defaultPagePermissions = {
+            'Project Manager': {
+                dashboard: { show: true, add: true, edit: true, delete: true, admin: true },
+                projectslist: { show: true, add: true, edit: true, delete: true, admin: true },
+                tasks: { show: true, add: true, edit: true, delete: true, admin: true },
+                team: { show: true, add: true, edit: true, delete: true, admin: true },
+                reports: { show: true, add: true, edit: true, delete: true, admin: true },
+                admin: { admin: true }
+            },
+            'Business Analyst': {
+                dashboard: { show: true, add: false, edit: false, delete: false, admin: false },
+                projectslist: { show: false, add: false, edit: false, delete: false, admin: false },
+                tasks: { show: true, add: true, edit: true, delete: true, admin: false },
+                team: { show: false, add: false, edit: false, delete: false, admin: false },
+                reports: { show: true, add: false, edit: false, delete: false, admin: false },
+                admin: { admin: false }
+            },
+            'System Analyst': {
+                dashboard: { show: true, add: false, edit: false, delete: false, admin: false },
+                projectslist: { show: false, add: false, edit: false, delete: false, admin: false },
+                tasks: { show: true, add: true, edit: true, delete: true, admin: false },
+                team: { show: false, add: false, edit: false, delete: false, admin: false },
+                reports: { show: true, add: false, edit: false, delete: false, admin: false },
+                admin: { admin: false }
+            },
+            'Developer': {
+                dashboard: { show: true, add: false, edit: false, delete: false, admin: false },
+                projectslist: { show: false, add: false, edit: false, delete: false, admin: false },
+                tasks: { show: true, add: true, edit: true, delete: false, admin: false },
+                team: { show: false, add: false, edit: false, delete: false, admin: false },
+                reports: { show: true, add: false, edit: false, delete: false, admin: false },
+                admin: { admin: false }
+            },
+            'QA Lead': {
+                dashboard: { show: true, add: false, edit: false, delete: false, admin: false },
+                projectslist: { show: false, add: false, edit: false, delete: false, admin: false },
+                tasks: { show: true, add: true, edit: true, delete: false, admin: false },
+                team: { show: false, add: false, edit: false, delete: false, admin: false },
+                reports: { show: true, add: false, edit: false, delete: false, admin: false },
+                admin: { admin: false }
+            }
+        };
+
+        // Toggle all checkboxes for a specific role
+        function toggleAllCheckboxesForRole(role) {
+            console.log(`🔄 Toggling all checkboxes for role: ${role}`);
+
+            const pages = ['dashboard', 'projectslist', 'tasks', 'team', 'reports'];
+            const operations = ['show', 'add', 'edit', 'delete', 'admin'];
+
+            // Get all checkboxes for this role
+            const checkboxes = [];
+            pages.forEach(page => {
+                operations.forEach(op => {
+                    const checkboxId = `perm-${role}-${page}-${op}`;
+                    const checkbox = document.getElementById(checkboxId);
+                    if (checkbox) {
+                        checkboxes.push(checkbox);
+                    }
+                });
+            });
+
+            // Check if all are checked, if so uncheck all, otherwise check all
+            const allChecked = checkboxes.every(cb => cb.checked);
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = !allChecked;
+            });
+
+            console.log(`✅ Toggled all checkboxes for ${role}: ${!allChecked ? 'checked' : 'unchecked'}`);
+        }
+
+        // Render permissions table
+        async function renderPagePermissionsTable() {
+            console.log("📊 Rendering page permissions table...");
+            const tableBody = document.getElementById('permissionsTableBody');
+            if (!tableBody) return;
+
+            tableBody.innerHTML = '';
+
+            try {
+                // Load current permissions from Firebase
+                const doc = await db.collection('page_permissions').doc('global').get();
+                const savedPermissions = doc.exists ? doc.data() : {};
+
+                const pages = ['dashboard', 'projectslist', 'tasks', 'team', 'reports'];
+                const operations = ['show', 'add', 'edit', 'delete', 'admin'];
+                const roles = Object.keys(defaultPagePermissions);
+
+                roles.forEach(role => {
+                    const permissions = savedPermissions[role] || defaultPagePermissions[role];
+
+                    let row = `<tr style="border-bottom: 1px solid #e6e9ef;">
+                        <td style="padding: 12px 16px; font-weight: 500; color: #323338; border-right: 1px solid #e6e9ef; text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span>${role}</span>
+                                <button onclick="toggleAllCheckboxesForRole('${role}')" style="padding: 4px 8px; font-size: 11px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; color: #323338; font-weight: 500;" title="Check/Uncheck all permissions for this role">✓ All</button>
+                            </div>
+                        </td>`;
+
+                    // Iterate through each page
+                    pages.forEach(page => {
+                        const pagePerms = permissions[page] || defaultPagePermissions[role][page];
+
+                        // Iterate through each operation (show, add, edit, delete, admin)
+                        operations.forEach(op => {
+                            const permValue = pagePerms[op];
+                            const checkboxId = `perm-${role}-${page}-${op}`;
+
+                            // Use checkbox (checked if true, unchecked if false)
+                            const isChecked = permValue === true;
+                            row += `<td style="padding: 8px 4px; text-align: center; border-right: 1px solid #e6e9ef;">
+                                <input type="checkbox" id="${checkboxId}" ${isChecked ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer;">
+                            </td>`;
+                        });
+                    });
+
+                    // Add Admin page (only has admin operation)
+                    const adminPerms = permissions['admin'] || defaultPagePermissions[role]['admin'];
+                    const adminCheckboxId = `perm-${role}-admin-admin`;
+                    const adminIsChecked = adminPerms['admin'] === true;
+                    row += `<td style="padding: 8px 4px; text-align: center;">
+                        <input type="checkbox" id="${adminCheckboxId}" ${adminIsChecked ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer;">
+                    </td>`;
+
+                    row += '</tr>';
+                    tableBody.insertAdjacentHTML('beforeend', row);
+                });
+
+                console.log("✅ Page permissions table rendered");
+            } catch (error) {
+                console.error("❌ Error rendering page permissions table:", error);
+            }
+        }
+
+        // Save page permissions to Firebase
+        async function savePagePermissions() {
+            console.log("💾 Saving page permissions...");
+
+            try {
+                const pages = ['dashboard', 'projectslist', 'tasks', 'team', 'reports'];
+                const operations = ['show', 'add', 'edit', 'delete', 'admin'];
+                const roles = Object.keys(defaultPagePermissions);
+                const permissions = {};
+
+                // Collect all checkbox states
+                roles.forEach(role => {
+                    permissions[role] = {};
+                    pages.forEach(page => {
+                        permissions[role][page] = {};
+                        operations.forEach(op => {
+                            const checkboxId = `perm-${role}-${page}-${op}`;
+                            const checkbox = document.getElementById(checkboxId);
+                            // Save true if checked, false if unchecked
+                            permissions[role][page][op] = checkbox && checkbox.checked ? true : false;
+                        });
+                    });
+
+                    // Collect Admin page checkbox
+                    const adminCheckboxId = `perm-${role}-admin-admin`;
+                    const adminCheckbox = document.getElementById(adminCheckboxId);
+                    permissions[role]['admin'] = {
+                        admin: adminCheckbox && adminCheckbox.checked ? true : false
+                    };
+                });
+
+                console.log("📝 Permissions data:", permissions);
+
+                // Save to Firebase page_permissions collection
+                await db.collection('page_permissions').doc('global').set(permissions, { merge: true });
+
+                console.log("✅ Page permissions saved successfully");
+                alert("✅ Page permissions saved successfully!");
+
+            } catch (error) {
+                console.error("❌ Error saving page permissions:", error);
+                alert("❌ Error saving page permissions: " + error.message);
+            }
+        }
+
+        // Reset page permissions to default
+        async function resetPagePermissionsToDefault() {
+            console.log("🔄 Resetting page permissions to default...");
+
+            if (!confirm("Are you sure you want to reset all permissions to default? This action cannot be undone.")) {
+                return;
+            }
+
+            try {
+                // Save default permissions to Firebase
+                await db.collection('page_permissions').doc('global').set(defaultPagePermissions, { merge: true });
+
+                console.log("✅ Page permissions reset to default");
+                alert("✅ Page permissions have been reset to default!");
+
+                // Re-render the table
+                await renderPagePermissionsTable();
+
+            } catch (error) {
+                console.error("❌ Error resetting page permissions:", error);
+                alert("❌ Error resetting page permissions: " + error.message);
+            }
+        }
+
+        // Load page permissions from Firebase on page load
+        async function loadPagePermissions() {
+            console.log("📖 Loading page permissions from Firebase...");
+
+            try {
+                // Render the table when switching to permissions page
+                if (document.getElementById('pagePermissionsPage')?.classList.contains('active')) {
+                    await renderPagePermissionsTable();
+                }
+            } catch (error) {
+                console.error("❌ Error loading page permissions:", error);
+            }
+        }
+
+        // ===== ROLE MANAGEMENT FUNCTIONS =====
+        let currentEditingRoleId = null;
+
+        // Open Add Role Modal
+        function openAddRoleModal() {
+            console.log("➕ Opening add role modal...");
+            currentEditingRoleId = null;
+            document.getElementById('roleModalTitle').textContent = 'Add New Role';
+            document.getElementById('roleNameInput').value = '';
+            document.getElementById('roleDescriptionInput').value = '';
+            document.getElementById('roleActiveCheckbox').checked = true; // Reset to checked (active) by default
+            document.getElementById('roleModal').style.display = 'flex';
+        }
+
+        // Close Role Modal
+        function closeRoleModal() {
+            console.log("✖️ Closing role modal...");
+            document.getElementById('roleModal').style.display = 'none';
+            currentEditingRoleId = null;
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('roleModal')?.addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeRoleModal();
+            }
+        });
+
+        // Save Role to Firebase
+        async function saveRole() {
+            console.log("💾 Saving role...");
+
+            const roleName = document.getElementById('roleNameInput').value.trim();
+            const roleDescription = document.getElementById('roleDescriptionInput').value.trim();
+            const roleActive = document.getElementById('roleActiveCheckbox').checked;
+
+            if (!roleName) {
+                alert('⚠️ Please enter a role name');
+                return;
+            }
+
+            try {
+                if (currentEditingRoleId) {
+                    // Update existing role
+                    await db.collection('roles').doc(currentEditingRoleId).update({
+                        name: roleName,
+                        description: roleDescription,
+                        active: roleActive,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: sessionStorage.getItem('loggedInUser') || 'admin'
+                    });
+                    console.log("✅ Role updated successfully");
+                    alert("✅ Role updated successfully!");
+                } else {
+                    // Create new role
+                    await db.collection('roles').add({
+                        name: roleName,
+                        description: roleDescription,
+                        active: roleActive,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        createdBy: sessionStorage.getItem('loggedInUser') || 'admin',
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedBy: sessionStorage.getItem('loggedInUser') || 'admin'
+                    });
+                    console.log("✅ Role created successfully");
+                    alert("✅ Role created successfully!");
+                }
+
+                closeRoleModal();
+                await loadRolesFromFirebase();
+            } catch (error) {
+                console.error("❌ Error saving role:", error);
+                alert("❌ Error saving role: " + error.message);
+            }
+        }
+
+        // Load Roles from Firebase
+        async function loadRolesFromFirebase() {
+            console.log("📖 Loading roles from Firebase...");
+
+            try {
+                const querySnapshot = await db.collection('roles').get();
+                const rolesTableBody = document.getElementById('rolesTableBody');
+
+                if (!rolesTableBody) return;
+
+                rolesTableBody.innerHTML = '';
+
+                if (querySnapshot.empty) {
+                    rolesTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="padding: 24px; text-align: center; color: #676879;">
+                                No roles found. Click "New Role" to create one.
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                for (const doc of querySnapshot.docs) {
+                    const role = doc.data();
+                    const roleId = doc.id;
+                    const isActive = role.active !== false; // Default to true if not specified
+
+                    // Count users with this role
+                    const usersCount = await countUsersWithRole(roleId);
+
+                    const row = `
+                        <tr style="border-bottom: 1px solid #e6e9ef;">
+                            <td style="padding: 12px 16px; color: #323338; font-weight: 500;">${role.name}</td>
+                            <td style="padding: 12px 16px; color: #676879;">${role.description || '-'}</td>
+                            <td style="padding: 12px 16px; text-align: center; color: #323338;">${usersCount}</td>
+                            <td style="padding: 12px 16px; text-align: center;">
+                                <input type="checkbox" ${isActive ? 'checked' : ''} onclick="toggleRoleActive('${roleId}', this)" style="width: 16px; height: 16px; cursor: pointer;">
+                            </td>
+                            <td style="padding: 12px 16px; text-align: center;">
+                                <button onclick="editRole('${roleId}', '${role.name}', '${role.description || ''}')" style="padding: 4px 12px; margin-right: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; color: #323338; font-size: 12px;">✏️ Edit</button>
+                                <button onclick="deleteRole('${roleId}', '${role.name}')" style="padding: 4px 12px; border: 1px solid #ddd; border-radius: 4px; background: #fff5f5; cursor: pointer; color: #d32f2f; font-size: 12px;">🗑️ Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                    rolesTableBody.insertAdjacentHTML('beforeend', row);
+                }
+
+                console.log("✅ Roles loaded successfully");
+            } catch (error) {
+                console.error("❌ Error loading roles:", error);
+            }
+        }
+
+        // Count Users with Specific Role
+        async function countUsersWithRole(roleId) {
+            try {
+                const snapshot = await db.collection('team_members').where('roleId', '==', roleId).get();
+                return snapshot.size;
+            } catch (error) {
+                console.error("❌ Error counting users:", error);
+                return 0;
+            }
+        }
+
+        // Edit Role
+        async function editRole(roleId, roleName, roleDescription) {
+            console.log(`✏️ Editing role: ${roleName}`);
+            currentEditingRoleId = roleId;
+            document.getElementById('roleModalTitle').textContent = 'Edit Role';
+            document.getElementById('roleNameInput').value = roleName;
+            document.getElementById('roleDescriptionInput').value = roleDescription;
+
+            // Load role from Firebase to get active status
+            try {
+                const roleDoc = await db.collection('roles').doc(roleId).get();
+                if (roleDoc.exists) {
+                    const roleData = roleDoc.data();
+                    document.getElementById('roleActiveCheckbox').checked = roleData.active !== false; // Default to true
+                }
+            } catch (error) {
+                console.error("❌ Error loading role data:", error);
+                document.getElementById('roleActiveCheckbox').checked = true; // Default to true on error
+            }
+
+            document.getElementById('roleModal').style.display = 'flex';
+        }
+
+        // Toggle Role Active Status
+        async function toggleRoleActive(roleId, checkboxElement) {
+            const newActiveStatus = checkboxElement.checked;
+            const previousStatus = !newActiveStatus; // Store for reverting if error
+
+            console.log(`🔄 Toggling role active status to ${newActiveStatus}...`);
+
+            try {
+                await db.collection('roles').doc(roleId).update({
+                    active: newActiveStatus,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: sessionStorage.getItem('loggedInUser') || 'admin'
+                });
+
+                console.log(`✅ Role active status updated to ${newActiveStatus}`);
+
+                // Also reload member role dropdown in case it's open, to reflect active status changes
+                const memberRoleSelect = document.getElementById('memberRoleSelect');
+                if (memberRoleSelect && memberRoleSelect.innerHTML !== '') {
+                    await populateMemberRoleDropdown();
+                }
+            } catch (error) {
+                console.error("❌ Error updating role status:", error);
+                // Revert checkbox to previous state on error
+                checkboxElement.checked = previousStatus;
+                alert("❌ Error updating role status: " + error.message);
+            }
+        }
+
+        // Delete Role
+        async function deleteRole(roleId, roleName) {
+            console.log(`🗑️ Deleting role: ${roleName}`);
+
+            if (!confirm(`Are you sure you want to delete the role "${roleName}"? Users assigned to this role will need to be reassigned.`)) {
+                return;
+            }
+
+            try {
+                // Check if any users are assigned to this role
+                const usersCount = await countUsersWithRole(roleId);
+                if (usersCount > 0) {
+                    alert(`⚠️ Cannot delete role "${roleName}" because ${usersCount} user(s) are still assigned to it.`);
+                    return;
+                }
+
+                await db.collection('roles').doc(roleId).delete();
+                console.log("✅ Role deleted successfully");
+                alert("✅ Role deleted successfully!");
+                await loadRolesFromFirebase();
+            } catch (error) {
+                console.error("❌ Error deleting role:", error);
+                alert("❌ Error deleting role: " + error.message);
+            }
+        }
 
         // Logout function
         function logout() {
@@ -4986,7 +5785,35 @@
             icon.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
         }
 
+        // Toggle settings menu
+        function toggleSettingsMenu() {
+            const menu = document.getElementById('settingsMenu');
+            if (menu) {
+                menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        // Close settings menu
+        function closeSettingsMenu() {
+            const menu = document.getElementById('settingsMenu');
+            if (menu) {
+                menu.style.display = 'none';
+            }
+        }
+
+        // Close settings menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const settingsBtn = document.getElementById('settingsBtn');
+            const settingsMenu = document.getElementById('settingsMenu');
+            if (settingsBtn && settingsMenu && !settingsBtn.contains(event.target) && !settingsMenu.contains(event.target)) {
+                closeSettingsMenu();
+            }
+        });
+
         function switchPage(pageName, skipFilterClear = false) {
+            // Close settings menu when navigating
+            closeSettingsMenu();
+
             // In guest mode, only allow dashboard and projects pages
             const allowedGuestPages = ['dashboard', 'projectslist'];
             if (guestMode && !allowedGuestPages.includes(pageName)) {
@@ -4996,7 +5823,7 @@
                 return;
             }
 
-            const pages = ['dashboard', 'projectslist', 'tasks', 'team', 'reports'];
+            const pages = ['dashboard', 'projectslist', 'tasks', 'team', 'reports', 'adminRules', 'pagePermissions', 'roleManagement'];
             pages.forEach(p => {
                 const page = document.getElementById(p + 'Page');
                 if (page) page.classList.remove('active');
@@ -5043,6 +5870,10 @@
                 } else {
                     renderProjects();
                 }
+            } else if (pageName === 'pagePermissions' && db) {
+                renderPagePermissionsTable();
+            } else if (pageName === 'roleManagement' && db) {
+                loadRolesFromFirebase();
             }
         }
 
@@ -7670,7 +8501,12 @@
 
             tasks.forEach((task, taskIndex) => {
                 // Find subtasks for this task
-                const taskSubtasks = subtasks.filter(st => st.parentTaskId === task.id);
+                let taskSubtasks = subtasks.filter(st => st.parentTaskId === task.id);
+
+                // Filter subtasks by assigned member if a filter is active
+                if (taskFilters.assignedTo) {
+                    taskSubtasks = taskSubtasks.filter(st => st.assignedTo === taskFilters.assignedTo);
+                }
 
                 if (taskSubtasks.length > 0) {
                     // Find the task row by task ID instead of by index
@@ -7928,16 +8764,26 @@
         let currentInlineAddSubtask = null;
 
         async function showInlineAddSubtask(taskIndex) {
+            console.log("🔄 showInlineAddSubtask() called with index:", taskIndex);
+
             // Close any existing inline add row
             if (currentInlineAddSubtask) {
                 cancelInlineAddSubtask();
             }
 
             const task = tasks[taskIndex];
-            const tableBody = document.getElementById('tableBody');
-            const taskRow = tableBody.children[taskIndex];
+            console.log("📋 Task found:", task);
 
-            if (!taskRow) return;
+            const tableBody = document.getElementById('tableBody');
+
+            // Find task row by task ID, not by index (accounts for subtask rows already inserted)
+            const taskRow = Array.from(tableBody.children).find(row => row.dataset.taskId === task.id);
+
+            if (!taskRow) {
+                console.error("❌ Task row not found for task ID:", task.id);
+                return;
+            }
+            console.log("✅ Task row found at position");
 
             // Load active team members for dropdown
             const activeMembers = await loadActiveTeamMembers();
@@ -8007,8 +8853,28 @@
                 </div>
             `;
 
-            // Insert after task row
-            taskRow.insertAdjacentElement('afterend', addRow);
+            // Find the last subtask row for this task, or the task row itself
+            let insertAfterElement = taskRow;
+            const allRows = Array.from(tableBody.children);
+            const taskRowIndex = allRows.indexOf(taskRow);
+
+            // Look for subtask rows immediately after this task
+            for (let i = taskRowIndex + 1; i < allRows.length; i++) {
+                const row = allRows[i];
+                // If it's a subtask row and belongs to this task, it's a candidate
+                if (row.classList.contains('subtask-row') && row.dataset.parentIndex === String(taskIndex)) {
+                    insertAfterElement = row;
+                } else if (row.classList.contains('subtask-row')) {
+                    // If we hit a subtask from a different task, stop
+                    break;
+                } else {
+                    // If we hit a non-subtask row, stop
+                    break;
+                }
+            }
+
+            // Insert after the last subtask (or task if no subtasks)
+            insertAfterElement.insertAdjacentElement('afterend', addRow);
 
             // Store reference
             currentInlineAddSubtask = {
@@ -8040,7 +8906,12 @@
         }
 
         async function saveInlineAddSubtask(taskIndex) {
-            if (!currentInlineAddSubtask) return;
+            console.log("💾 saveInlineAddSubtask() called with index:", taskIndex);
+
+            if (!currentInlineAddSubtask) {
+                console.error("❌ currentInlineAddSubtask is null");
+                return;
+            }
 
             const name = document.getElementById(`inline-subtask-name-${taskIndex}`).value.trim();
             const status = document.getElementById(`inline-subtask-status-${taskIndex}`).value;
@@ -8049,13 +8920,17 @@
             const startDate = document.getElementById(`inline-subtask-startdate-${taskIndex}`).value;
             const date = document.getElementById(`inline-subtask-date-${taskIndex}`).value;
 
+            console.log("📝 Subtask data:", { name, status, assignedTo, projectId, startDate, date });
+
             // Validate
             if (!name) {
+                console.warn("⚠️ Subtask name is empty");
                 alert('⚠️ Please enter a subtask name');
                 return;
             }
 
             if (!assignedTo) {
+                console.warn("⚠️ No assigned member selected");
                 alert('⚠️ Please select a team member');
                 return;
             }
@@ -8091,12 +8966,14 @@
                 }
 
                 // Add to Firebase
-                await db.collection('subtasks').add(subtaskData);
-
-                console.log('✅ Subtask created');
+                console.log("📤 Adding subtask to Firebase...");
+                const docRef = await db.collection('subtasks').add(subtaskData);
+                console.log('✅ Subtask created with ID:', docRef.id);
 
                 // Reload subtasks
+                console.log("🔄 Reloading subtasks from Firebase...");
                 await loadSubtasksFromFirebase();
+                console.log("✅ Subtasks reloaded");
 
                 // Remove inline add row
                 cancelInlineAddSubtask();
@@ -8104,17 +8981,20 @@
                 // Re-render with filters maintained
                 const hasActiveFilters = (taskFilters && Object.values(taskFilters).some(v => v !== '' && (Array.isArray(v) ? v.length > 0 : true))) || isMyTasksActive;
                 if (hasActiveFilters) {
+                    console.log("🔍 Re-applying filters after subtask creation");
                     applyTaskFilters();
                 } else {
+                    console.log("📊 Re-rendering tasks after subtask creation");
                     renderTasks();
                 }
 
                 hideSpinner();
+                console.log("✅ Subtask save completed successfully");
 
             } catch (error) {
                 console.error('❌ Error creating subtask:', error);
                 hideSpinner();
-                alert('Error creating subtask: ' + error.message);
+                alert('❌ Error creating subtask: ' + error.message);
             }
         }
 
@@ -8379,6 +9259,8 @@
 
         // Change subtask status
         async function changeSubtaskStatus(subtaskId, newStatus) {
+            console.log(`🔄 Changing subtask status to: ${newStatus}`);
+
             try {
                 await db.collection('subtasks').doc(subtaskId).update({
                     status: newStatus,
@@ -8393,8 +9275,17 @@
                     subtask.status = newStatus;
                 }
 
-                // Re-render
-                renderTasks();
+                // Check if any filters are active
+                const hasActiveFilters = (taskFilters && Object.values(taskFilters).some(v => v !== '' && (Array.isArray(v) ? v.length > 0 : true))) || isMyTasksActive;
+
+                // Re-render with filters maintained
+                if (hasActiveFilters) {
+                    console.log("🔍 Re-applying active filters after status change");
+                    applyTaskFilters();
+                } else {
+                    console.log("📊 Rendering all tasks (no active filters)");
+                    renderTasks();
+                }
             } catch (error) {
                 console.error('❌ Error updating subtask status:', error);
             }
@@ -8708,10 +9599,12 @@
                 task.status = newStatus;
 
                 // Re-render tasks (will apply filters if active)
-                const hasActiveFilters = taskFilters && Object.values(taskFilters).some(v => v !== '');
+                const hasActiveFilters = (taskFilters && Object.values(taskFilters).some(v => v !== '' && (Array.isArray(v) ? v.length > 0 : true))) || isMyTasksActive;
                 if (hasActiveFilters) {
+                    console.log("🔍 Re-applying active filters after task status change");
                     applyTaskFilters();
                 } else {
+                    console.log("📊 Rendering all tasks (no active filters)");
                     renderTasks();
                 }
 
@@ -8953,18 +9846,107 @@
         // ========================================
         // TEAM MEMBER MODAL FUNCTIONS
         // ========================================
-        
+
+        // Default roles to use if none exist in Firebase
+        const defaultRolesForDropdown = [
+            { name: 'Project Manager' },
+            { name: 'Business Analyst' },
+            { name: 'System Analyst' },
+            { name: 'Developer' },
+            { name: 'QA Lead' }
+        ];
+
+        // Populate Member Role Dropdown
+        async function populateMemberRoleDropdown() {
+            console.log("📋 Loading active roles for member dropdown...");
+
+            try {
+                const roleSelect = document.getElementById('memberRoleSelect');
+
+                // Keep the default option
+                roleSelect.innerHTML = '<option value="">Select a role...</option>';
+
+                if (!db) {
+                    console.warn("⚠️ Firebase not initialized, using default roles");
+                    // Use default roles if Firebase not available
+                    defaultRolesForDropdown.forEach(role => {
+                        const option = document.createElement('option');
+                        option.value = role.name; // Use name as value since no ID
+                        option.textContent = role.name;
+                        roleSelect.appendChild(option);
+                    });
+                    console.log("✅ Default roles loaded in member dropdown");
+                    return;
+                }
+
+                const rolesSnapshot = await db.collection('roles').get();
+
+                if (rolesSnapshot.empty) {
+                    console.warn("⚠️ No roles found in Firebase, using default roles");
+                    // Use default roles if none exist in Firebase
+                    defaultRolesForDropdown.forEach(role => {
+                        const option = document.createElement('option');
+                        option.value = role.name; // Use name as value since no ID
+                        option.textContent = role.name;
+                        roleSelect.appendChild(option);
+                    });
+                    console.log("✅ Default roles loaded in member dropdown");
+                } else {
+                    // Load only ACTIVE roles from Firebase
+                    let activeRolesCount = 0;
+                    rolesSnapshot.forEach(doc => {
+                        const role = doc.data();
+                        // Only add active roles (default to true if not specified)
+                        if (role.active !== false) {
+                            const option = document.createElement('option');
+                            option.value = doc.id; // Use Firebase document ID as value
+                            option.textContent = role.name;
+                            roleSelect.appendChild(option);
+                            activeRolesCount++;
+                        }
+                    });
+                    console.log(`✅ Loaded ${activeRolesCount} active roles from Firebase (${rolesSnapshot.size} total roles)`);
+
+                    // If no active roles found, use defaults
+                    if (activeRolesCount === 0) {
+                        console.warn("⚠️ No active roles found in Firebase, using default roles");
+                        defaultRolesForDropdown.forEach(role => {
+                            const option = document.createElement('option');
+                            option.value = role.name;
+                            option.textContent = role.name;
+                            roleSelect.appendChild(option);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("❌ Error loading roles for dropdown:", error);
+                // Fallback to default roles on error
+                const roleSelect = document.getElementById('memberRoleSelect');
+                roleSelect.innerHTML = '<option value="">Select a role...</option>';
+                defaultRolesForDropdown.forEach(role => {
+                    const option = document.createElement('option');
+                    option.value = role.name;
+                    option.textContent = role.name;
+                    roleSelect.appendChild(option);
+                });
+                console.log("✅ Default roles loaded as fallback");
+            }
+        }
+
         let editingMemberId = null;
 
-        function openMemberModal() {
+        async function openMemberModal() {
             editingMemberId = null;
             document.getElementById('memberModalTitle').textContent = 'Add Team Member';
             document.getElementById('memberModal').classList.add('active');
             document.getElementById('memberForm').reset();
-            
+
             // Set default status
             document.getElementById('memberStatus').value = 'Active';
-            
+
+            // Load roles into dropdown
+            await populateMemberRoleDropdown();
+
             // Reset button text
             const submitBtn = document.querySelector('#memberForm button[type="submit"]');
             submitBtn.textContent = 'Add Member';
@@ -8976,25 +9958,28 @@
             editingMemberId = null;
         }
 
-        function editMember(member, index) {
+        async function editMember(member, index) {
             editingMemberId = member.id;
-            
+
             // Update modal title
             document.getElementById('memberModalTitle').textContent = 'Edit Team Member';
-            
-            // Populate form with member data
+
+            // Load roles into dropdown first
+            await populateMemberRoleDropdown();
+
+            // Populate form with member data (after roles are loaded)
             document.getElementById('memberName').value = member.name;
             document.getElementById('memberEmail').value = member.email;
-            document.getElementById('memberRole').value = member.role;
+            document.getElementById('memberRoleSelect').value = member.roleId || member.role || '';
             document.getElementById('memberDepartment').value = member.department;
             document.getElementById('memberAvatar').value = member.avatar;
             document.getElementById('memberStatus').value = member.status || 'Active';
             document.getElementById('memberSkills').value = member.skills ? member.skills.join(', ') : '';
-            
+
             // Change button text
             const submitBtn = document.querySelector('#memberForm button[type="submit"]');
             submitBtn.textContent = 'Update Member';
-            
+
             // Open modal
             document.getElementById('memberModal').classList.add('active');
         }
@@ -9006,10 +9991,17 @@
             const skillsInput = document.getElementById('memberSkills').value;
             const skillsArray = skillsInput ? skillsInput.split(',').map(s => s.trim()).filter(s => s) : [];
             
+            const selectedRoleId = document.getElementById('memberRoleSelect').value;
+
+            // Get role name from selected option
+            const roleSelect = document.getElementById('memberRoleSelect');
+            const roleName = roleSelect.options[roleSelect.selectedIndex].text;
+
             const memberData = {
                 name: document.getElementById('memberName').value,
                 email: document.getElementById('memberEmail').value,
-                role: document.getElementById('memberRole').value,
+                roleId: selectedRoleId,
+                role: roleName,
                 department: document.getElementById('memberDepartment').value,
                 avatar: document.getElementById('memberAvatar').value.toUpperCase(),
                 status: document.getElementById('memberStatus').value,
@@ -10586,12 +11578,25 @@
 
             // Populate dropdowns first
             populateFilterDropdowns().then(() => {
-                // Set the project filter
-                document.getElementById('filterProject').value = projectId;
-                taskFilters.project = projectId;
+                // Find and check the project checkbox
+                const projectCheckbox = document.querySelector(`#projectFilterOptions input[value="${projectId}"]`);
 
-                // Apply filters
-                applyTaskFilters();
+                if (projectCheckbox) {
+                    console.log(`✅ Found project checkbox for: ${projectName}`);
+                    // Check the checkbox
+                    projectCheckbox.checked = true;
+
+                    // Update taskFilters.projects array
+                    taskFilters.projects = [projectId];
+
+                    // Update filter display
+                    updateProjectFilterDisplay();
+
+                    // Apply filters
+                    applyTaskFilters();
+                } else {
+                    console.warn(`⚠️ Project checkbox not found for ID: ${projectId}`);
+                }
             });
 
             // Store for backwards compatibility
@@ -10650,13 +11655,17 @@
 
                 // Clear other filters
                 document.getElementById('filterPriority').value = '';
-                document.getElementById('filterProject').value = '';
+
+                // Clear project filter checkboxes
+                document.querySelectorAll('#projectFilterOptions input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
 
                 // Update task filters object with the non-done statuses
                 taskFilters.assignedTo = memberId;
                 taskFilters.status = ['blank', 'working', 'stuck'];
                 taskFilters.priority = '';
-                taskFilters.project = '';
+                taskFilters.projects = [];
 
                 console.log(`🎯 Filter object:`, taskFilters);
 
@@ -11023,7 +12032,14 @@
 
             // Populate Assigned To dropdown
             const assignedToSelect = document.getElementById('filterAssignedTo');
-            const uniqueMembers = [...new Set(tasks.map(t => t.assignedTo).filter(Boolean))];
+
+            // Get members from both tasks AND subtasks
+            const taskMembers = tasks.map(t => t.assignedTo).filter(Boolean);
+            const subtaskMembers = subtasks.map(st => st.assignedTo).filter(Boolean);
+            const allMembers = [...taskMembers, ...subtaskMembers];
+            const uniqueMembers = [...new Set(allMembers)];
+
+            console.log(`📋 Found ${taskMembers.length} task assignments and ${subtaskMembers.length} subtask assignments`);
 
             // Get member names
             const memberOptions = await Promise.all(
@@ -11032,6 +12048,9 @@
                     return { id: memberId, name: memberName };
                 })
             );
+
+            // Sort members by name
+            memberOptions.sort((a, b) => a.name.localeCompare(b.name));
 
             assignedToSelect.innerHTML = '<option value="">All Members</option>' +
                 memberOptions.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
@@ -11141,11 +12160,19 @@
 
             if (taskFilters.assignedTo) {
                 filteredTasks = filteredTasks.filter(t => {
-                    // Check assignedTo (primary ID), assignedToIds (array), and person (name) for backward compatibility
-                    return t.assignedTo === taskFilters.assignedTo ||
+                    // Check task assignment
+                    const isTaskAssigned = t.assignedTo === taskFilters.assignedTo ||
                            (t.assignedToIds && t.assignedToIds.includes(taskFilters.assignedTo)) ||
                            (t.person && document.getElementById('filterAssignedTo').selectedOptions[0] &&
                             t.person === document.getElementById('filterAssignedTo').selectedOptions[0].text);
+
+                    if (isTaskAssigned) return true;
+
+                    // Check if any subtask is assigned to this member
+                    const taskSubtasks = subtasks.filter(st => st.parentTaskId === t.id);
+                    const hasSubtaskAssignment = taskSubtasks.some(st => st.assignedTo === taskFilters.assignedTo);
+
+                    return hasSubtaskAssignment;
                 });
             }
 
@@ -11557,6 +12584,7 @@
                     await loadSubtasksFromFirebase();
                     await loadTeamMembersWithStats();
                     await loadProjectsFromFirebase();
+                    await loadAdminRules();
                     setupRealtimeListener();
 
                     // Restore original spinner functions
