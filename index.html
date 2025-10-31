@@ -4707,6 +4707,253 @@
             window.location.href = 'login.html';
         }
 
+        // ========================================
+        // PERMISSION CHECKING FUNCTIONS
+        // ========================================
+
+        let userPermissionsCache = null;
+        let userRoleCache = null;
+
+        /**
+         * Get current user's role
+         * @returns {string} User's role name or null
+         */
+        function getCurrentUserRole() {
+            if (userRoleCache) return userRoleCache;
+
+            const loggedInUser = sessionStorage.getItem('loggedInUser');
+            if (!loggedInUser) return null;
+
+            try {
+                const currentUser = JSON.parse(loggedInUser);
+                userRoleCache = currentUser.role || null;
+                return userRoleCache;
+            } catch (error) {
+                console.error("Error getting user role:", error);
+                return null;
+            }
+        }
+
+        /**
+         * Get current logged-in user data
+         * @returns {object} User object with id, email, name, role
+         */
+        function getCurrentUser() {
+            const loggedInUser = sessionStorage.getItem('loggedInUser');
+            if (!loggedInUser) return null;
+
+            try {
+                return JSON.parse(loggedInUser);
+            } catch (error) {
+                console.error("Error getting current user:", error);
+                return null;
+            }
+        }
+
+        /**
+         * Load and cache user permissions from Firebase
+         * @returns {Promise<object>} Permissions object
+         */
+        async function loadUserPermissions() {
+            if (userPermissionsCache) return userPermissionsCache;
+
+            const userRole = getCurrentUserRole();
+            if (!userRole) {
+                console.warn("⚠️ No user role found");
+                return {};
+            }
+
+            try {
+                const doc = await db.collection('page_permissions').doc('global').get();
+                const permissions = doc.exists ? doc.data() : {};
+                userPermissionsCache = permissions[userRole] || {};
+
+                console.log(`✅ Loaded permissions for role: ${userRole}`, userPermissionsCache);
+                return userPermissionsCache;
+            } catch (error) {
+                console.error("❌ Error loading user permissions:", error);
+                return {};
+            }
+        }
+
+        /**
+         * Check if user has permission for a specific page and operation
+         * @param {string} page - Page name (dashboard, projectslist, tasks, team, reports, admin, adminRules, pagePermissions, roleManagement)
+         * @param {string} operation - Operation (show, add, edit, delete, admin)
+         * @returns {Promise<boolean>} True if user has permission
+         */
+        async function hasPermission(page, operation) {
+            const userRole = getCurrentUserRole();
+
+            // Admins have all permissions
+            if (userRole === 'Admin') {
+                return true;
+            }
+
+            // Settings pages require admin permission
+            if (['adminRules', 'pagePermissions', 'roleManagement'].includes(page)) {
+                const permissions = await loadUserPermissions();
+                return permissions['admin']?.['admin'] === true;
+            }
+
+            // Check page-specific permissions
+            const permissions = await loadUserPermissions();
+            return permissions[page]?.[operation] === true;
+        }
+
+        /**
+         * Check multiple permissions (AND logic - user must have ALL)
+         * @param {Array<{page, operation}>} permissionChecks - Array of permission checks
+         * @returns {Promise<boolean>} True if user has ALL permissions
+         */
+        async function hasAllPermissions(permissionChecks) {
+            for (const check of permissionChecks) {
+                const hasPerms = await hasPermission(check.page, check.operation);
+                if (!hasPerms) return false;
+            }
+            return true;
+        }
+
+        /**
+         * Check if user is Admin (all permissions)
+         * @returns {boolean} True if user is Admin
+         */
+        function isAdmin() {
+            return getCurrentUserRole() === 'Admin';
+        }
+
+        /**
+         * Check if user can see data (show permission)
+         * @param {string} page - Page name
+         * @returns {Promise<boolean>} True if user can view page
+         */
+        async function canShow(page) {
+            return await hasPermission(page, 'show');
+        }
+
+        /**
+         * Check if user can add data (add permission)
+         * @param {string} page - Page name
+         * @returns {Promise<boolean>} True if user can add
+         */
+        async function canAdd(page) {
+            return await hasPermission(page, 'add');
+        }
+
+        /**
+         * Check if user can edit data (edit permission)
+         * @param {string} page - Page name
+         * @returns {Promise<boolean>} True if user can edit
+         */
+        async function canEdit(page) {
+            return await hasPermission(page, 'edit');
+        }
+
+        /**
+         * Check if user can delete data (delete permission)
+         * @param {string} page - Page name
+         * @returns {Promise<boolean>} True if user can delete
+         */
+        async function canDelete(page) {
+            return await hasPermission(page, 'delete');
+        }
+
+        /**
+         * Check if data belongs to current user or user is admin
+         * @param {object} data - Data object with email or assignedTo field
+         * @returns {boolean} True if user owns the data
+         */
+        function isOwner(data) {
+            const currentUser = getCurrentUser();
+            if (!currentUser) return false;
+
+            // Admin owns everything
+            if (isAdmin()) return true;
+
+            // Check email field
+            if (data.email === currentUser.email) return true;
+
+            // Check assignedTo field
+            if (data.assignedTo === currentUser.email) return true;
+
+            // Check createdBy field
+            if (data.createdBy === currentUser.email) return true;
+
+            // Check createdByName field
+            if (data.createdByName === currentUser.name) return true;
+
+            return false;
+        }
+
+        /**
+         * Clear permission cache (call after settings change)
+         */
+        function clearPermissionCache() {
+            userPermissionsCache = null;
+            userRoleCache = null;
+            console.log("✅ Permission cache cleared");
+        }
+
+        /**
+         * Update menu visibility based on user permissions
+         */
+        async function updateMenuVisibility() {
+            console.log("🔒 Updating menu visibility based on permissions...");
+
+            try {
+                // Dashboard
+                const dashboardBtn = document.getElementById('dashboardNavBtn');
+                if (dashboardBtn) {
+                    dashboardBtn.style.display = (await canShow('dashboard')) ? '' : 'none';
+                }
+
+                // Projects
+                const projectsBtn = document.getElementById('projectsNavBtn');
+                if (projectsBtn) {
+                    projectsBtn.style.display = (await canShow('projectslist')) ? '' : 'none';
+                }
+
+                // Tasks
+                const tasksBtn = document.getElementById('tasksNavBtn');
+                if (tasksBtn) {
+                    tasksBtn.style.display = (await canShow('tasks')) ? '' : 'none';
+                }
+
+                // Team
+                const teamBtn = document.getElementById('teamNavBtn');
+                if (teamBtn) {
+                    teamBtn.style.display = (await canShow('team')) ? '' : 'none';
+                }
+
+                // Reports
+                const reportsBtn = document.getElementById('reportsNavBtn');
+                if (reportsBtn) {
+                    reportsBtn.style.display = (await canShow('reports')) ? '' : 'none';
+                }
+
+                // Settings menu items (require admin permission)
+                const adminRulesItem = document.querySelector('[onclick*="adminRules"]');
+                const pagePermissionsItem = document.querySelector('[onclick*="pagePermissions"]');
+                const roleManagementItem = document.querySelector('[onclick*="roleManagement"]');
+
+                const hasAdminAccess = await hasPermission('admin', 'admin');
+
+                if (adminRulesItem) {
+                    adminRulesItem.style.display = hasAdminAccess ? '' : 'none';
+                }
+                if (pagePermissionsItem) {
+                    pagePermissionsItem.style.display = hasAdminAccess ? '' : 'none';
+                }
+                if (roleManagementItem) {
+                    roleManagementItem.style.display = hasAdminAccess ? '' : 'none';
+                }
+
+                console.log("✅ Menu visibility updated");
+            } catch (error) {
+                console.error("❌ Error updating menu visibility:", error);
+            }
+        }
+
         // Initialize Firebase
         let db;
         try {
@@ -5870,7 +6117,7 @@
             }
         });
 
-        function switchPage(pageName, skipFilterClear = false) {
+        async function switchPage(pageName, skipFilterClear = false) {
             // Close settings menu when navigating
             closeSettingsMenu();
 
@@ -5881,6 +6128,28 @@
                 alert('Guest access is limited to Dashboard and Projects only');
                 switchPage('projectslist');
                 return;
+            }
+
+            // Check permission for regular pages
+            const pagePermissionMap = {
+                'dashboard': 'dashboard',
+                'projectslist': 'projectslist',
+                'tasks': 'tasks',
+                'team': 'team',
+                'reports': 'reports',
+                'adminRules': 'admin',
+                'pagePermissions': 'admin',
+                'roleManagement': 'admin'
+            };
+
+            const permissionPage = pagePermissionMap[pageName];
+            if (permissionPage) {
+                const canAccess = await hasPermission(permissionPage, 'show');
+                if (!canAccess) {
+                    console.log(`🔒 User does not have permission to access: ${pageName}`);
+                    alert(`You do not have permission to access the ${pageName} page`);
+                    return;
+                }
             }
 
             const pages = ['dashboard', 'projectslist', 'tasks', 'team', 'reports', 'adminRules', 'pagePermissions', 'roleManagement'];
@@ -12682,6 +12951,9 @@
                         console.log(`  ✅ Hidden button: ${btnId}`);
                     }
                 });
+            } else {
+                // Apply permission-based menu visibility for logged-in users
+                await updateMenuVisibility();
             }
 
             // Project Card button removed - no view switching styling needed
