@@ -4785,20 +4785,25 @@
         async function hasPermission(page, operation) {
             const userRole = getCurrentUserRole();
 
-            // Admins have all permissions
-            if (userRole === 'Admin') {
-                return true;
+            if (!userRole) {
+                console.warn("⚠️ No user role found, denying all permissions");
+                return false;
             }
 
-            // Settings pages require admin permission
-            if (['adminRules', 'pagePermissions', 'roleManagement'].includes(page)) {
-                const permissions = await loadUserPermissions();
-                return permissions['admin']?.['admin'] === true;
-            }
-
-            // Check page-specific permissions
+            // Load permissions from Firebase page_permissions collection
             const permissions = await loadUserPermissions();
-            return permissions[page]?.[operation] === true;
+
+            // For settings pages (admin-only), check the 'admin' section
+            if (['adminRules', 'pagePermissions', 'roleManagement'].includes(page)) {
+                const adminPermission = permissions['admin']?.[operation] === true;
+                console.log(`🔐 Checking admin permission for ${page}/${operation}: ${adminPermission}`);
+                return adminPermission;
+            }
+
+            // For regular pages, check the specific page permissions
+            const pagePermission = permissions[page]?.[operation] === true;
+            console.log(`🔐 Checking permission ${userRole}/${page}/${operation}: ${pagePermission}`);
+            return pagePermission;
         }
 
         /**
@@ -4815,11 +4820,14 @@
         }
 
         /**
-         * Check if user is Admin (all permissions)
-         * @returns {boolean} True if user is Admin
+         * Check if user is Admin (has admin permission)
+         * @returns {Promise<boolean>} True if user has admin permission in page_permissions
          */
-        function isAdmin() {
-            return getCurrentUserRole() === 'Admin';
+        async function isAdmin() {
+            const permissions = await loadUserPermissions();
+            const isAdminUser = permissions['admin']?.['admin'] === true;
+            console.log(`🔐 Checking admin status: ${isAdminUser}`);
+            return isAdminUser;
         }
 
         /**
@@ -4859,7 +4867,8 @@
         }
 
         /**
-         * Check if data belongs to current user or user is admin
+         * Check if data belongs to current user
+         * Note: Admin access is checked separately via hasPermission()
          * @param {object} data - Data object with email or assignedTo field
          * @returns {boolean} True if user owns the data
          */
@@ -4867,19 +4876,16 @@
             const currentUser = getCurrentUser();
             if (!currentUser) return false;
 
-            // Admin owns everything
-            if (isAdmin()) return true;
-
-            // Check email field
+            // Check email field (team members)
             if (data.email === currentUser.email) return true;
 
-            // Check assignedTo field
+            // Check assignedTo field (tasks, projects)
             if (data.assignedTo === currentUser.email) return true;
 
-            // Check createdBy field
+            // Check createdBy field (audit)
             if (data.createdBy === currentUser.email) return true;
 
-            // Check createdByName field
+            // Check createdByName field (backup)
             if (data.createdByName === currentUser.name) return true;
 
             return false;
@@ -4899,13 +4905,15 @@
          * - Admins see all data
          * - Other users see only data they created/own or data assigned to them
          * - For tasks: show all tasks but filter subtasks based on ownership
+         * NOTE: This function is now async to properly check Firebase permissions
          */
-        function filterDataByOwnership(dataArray, dataType = 'generic') {
+        async function filterDataByOwnership(dataArray, dataType = 'generic') {
             const currentUser = getCurrentUser();
             if (!currentUser) return [];
 
-            // Admins see everything
-            if (isAdmin()) return dataArray;
+            // Admins see everything (check Firebase permissions, not role name)
+            const adminStatus = await isAdmin();
+            if (adminStatus) return dataArray;
 
             if (!Array.isArray(dataArray)) return [];
 
