@@ -10789,18 +10789,14 @@
 
             // Filter projects to show only those user has access to
             const visibleProjects = await filterProjectsByUserAccess(projects);
-
-            // Check if user can see tasks page (for Tasks button)
-            const canSeeTasksPage = await canShow('tasks');
-
-            renderProjectsGridView(visibleProjects, canSeeTasksPage);
+            renderProjectsGridView(visibleProjects);
         }
 
         /**
          * Filter projects to show only those the current user should see
          * User sees project if:
          * - Has show: true permission for projectslist page AND
-         * - (Is project manager OR is team member OR has show permission for tasks page)
+         * - Is project manager OR is team member
          * @param {Array} projectsArray - Array of projects to filter
          * @returns {Promise<Array>} Filtered projects
          */
@@ -10810,9 +10806,6 @@
 
             const hasShowPermission = await canShow('projectslist');
             if (!hasShowPermission) return [];
-
-            // Check if user can see tasks page (allows Tasks button)
-            const canSeeTasksPage = await canShow('tasks');
 
             return projectsArray.filter(project => {
                 // Check if user is project manager
@@ -10830,10 +10823,8 @@
                                     (project.teamMembers.includes(currentUser.email) ||
                                      project.teamMembers.includes(currentUser.name));
 
-                // User sees project if:
-                // - They are PM or team member, OR
-                // - They have permission to see tasks page
-                return isProjectManager || isTeamMember || canSeeTasksPage;
+                // User sees project if they are PM or team member
+                return isProjectManager || isTeamMember;
             });
         }
 
@@ -10968,9 +10959,9 @@
                     ` : ''}
 
                     <div class="project-card-actions">
-                        ${canSeeTasksPage ? `<button class="project-action-btn" onclick="viewProjectTasks('${project.id}', '${project.name}')">
+                        <button class="project-action-btn" onclick="viewProjectTasks('${project.id}', '${project.name}')">
                             📋 Tasks
-                        </button>` : ''}
+                        </button>
                         ${canEditThis ? `<button class="project-action-btn" onclick="editProject(${index})">
                             ✏️ Edit
                         </button>` : ''}
@@ -12120,17 +12111,12 @@
             renderProjectsGridView(filteredProjects);
         }
 
-        async function renderProjectsGridView(filteredProjects, canSeeTasksPage = null) {
+        async function renderProjectsGridView(filteredProjects) {
             const projectsGrid = document.getElementById('projectsGrid');
             if (!projectsGrid) return;
 
             // Get permissions once for all projects
             const canEditProjects = await canEdit('projectslist');
-
-            // If canSeeTasksPage not passed (e.g., from filter), check it now
-            if (canSeeTasksPage === null) {
-                canSeeTasksPage = await canShow('tasks');
-            }
 
             if (filteredProjects.length === 0) {
                 projectsGrid.innerHTML = `
@@ -12282,9 +12268,9 @@
                     ` : ''}
 
                     <div class="project-card-actions">
-                        ${canSeeTasksPage ? `<button class="project-action-btn" onclick="viewProjectTasks('${project.id}', '${project.name}')">
+                        <button class="project-action-btn" onclick="viewProjectTasks('${project.id}', '${project.name}')">
                             📋 Tasks
-                        </button>` : ''}
+                        </button>
                         ${canEditThis ? `<button class="project-action-btn" onclick="editProject(${index})">
                             ✏️ Edit
                         </button>` : ''}
