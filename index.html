@@ -10797,8 +10797,8 @@
         /**
          * Filter projects to show only those the current user should see
          * User sees project if:
-         * - Has show: true permission for projectslist page AND
-         * - Is project manager OR is team member
+         * - Has show: true permission for projectslist page
+         * (All projects visible if user has show permission)
          * @param {Array} projectsArray - Array of projects to filter
          * @returns {Promise<Array>} Filtered projects
          */
@@ -10809,25 +10809,10 @@
             const hasShowPermission = await canShow('projectslist');
             if (!hasShowPermission) return [];
 
-            return projectsArray.filter(project => {
-                // Check if user is project manager
-                const isProjectManager = project.projectManager === currentUser.email ||
-                                        project.projectManager === currentUser.name ||
-                                        (project.projectManagers &&
-                                         (project.projectManagers.includes(currentUser.email) ||
-                                          project.projectManagers.includes(currentUser.name)));
-
-                // Check if user is team member
-                const isTeamMember = project.team &&
-                                    (project.team.includes(currentUser.email) ||
-                                     project.team.includes(currentUser.name)) ||
-                                    project.teamMembers &&
-                                    (project.teamMembers.includes(currentUser.email) ||
-                                     project.teamMembers.includes(currentUser.name));
-
-                // User sees project if they are PM or team member
-                return isProjectManager || isTeamMember;
-            });
+            // If user has show permission, show all projects
+            // Edit/Delete buttons will be hidden based on PM status
+            // Tasks button will be visible if user can see projects
+            return projectsArray;
         }
 
         function renderProjectsGridOld() {
