@@ -10818,10 +10818,10 @@
                                     </div>
                                 </div>
                                 <div class="project-status-popup-wrapper">
-                                    <span class="project-status-badge clickable"
-                                          style="background: #0073ea; color: white;"
-                                          onclick="toggleProjectSDLCPopup(event, '${project.id}', ${index})"
-                                          title="Click to change SDLC phase">
+                                    <span class="project-status-badge ${canEditThis ? 'clickable' : 'disabled'}"
+                                          style="background: #0073ea; color: white; cursor: ${canEditThis ? 'pointer' : 'not-allowed'}; opacity: ${canEditThis ? '1' : '0.6'};"
+                                          ${canEditThis ? `onclick="toggleProjectSDLCPopup(event, '${project.id}', ${index})"` : ''}
+                                          title="${canEditThis ? 'Click to change SDLC phase' : 'You do not have permission to change the SDLC phase'}">
                                         ${project.sdlc || 'No Phase'}
                                     </span>
                                     <div class="project-status-popup" id="project-sdlc-popup-${project.id}">
@@ -11186,8 +11186,9 @@
         }
 
         /**
-         * Update styling of status/SDLC badges based on edit permissions
-         * Disabled badges won't show as clickable to users without permission
+         * DEPRECATED: Badge onclick is now conditionally rendered during renderProjectsGridView()
+         * This function is no longer called
+         * @deprecated Use renderProjectsGridView() which handles conditional onclick rendering
          */
         async function updateProjectBadgeStyles(projects) {
             for (let i = 0; i < projects.length; i++) {
@@ -12063,9 +12064,12 @@
             renderProjectsGridView(filteredProjects);
         }
 
-        function renderProjectsGridView(filteredProjects) {
+        async function renderProjectsGridView(filteredProjects) {
             const projectsGrid = document.getElementById('projectsGrid');
             if (!projectsGrid) return;
+
+            // Get permissions once for all projects
+            const canEditProjects = await canEdit('projectslist');
 
             if (filteredProjects.length === 0) {
                 projectsGrid.innerHTML = `
@@ -12081,6 +12085,13 @@
             // Use the original index from projects array
             projectsGrid.innerHTML = filteredProjects.map((project) => {
                 const index = projects.indexOf(project);
+                const isProjectOwner = isOwner(project);
+                const canEditThis = canEditProjects && isProjectOwner;
+
+                // Build status badge - conditionally include onclick based on permission
+                const statusBadgeOnclick = canEditThis ? `onclick="toggleProjectStatusPopup(event, '${project.id}', ${index})"` : '';
+                const statusBadgeTitle = canEditThis ? 'Click to change status' : 'You do not have permission to change the status';
+
                 //editProject(${index})
                 return `
                 <div class="project-card" onclick="if(event.target.closest('.project-action-btn') || event.target.closest('.project-status-badge')) return; ">
@@ -12088,15 +12099,16 @@
                         <div>
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
                                 <div class="project-health-circle ${project.projectHealth || 'none'}" title="Health: ${project.projectHealth || 'None'}">
-                                    
+
                                 </div>
                                 <div class="project-card-title">${project.name}</div>
                             </div>
                             <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
                                 <div class="project-status-popup-wrapper">
-                                    <span class="project-status-badge clickable ${project.status}"
-                                          onclick="toggleProjectStatusPopup(event, '${project.id}', ${index})"
-                                          title="Click to change status">
+                                    <span class="project-status-badge ${canEditThis ? 'clickable' : 'disabled'} ${project.status}"
+                                          ${statusBadgeOnclick}
+                                          style="cursor: ${canEditThis ? 'pointer' : 'not-allowed'}; opacity: ${canEditThis ? '1' : '0.6'};"
+                                          title="${statusBadgeTitle}">
                                         ${formatStatus(project.status)}
                                     </span>
                                     <div class="project-status-popup" id="project-status-popup-${project.id}">
@@ -12115,10 +12127,10 @@
                                     </div>
                                 </div>
                                 <div class="project-status-popup-wrapper">
-                                    <span class="project-status-badge clickable"
-                                          style="background: #0073ea; color: white;"
-                                          onclick="toggleProjectSDLCPopup(event, '${project.id}', ${index})"
-                                          title="Click to change SDLC phase">
+                                    <span class="project-status-badge ${canEditThis ? 'clickable' : 'disabled'}"
+                                          style="background: #0073ea; color: white; cursor: ${canEditThis ? 'pointer' : 'not-allowed'}; opacity: ${canEditThis ? '1' : '0.6'};"
+                                          ${canEditThis ? `onclick="toggleProjectSDLCPopup(event, '${project.id}', ${index})"` : ''}
+                                          title="${canEditThis ? 'Click to change SDLC phase' : 'You do not have permission to change the SDLC phase'}">
                                         ${project.sdlc || 'No Phase'}
                                     </span>
                                     <div class="project-status-popup" id="project-sdlc-popup-${project.id}">
@@ -12227,10 +12239,7 @@
                 console.error('Error updating project button visibility:', err)
             );
 
-            // Update status/SDLC badge styles based on permissions
-            updateProjectBadgeStyles(filteredProjects).catch(err =>
-                console.error('Error updating project badge styles:', err)
-            );
+            // Note: Badge onclick is now conditionally rendered during map(), so no need for updateProjectBadgeStyles()
         }
 
         function clearProjectFilters() {
