@@ -5037,6 +5037,132 @@
         }
 
         /**
+         * Update edit and delete button visibility for items based on permissions
+         * Checks each item to see if user has permission to edit/delete it
+         * @param {string} page - Page name (projectslist, tasks)
+         * @param {Array} items - Array of items to check
+         */
+        async function updateEditDeleteButtonVisibility(page, items) {
+            console.log(`🔘 Updating edit/delete button visibility for ${page}...`);
+
+            if (!Array.isArray(items)) return;
+
+            const canEditPerm = await canEdit(page);
+            const canDeletePerm = await canDelete(page);
+            const currentUser = getCurrentUser();
+
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                const isItemOwner = isOwner(item);
+
+                // Edit button visibility: show if user has edit permission AND is owner
+                const editBtnSelector = `[data-action="edit"][data-index="${i}"]`;
+                const editBtn = document.querySelector(editBtnSelector);
+                if (editBtn) {
+                    const canEditThis = canEditPerm && isItemOwner;
+                    editBtn.style.display = canEditThis ? '' : 'none';
+                    editBtn.disabled = !canEditThis;
+                    editBtn.title = canEditThis ? 'Edit' : 'You do not have permission to edit this item';
+                }
+
+                // Delete button visibility: show if user has delete permission AND is owner
+                const deleteBtnSelector = `[data-action="delete"][data-index="${i}"]`;
+                const deleteBtn = document.querySelector(deleteBtnSelector);
+                if (deleteBtn) {
+                    const canDeleteThis = canDeletePerm && isItemOwner;
+                    deleteBtn.style.display = canDeleteThis ? '' : 'none';
+                    deleteBtn.disabled = !canDeleteThis;
+                    deleteBtn.title = canDeleteThis ? 'Delete' : 'You do not have permission to delete this item';
+                }
+            }
+
+            console.log(`✅ Edit/delete button visibility updated for ${page}`);
+        }
+
+        /**
+         * Update edit and delete button visibility for project items
+         * @param {Array} projects - Array of projects to check
+         */
+        async function updateProjectEditDeleteButtonVisibility(projects) {
+            console.log(`🔘 Updating project edit/delete button visibility...`);
+
+            if (!Array.isArray(projects)) return;
+
+            const canEditPerm = await canEdit('projectslist');
+            const canDeletePerm = await canDelete('projectslist');
+
+            for (let i = 0; i < projects.length; i++) {
+                const project = projects[i];
+                const isProjectOwner = isOwner(project);
+
+                // Edit button for project card
+                const editBtns = document.querySelectorAll(`.project-action-btn:not(.delete)`);
+                editBtns.forEach((btn, btnIndex) => {
+                    // Only update buttons that match this project index
+                    const parentCard = btn.closest('.project-card');
+                    if (parentCard && btnIndex === i) {
+                        const canEditThis = canEditPerm && isProjectOwner;
+                        btn.style.display = canEditThis ? '' : 'none';
+                        btn.disabled = !canEditThis;
+                        btn.title = canEditThis ? 'Edit' : 'You do not have permission to edit this project';
+                    }
+                });
+
+                // Delete button for project card
+                const deleteBtns = document.querySelectorAll(`.project-action-btn.delete`);
+                deleteBtns.forEach((btn, btnIndex) => {
+                    // Only update buttons that match this project index
+                    const parentCard = btn.closest('.project-card');
+                    if (parentCard && btnIndex === i) {
+                        const canDeleteThis = canDeletePerm && isProjectOwner;
+                        btn.style.display = canDeleteThis ? '' : 'none';
+                        btn.disabled = !canDeleteThis;
+                        btn.title = canDeleteThis ? 'Delete' : 'You do not have permission to delete this project';
+                    }
+                });
+            }
+
+            console.log(`✅ Project edit/delete button visibility updated`);
+        }
+
+        /**
+         * Update edit and delete button visibility for subtasks
+         * @param {Array} subtasks - Array of subtasks to check
+         */
+        async function updateSubtaskEditDeleteButtonVisibility(subtasks) {
+            console.log(`🔘 Updating subtask edit/delete button visibility...`);
+
+            if (!Array.isArray(subtasks)) return;
+
+            const canEditPerm = await canEdit('tasks');
+            const canDeletePerm = await canDelete('tasks');
+
+            subtasks.forEach((subtask) => {
+                const isSubtaskOwner = isOwner(subtask);
+
+                // Edit button for subtask
+                const editBtn = document.querySelector(`.action-btn.edit-btn[onclick*="editSubtask('${subtask.id}')"]`);
+                if (editBtn) {
+                    const canEditThis = canEditPerm && isSubtaskOwner;
+                    editBtn.style.display = canEditThis ? '' : 'none';
+                    editBtn.disabled = !canEditThis;
+                    editBtn.title = canEditThis ? 'Edit subtask' : 'You do not have permission to edit this subtask';
+                }
+
+                // Delete button for subtask
+                const deleteBtn = document.querySelector(`.action-btn.delete-btn[onclick*="deleteSubtask('${subtask.id}')"]`);
+                if (deleteBtn) {
+                    const canDeleteThis = canDeletePerm && isSubtaskOwner;
+                    deleteBtn.style.display = canDeleteThis ? '' : 'none';
+                    deleteBtn.disabled = !canDeleteThis;
+                    deleteBtn.title = canDeleteThis ? 'Delete subtask' : 'You do not have permission to delete this subtask';
+                }
+            });
+
+            console.log(`✅ Subtask edit/delete button visibility updated`);
+        }
+
+        /**
          * Check if user can edit a specific item
          * Must have edit permission AND be owner of item
          */
@@ -8041,6 +8167,11 @@
                     }
                 });
             });
+
+            // Update edit/delete button visibility based on permissions
+            updateEditDeleteButtonVisibility('tasks', tasks).catch(err =>
+                console.error('Error updating task button visibility:', err)
+            );
         }
 
         // ========================================
@@ -9060,6 +9191,11 @@
                     });
                 }
             });
+
+            // Update edit/delete button visibility based on permissions
+            updateSubtaskEditDeleteButtonVisibility(subtasks).catch(err =>
+                console.error('Error updating subtask button visibility:', err)
+            );
 
             // Add event delegation for subtask inline editing
             setupSubtaskInlineEditListeners();
@@ -11945,6 +12081,11 @@
                     </div>
                 </div>
             `}).join('');
+
+            // Update edit/delete button visibility based on permissions
+            updateProjectEditDeleteButtonVisibility(filteredProjects).catch(err =>
+                console.error('Error updating project button visibility:', err)
+            );
         }
 
         function clearProjectFilters() {
