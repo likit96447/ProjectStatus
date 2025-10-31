@@ -8180,12 +8180,22 @@
         let currentlyEditing = null;
 
         async function startInlineEdit(taskIndex, field, element) {
+            // Check permission before allowing inline edit
+            const task = tasks[taskIndex];
+            const hasEditPermission = await canEdit('tasks');
+            const isTaskOwner = isOwner(task);
+
+            if (!hasEditPermission || !isTaskOwner) {
+                console.log('🔒 User does not have permission to edit this task');
+                alert('You do not have permission to edit this task');
+                return;
+            }
+
             // Prevent multiple edits at once
             if (currentlyEditing) {
                 cancelInlineEdit();
             }
 
-            const task = tasks[taskIndex];
             const cell = element.closest('.table-cell');
             currentlyEditing = { taskIndex, field, element, cell, originalValue: element.innerHTML };
 
@@ -9607,6 +9617,15 @@
         // Open subtask modal
         async function openSubtaskModal(taskIndex) {
             const task = tasks[taskIndex];
+
+            // Check permission before allowing subtask creation
+            const hasAddPermission = await canAdd('tasks');
+            if (!hasAddPermission) {
+                console.log('🔒 User does not have permission to add subtasks');
+                alert('You do not have permission to add subtasks');
+                return;
+            }
+
             currentParentTaskId = task.id;
             editingSubtaskIndex = -1;
 
@@ -9870,6 +9889,22 @@
         // Change subtask status
         async function changeSubtaskStatus(subtaskId, newStatus) {
             console.log(`🔄 Changing subtask status to: ${newStatus}`);
+
+            // Check permission before allowing status change
+            const subtask = subtasks.find(st => st.id === subtaskId);
+            if (!subtask) {
+                console.error('Subtask not found');
+                return;
+            }
+
+            const hasEditPermission = await canEdit('tasks');
+            const isSubtaskOwner = isOwner(subtask);
+
+            if (!hasEditPermission || !isSubtaskOwner) {
+                console.log('🔒 User does not have permission to change subtask status');
+                alert('You do not have permission to change the subtask status');
+                return;
+            }
 
             try {
                 await db.collection('subtasks').doc(subtaskId).update({
@@ -10199,6 +10234,16 @@
                 return;
             }
 
+            // Check permission before allowing status change
+            const hasEditPermission = await canEdit('tasks');
+            const isTaskOwner = isOwner(task);
+
+            if (!hasEditPermission || !isTaskOwner) {
+                console.log('🔒 User does not have permission to change task status');
+                alert('You do not have permission to change the task status');
+                return;
+            }
+
             // Close popup
             if (activeStatusPopup) {
                 activeStatusPopup.classList.remove('active');
@@ -10260,6 +10305,14 @@
 
             const task = tasks[index];
             console.log("📋 Task to clone:", task);
+
+            // Check permission before allowing clone
+            const hasAddPermission = await canAdd('tasks');
+            if (!hasAddPermission) {
+                console.log('🔒 User does not have permission to clone tasks');
+                alert('You do not have permission to clone tasks');
+                return;
+            }
 
             // Show confirmation dialog
             if (!confirm(`Are you sure you want to duplicate the task "${task.name}"?`)) {
@@ -11082,8 +11135,18 @@
         // PROJECT STATUS/SDLC POPUP FUNCTIONS
         // ========================================
 
-        function toggleProjectStatusPopup(event, projectId, projectIndex) {
+        async function toggleProjectStatusPopup(event, projectId, projectIndex) {
             event.stopPropagation();
+
+            // Check permission before allowing status popup
+            const project = projects[projectIndex];
+            const hasEditPermission = await canEdit('projectslist');
+            const isProjectOwner = isOwner(project);
+
+            if (!hasEditPermission || !isProjectOwner) {
+                console.log('🔒 User does not have permission to change project status');
+                return;
+            }
 
             // Close all other popups
             document.querySelectorAll('.project-status-popup').forEach(popup => {
@@ -11097,8 +11160,18 @@
             popup.classList.toggle('active');
         }
 
-        function toggleProjectSDLCPopup(event, projectId, projectIndex) {
+        async function toggleProjectSDLCPopup(event, projectId, projectIndex) {
             event.stopPropagation();
+
+            // Check permission before allowing SDLC popup
+            const project = projects[projectIndex];
+            const hasEditPermission = await canEdit('projectslist');
+            const isProjectOwner = isOwner(project);
+
+            if (!hasEditPermission || !isProjectOwner) {
+                console.log('🔒 User does not have permission to change project SDLC phase');
+                return;
+            }
 
             // Close all other popups
             document.querySelectorAll('.project-status-popup').forEach(popup => {
@@ -11112,7 +11185,63 @@
             popup.classList.toggle('active');
         }
 
+        /**
+         * Update styling of status/SDLC badges based on edit permissions
+         * Disabled badges won't show as clickable to users without permission
+         */
+        async function updateProjectBadgeStyles(projects) {
+            for (let i = 0; i < projects.length; i++) {
+                const project = projects[i];
+                const hasEditPermission = await canEdit('projectslist');
+                const isProjectOwner = isOwner(project);
+                const canEditProject = hasEditPermission && isProjectOwner;
+
+                // Find status badge
+                const statusBadge = document.querySelector(
+                    `.project-status-badge[onclick*="toggleProjectStatusPopup(event, '${project.id}']`
+                );
+                if (statusBadge) {
+                    if (canEditProject) {
+                        statusBadge.style.cursor = 'pointer';
+                        statusBadge.style.opacity = '1';
+                        statusBadge.title = 'Click to change status';
+                    } else {
+                        statusBadge.style.cursor = 'not-allowed';
+                        statusBadge.style.opacity = '0.6';
+                        statusBadge.title = 'You do not have permission to change the status';
+                    }
+                }
+
+                // Find SDLC badge
+                const sdlcBadge = document.querySelector(
+                    `.project-status-badge[onclick*="toggleProjectSDLCPopup(event, '${project.id}']`
+                );
+                if (sdlcBadge) {
+                    if (canEditProject) {
+                        sdlcBadge.style.cursor = 'pointer';
+                        sdlcBadge.style.opacity = '1';
+                        sdlcBadge.title = 'Click to change SDLC phase';
+                    } else {
+                        sdlcBadge.style.cursor = 'not-allowed';
+                        sdlcBadge.style.opacity = '0.6';
+                        sdlcBadge.title = 'You do not have permission to change the SDLC phase';
+                    }
+                }
+            }
+        }
+
         async function changeProjectStatus(projectId, projectIndex, newStatus) {
+            // Check permission before allowing status change
+            const project = projects[projectIndex];
+            const hasEditPermission = await canEdit('projectslist');
+            const isProjectOwner = isOwner(project);
+
+            if (!hasEditPermission || !isProjectOwner) {
+                console.log('🔒 User does not have permission to change project status');
+                alert('You do not have permission to change the project status');
+                return;
+            }
+
             // Close popup
             document.getElementById(`project-status-popup-${projectId}`).classList.remove('active');
 
@@ -11150,6 +11279,17 @@
         }
 
         async function changeProjectSDLC(projectId, projectIndex, newSDLC) {
+            // Check permission before allowing SDLC change
+            const project = projects[projectIndex];
+            const hasEditPermission = await canEdit('projectslist');
+            const isProjectOwner = isOwner(project);
+
+            if (!hasEditPermission || !isProjectOwner) {
+                console.log('🔒 User does not have permission to change project SDLC phase');
+                alert('You do not have permission to change the project SDLC phase');
+                return;
+            }
+
             // Close popup
             document.getElementById(`project-sdlc-popup-${projectId}`).classList.remove('active');
 
@@ -12085,6 +12225,11 @@
             // Update edit/delete button visibility based on permissions
             updateProjectEditDeleteButtonVisibility(filteredProjects).catch(err =>
                 console.error('Error updating project button visibility:', err)
+            );
+
+            // Update status/SDLC badge styles based on permissions
+            updateProjectBadgeStyles(filteredProjects).catch(err =>
+                console.error('Error updating project badge styles:', err)
             );
         }
 
