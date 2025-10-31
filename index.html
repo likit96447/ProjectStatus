@@ -10795,8 +10795,8 @@
         /**
          * Filter projects to show only those the current user should see
          * User sees project if:
-         * - Has show: true permission for projectslist page
-         * (All projects visible if user has show permission)
+         * - Has show: true permission for projectslist page AND
+         * - Is project manager OR is team member of that project
          * @param {Array} projectsArray - Array of projects to filter
          * @returns {Promise<Array>} Filtered projects
          */
@@ -10807,10 +10807,26 @@
             const hasShowPermission = await canShow('projectslist');
             if (!hasShowPermission) return [];
 
-            // If user has show permission, show all projects
-            // Edit/Delete buttons will be hidden based on PM status
-            // Tasks button will be visible if user can see projects
-            return projectsArray;
+            // Filter to show only projects where user is PM or team member
+            return projectsArray.filter(project => {
+                // Check if user is project manager
+                const isProjectManager = project.projectManager === currentUser.email ||
+                                        project.projectManager === currentUser.name ||
+                                        (project.projectManagers &&
+                                         (project.projectManagers.includes(currentUser.email) ||
+                                          project.projectManagers.includes(currentUser.name)));
+
+                // Check if user is team member
+                const isTeamMember = project.team &&
+                                    (project.team.includes(currentUser.email) ||
+                                     project.team.includes(currentUser.name)) ||
+                                    project.teamMembers &&
+                                    (project.teamMembers.includes(currentUser.email) ||
+                                     project.teamMembers.includes(currentUser.name));
+
+                // Show project if user is PM or team member
+                return isProjectManager || isTeamMember;
+            });
         }
 
         function renderProjectsGridOld() {
