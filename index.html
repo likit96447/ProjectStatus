@@ -6408,7 +6408,9 @@
 
             const permissionPage = pagePermissionMap[pageName];
             if (permissionPage) {
-                const canAccess = await hasPermission(permissionPage, 'show');
+                // For admin pages, check 'admin' operation. For others, check 'show' operation
+                const operation = ['adminRules', 'pagePermissions', 'roleManagement'].includes(pageName) ? 'admin' : 'show';
+                const canAccess = await hasPermission(permissionPage, operation);
                 if (!canAccess) {
                     console.log(`🔒 User does not have permission to access: ${pageName}`);
                     alert(`You do not have permission to access the ${pageName} page`);
