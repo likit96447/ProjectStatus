@@ -10961,7 +10961,7 @@
                     ` : ''}
 
                     <div class="project-card-actions">
-                        ${canSeeTasksPage ? `<button class="project-action-btn" onclick="viewProjectTasks('${project.id}', '${project.name}')">
+                        ${canShowProjects ? `<button class="project-action-btn" onclick="viewProjectTasks('${project.id}', '${project.name}')">
                             📋 Tasks
                         </button>` : ''}
                         ${canEditThis ? `<button class="project-action-btn" onclick="editProject(${index})">
@@ -12119,7 +12119,7 @@
 
             // Get permissions once for all projects
             const canEditProjects = await canEdit('projectslist');
-            const canSeeTasksPage = await canShow('tasks');
+            const canShowProjects = await canShow('projectslist');
 
             if (filteredProjects.length === 0) {
                 projectsGrid.innerHTML = `
@@ -12271,7 +12271,7 @@
                     ` : ''}
 
                     <div class="project-card-actions">
-                        ${canSeeTasksPage ? `<button class="project-action-btn" onclick="viewProjectTasks('${project.id}', '${project.name}')">
+                        ${canShowProjects ? `<button class="project-action-btn" onclick="viewProjectTasks('${project.id}', '${project.name}')">
                             📋 Tasks
                         </button>` : ''}
                         ${canEditThis ? `<button class="project-action-btn" onclick="editProject(${index})">
