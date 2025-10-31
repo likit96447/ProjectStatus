@@ -2865,7 +2865,7 @@
                         <h1 class="board-title">Projects</h1>
                         <p class="board-subtitle">Manage all your projects in one place</p>
                         <div class="board-actions">
-                            <button class="btn btn-primary" onclick="openProjectModal()">
+                            <button id="newProjectBtn" class="btn btn-primary" onclick="openProjectModal()">
                                 <span>+</span>
                                 <span>New Project</span>
                             </button>
@@ -3031,7 +3031,7 @@
                         <h1 class="board-title">Task Management</h1>
                         <p class="board-subtitle">Manage your team's tasks and deliverables</p>
                         <div class="board-actions">
-                            <button class="btn btn-primary" onclick="openModal()">
+                            <button id="newTaskBtn" class="btn btn-primary" onclick="openModal()">
                                 <span>+</span>
                                 <span>New Task</span>
                             </button>
@@ -4988,9 +4988,43 @@
                     roleManagementItem.style.display = hasAdminAccess ? '' : 'none';
                 }
 
+                // Update action button visibility
+                await updateActionButtonVisibility();
+
                 console.log("✅ Menu visibility updated");
             } catch (error) {
                 console.error("❌ Error updating menu visibility:", error);
+            }
+        }
+
+        /**
+         * Update action button visibility based on user permissions
+         */
+        async function updateActionButtonVisibility() {
+            console.log("🔘 Updating action button visibility...");
+
+            try {
+                // New Project button
+                const newProjectBtn = document.getElementById('newProjectBtn');
+                if (newProjectBtn) {
+                    const canAddProject = await canAdd('projectslist');
+                    newProjectBtn.style.display = canAddProject ? '' : 'none';
+                    newProjectBtn.disabled = !canAddProject;
+                    newProjectBtn.title = canAddProject ? '' : 'You do not have permission to add projects';
+                }
+
+                // New Task button
+                const newTaskBtn = document.getElementById('newTaskBtn');
+                if (newTaskBtn) {
+                    const canAddTask = await canAdd('tasks');
+                    newTaskBtn.style.display = canAddTask ? '' : 'none';
+                    newTaskBtn.disabled = !canAddTask;
+                    newTaskBtn.title = canAddTask ? '' : 'You do not have permission to add tasks';
+                }
+
+                console.log("✅ Action button visibility updated");
+            } catch (error) {
+                console.error("❌ Error updating action button visibility:", error);
             }
         }
 
@@ -10095,8 +10129,17 @@
             }
         }
 
-        function openModal() {
+        async function openModal() {
             console.log('🚪 openModal() called');
+
+            // Check permission before opening modal
+            const canAddTask = await canAdd('tasks');
+            if (!canAddTask) {
+                console.log('🔒 User does not have permission to add tasks');
+                alert('You do not have permission to add tasks');
+                return;
+            }
+
             editingIndex = -1;
             document.getElementById('modalTitle').textContent = 'Create New Task';
             document.getElementById('taskForm').reset();
@@ -11236,8 +11279,17 @@
             }
         }
 
-        function openProjectModal() {
+        async function openProjectModal() {
             console.log('🚪 openProjectModal() called');
+
+            // Check permission before opening modal
+            const canAddProject = await canAdd('projectslist');
+            if (!canAddProject) {
+                console.log('🔒 User does not have permission to add projects');
+                alert('You do not have permission to add projects');
+                return;
+            }
+
             editingProjectIndex = -1;
             document.getElementById('projectModalTitle').textContent = 'Create New Project';
             document.getElementById('projectSubmitBtn').textContent = 'Create Project';
