@@ -5103,12 +5103,11 @@
                 const project = projects[i];
                 const isProjectOwner = isOwner(project);
 
-                // Edit button for project card
-                const editBtns = document.querySelectorAll(`.project-action-btn:not(.delete)`);
-                editBtns.forEach((btn, btnIndex) => {
-                    // Only update buttons that match this project index
+                // Edit button for project card - use data-action attribute
+                const editBtns = document.querySelectorAll(`[data-action="edit"]`);
+                editBtns.forEach((btn) => {
                     const parentCard = btn.closest('.project-card');
-                    if (parentCard && btnIndex === i) {
+                    if (parentCard) {
                         const canEditThis = canEditPerm && isProjectOwner;
                         btn.style.display = canEditThis ? '' : 'none';
                         btn.disabled = !canEditThis;
@@ -5116,12 +5115,11 @@
                     }
                 });
 
-                // Delete button for project card
-                const deleteBtns = document.querySelectorAll(`.project-action-btn.delete`);
-                deleteBtns.forEach((btn, btnIndex) => {
-                    // Only update buttons that match this project index
+                // Delete button for project card - use data-action attribute
+                const deleteBtns = document.querySelectorAll(`[data-action="delete"]`);
+                deleteBtns.forEach((btn) => {
                     const parentCard = btn.closest('.project-card');
-                    if (parentCard && btnIndex === i) {
+                    if (parentCard) {
                         const canDeleteThis = canDeletePerm && isProjectOwner;
                         btn.style.display = canDeleteThis ? '' : 'none';
                         btn.disabled = !canDeleteThis;
@@ -10946,13 +10944,13 @@
                     ` : ''}
 
                     <div class="project-card-actions">
-                        <button class="project-action-btn" onclick="viewProjectTasks('${project.id}', '${project.name}')">
+                        <button class="project-action-btn" data-action="tasks" onclick="viewProjectTasks('${project.id}', '${project.name}')">
                             📋 Tasks
                         </button>
-                        ${canEditThis ? `<button class="project-action-btn" onclick="editProject(${index})">
+                        ${canEditThis ? `<button class="project-action-btn" data-action="edit" onclick="editProject(${index})">
                             ✏️ Edit
                         </button>` : ''}
-                        ${canEditThis ? `<button class="project-action-btn delete" onclick="deleteProject(${index})">
+                        ${canEditThis ? `<button class="project-action-btn delete" data-action="delete" onclick="deleteProject(${index})">
                             🗑️ Delete
                         </button>` : ''}
                     </div>
@@ -12255,13 +12253,13 @@
                     ` : ''}
 
                     <div class="project-card-actions">
-                        <button class="project-action-btn" onclick="viewProjectTasks('${project.id}', '${project.name}')">
+                        <button class="project-action-btn" data-action="tasks" onclick="viewProjectTasks('${project.id}', '${project.name}')">
                             📋 Tasks
                         </button>
-                        ${canEditThis ? `<button class="project-action-btn" onclick="editProject(${index})">
+                        ${canEditThis ? `<button class="project-action-btn" data-action="edit" onclick="editProject(${index})">
                             ✏️ Edit
                         </button>` : ''}
-                        ${canEditThis ? `<button class="project-action-btn delete" onclick="deleteProject(${index})">
+                        ${canEditThis ? `<button class="project-action-btn delete" data-action="delete" onclick="deleteProject(${index})">
                             🗑️ Delete
                         </button>` : ''}
                     </div>
