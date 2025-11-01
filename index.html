@@ -12975,10 +12975,12 @@
             }, 500);
         }
 
-        // Filter tasks by project ID
+        // Filter tasks by project ID and user assignment
         function filterTasksByProject(projectId) {
             const tableBody = document.getElementById('tableBody');
-            const filteredTasks = tasks.filter(task => task.projectId === projectId);
+            // First filter by project, then filter by user assignment
+            const tasksByProject = tasks.filter(task => task.projectId === projectId);
+            const filteredTasks = filterTasksByUserAssignment(tasksByProject, subtasks);
 
             //console.log(`📊 Found ${filteredTasks.length} tasks for project ID: ${projectId}`);
 
@@ -13455,6 +13457,12 @@
             // Filter by multiple projects (OR logic)
             if (taskFilters.projects.length > 0) {
                 filteredTasks = filteredTasks.filter(t => taskFilters.projects.includes(t.projectId));
+            }
+
+            // Apply user assignment filtering (show only tasks assigned to current user)
+            // unless a specific filter is set
+            if (!taskFilters.assignedTo) {
+                filteredTasks = filterTasksByUserAssignment(filteredTasks, subtasks);
             }
 
             // Render filtered tasks
