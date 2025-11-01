@@ -4879,8 +4879,14 @@
             // Check email field (team members)
             if (data.email === currentUser.email) return true;
 
-            // Check assignedTo field (tasks, projects)
+            // Check assignedTo field (tasks, projects, subtasks)
             if (data.assignedTo === currentUser.email) return true;
+
+            // Check personName field (subtasks - person assigned to subtask)
+            if (data.personName === currentUser.name || data.personName === currentUser.email) {
+                console.log(`✅ User is subtask owner: ${currentUser.email || currentUser.name} === ${data.personName}`);
+                return true;
+            }
 
             // Check createdBy field (audit)
             if (data.createdBy === currentUser.email) return true;
@@ -4902,7 +4908,7 @@
                 return true;
             }
 
-            console.log(`❌ User is NOT owner of ${data.name}: currentUser=${currentUser.email || currentUser.name}, PM=${data.projectManager}, PMs=[${data.projectManagers?.join(', ') || 'none'}]`);
+            console.log(`❌ User is NOT owner of ${data.name || 'item'}: currentUser=${currentUser.email || currentUser.name}`);
             return false;
         }
 
