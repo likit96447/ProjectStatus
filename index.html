@@ -5177,14 +5177,30 @@
                     }
                 }
 
-                // Delete button visibility: show if user has delete permission AND is owner
+                // Delete button visibility: show if user has delete permission AND (is owner OR assigned to item)
                 const deleteBtnSelector = `[data-action="delete"][data-index="${i}"]`;
                 const deleteBtn = document.querySelector(deleteBtnSelector);
                 if (deleteBtn) {
-                    const canDeleteThis = canDeletePerm && isItemOwner;
+                    const canDeleteThis = canDeletePerm && (isItemOwner || isUserAssignedToItem);
                     deleteBtn.style.display = canDeleteThis ? '' : 'none';
                     deleteBtn.disabled = !canDeleteThis;
                     deleteBtn.title = canDeleteThis ? 'Delete' : 'You do not have permission to delete this item';
+
+                    // Debug logging
+                    if (page === 'tasks') {
+                        const logMsg = canDeleteThis ? '✅' : '❌';
+                        let reason = '';
+                        if (!canDeletePerm) {
+                            reason = 'no delete permission';
+                        } else if (isItemOwner) {
+                            reason = 'task owner';
+                        } else if (isUserAssignedToItem) {
+                            reason = 'assigned to task';
+                        } else {
+                            reason = 'not owner/assigned';
+                        }
+                        console.log(`${logMsg} Task "${item.name}" - Delete button: ${canDeleteThis ? 'visible' : 'hidden'} (${reason})`);
+                    }
                 }
             }
 
