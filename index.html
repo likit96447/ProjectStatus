@@ -5141,6 +5141,10 @@
 
             // Debug: Show permission status
             console.log(`   📋 Edit permission: ${canEditPerm}, Delete permission: ${canDeletePerm}`);
+            console.log(`   📊 Total items: ${items.length}, Updating visible buttons only...`);
+
+            let editButtonsUpdated = 0;
+            let deleteButtonsUpdated = 0;
 
             for (let i = 0; i < items.length; i++) {
                 const item = items[i];
@@ -5157,10 +5161,8 @@
                 // Edit button visibility: show if user has edit permission AND (is owner OR assigned to item)
                 const editBtnSelector = `[data-action="edit"][data-index="${i}"]`;
                 const editBtn = document.querySelector(editBtnSelector);
-                if (!editBtn && page === 'tasks') {
-                    console.warn(`   ⚠️ Edit button not found for index ${i} (selector: ${editBtnSelector})`);
-                }
                 if (editBtn) {
+                    editButtonsUpdated++;
                     const canEditThis = canEditPerm && (isItemOwner || isUserAssignedToItem);
                     editBtn.style.display = canEditThis ? '' : 'none';
                     editBtn.disabled = !canEditThis;
@@ -5186,10 +5188,8 @@
                 // Delete button visibility: show if user has delete permission AND (is owner OR assigned to item)
                 const deleteBtnSelector = `[data-action="delete"][data-index="${i}"]`;
                 const deleteBtn = document.querySelector(deleteBtnSelector);
-                if (!deleteBtn && page === 'tasks') {
-                    console.warn(`   ⚠️ Delete button not found for index ${i} (selector: ${deleteBtnSelector})`);
-                }
                 if (deleteBtn) {
+                    deleteButtonsUpdated++;
                     const canDeleteThis = canDeletePerm && (isItemOwner || isUserAssignedToItem);
                     deleteBtn.style.display = canDeleteThis ? '' : 'none';
                     deleteBtn.disabled = !canDeleteThis;
@@ -5213,7 +5213,8 @@
                 }
             }
 
-            console.log(`✅ Edit/delete button visibility updated for ${page}`);
+            // Summary: How many buttons were actually updated vs total items
+            console.log(`✅ Edit/delete button visibility updated - ${editButtonsUpdated}/${items.length} edit buttons, ${deleteButtonsUpdated}/${items.length} delete buttons (${items.length - editButtonsUpdated} tasks filtered out)`);
         }
 
         /**
