@@ -6480,7 +6480,10 @@
 
         // Add task to Firestore
         async function addTaskToFirebase(task) {
-            if (!db) return;
+            if (!db) {
+                console.error("❌ Database connection not available");
+                throw new Error("Database connection not available");
+            }
 
             try {
                 const docRef = await db.collection('tasks').add({
@@ -6488,11 +6491,12 @@
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                
+
                 //console.log("✅ Task added with ID:", docRef.id);
                 return docRef.id;
             } catch (error) {
-                console.error("❌ Error adding task:", error);
+                console.error("❌ Error adding task to Firebase:", error);
+                throw error; // Re-throw so caller can handle
             }
         }
 
@@ -10818,7 +10822,7 @@
                     throw new Error("Database connection not available");
                 }
 
-                //console.log("📤 Adding cloned task to Firebase...");
+                console.log("📤 Adding cloned task to Firebase...", clonedTask);
                 const taskId = await addTaskToFirebase(clonedTask);
 
                 // Check if task was actually added (taskId should exist)
@@ -10826,12 +10830,19 @@
                     throw new Error("Failed to create cloned task - no task ID returned from Firebase");
                 }
 
-                //console.log("✅ Task cloned successfully with ID:", taskId);
+                console.log("✅ Task cloned successfully with ID:", taskId);
 
-                // Reload tasks from Firebase to prevent duplicates
-                //console.log("🔄 Reloading tasks from Firebase...");
+                // Reload tasks from Firebase to ensure cloned task appears
+                console.log("🔄 Reloading tasks from Firebase...");
                 await loadTasksFromFirebase();
-                //console.log("✅ Tasks reloaded");
+
+                // Also reload subtasks
+                await loadSubtasksFromFirebase();
+
+                console.log("✅ Tasks and subtasks reloaded");
+
+                // Re-render UI
+                renderTasks();
 
                 // Show success message AFTER confirming task was added and reloaded
                 alert(`✅ Task "${clonedTask.name}" cloned successfully!`);
@@ -10839,7 +10850,7 @@
                 // Re-enable real-time listener after a short delay
                 setTimeout(() => {
                     isManualOperation = false;
-                    // //console.log("✅ Real-time listener re-enabled");
+                    console.log("✅ Real-time listener re-enabled");
                 }, 1000);
 
             } catch (error) {
@@ -10851,6 +10862,7 @@
                 if (error.message) {
                     errorMessage += ": " + error.message;
                 }
+                console.error("❌ Clone task error details:", errorMessage);
                 alert(`❌ ${errorMessage}`);
             }
         }
