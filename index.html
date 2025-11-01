@@ -5162,6 +5162,33 @@
         }
 
         /**
+         * Update subtask add button visibility based on permissions
+         * Users with "add" permission on tasks page can add subtasks
+         * Admin users can also add subtasks
+         * @param {Array} items - Array of items to check
+         */
+        async function updateSubtaskAddButtonVisibility(items) {
+            console.log(`🔘 Updating subtask add button visibility...`);
+
+            if (!Array.isArray(items)) return;
+
+            const canAddSubtask = await canAdd('tasks');
+            const isAdmin = await hasPermission('admin', 'admin');
+            const canAddAnything = canAddSubtask || isAdmin;
+
+            // Update all subtask add buttons
+            const subtaskButtons = document.querySelectorAll('[data-action="subtask"]');
+            subtaskButtons.forEach(btn => {
+                btn.style.display = canAddAnything ? '' : 'none';
+                btn.disabled = !canAddAnything;
+                btn.title = canAddAnything ? 'Add subtask' : 'You do not have permission to add subtasks';
+                console.log(`🔘 Subtask add button: ${canAddAnything ? 'visible ✅' : 'hidden ❌'}`);
+            });
+
+            console.log(`✅ Subtask add button visibility updated`);
+        }
+
+        /**
          * Update edit and delete button visibility for project items
          * @param {Array} projects - Array of projects to check
          */
@@ -8263,6 +8290,11 @@
             updateEditDeleteButtonVisibility('tasks', tasks).catch(err =>
                 console.error('Error updating task button visibility:', err)
             );
+
+            // Update subtask add button visibility based on permissions
+            updateSubtaskAddButtonVisibility(tasks).catch(err =>
+                console.error('Error updating subtask add button visibility:', err)
+            );
         }
 
         // ========================================
@@ -9475,6 +9507,18 @@
         async function showInlineAddSubtask(taskIndex) {
             console.log("🔄 showInlineAddSubtask() called with index:", taskIndex);
 
+            // Check if user can add subtasks
+            // Users with "add" permission on tasks page can add subtasks
+            // Users with admin permission can also add subtasks
+            const canAddSubtask = await canAdd('tasks');
+            const isAdmin = await hasPermission('admin', 'admin');
+
+            if (!canAddSubtask && !isAdmin) {
+                console.log('🔒 User does not have permission to add subtasks');
+                alert('You do not have permission to add subtasks. Only users with "add" permission or admin access can create subtasks.');
+                return;
+            }
+
             // Close any existing inline add row
             if (currentInlineAddSubtask) {
                 cancelInlineAddSubtask();
@@ -10507,11 +10551,15 @@
         async function openModal() {
             console.log('🚪 openModal() called');
 
-            // Check permission before opening modal
+            // Check if user can add tasks
+            // Users with "add" permission on tasks page can add NEW parent tasks
+            // Users with only admin permission can also add tasks
             const canAddTask = await canAdd('tasks');
-            if (!canAddTask) {
+            const isAdmin = await hasPermission('admin', 'admin');
+
+            if (!canAddTask && !isAdmin) {
                 console.log('🔒 User does not have permission to add tasks');
-                alert('You do not have permission to add tasks');
+                alert('You do not have permission to add tasks. Only users with "add" permission or admin access can create new tasks.');
                 return;
             }
 
