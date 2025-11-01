@@ -4220,47 +4220,19 @@
             }
         }
 
-        // Default page permissions configuration
-        const defaultPagePermissions = {
-            'Project Manager': {
-                dashboard: { show: true, add: true, edit: true, delete: true, admin: true },
-                projectslist: { show: true, add: true, edit: true, delete: true, admin: true },
-                tasks: { show: true, add: true, edit: true, delete: true, admin: true },
-                team: { show: true, add: true, edit: true, delete: true, admin: true },
-                reports: { show: true, add: true, edit: true, delete: true, admin: true },
-                admin: { admin: true }
-            },
-            'Business Analyst': {
-                dashboard: { show: true, add: false, edit: false, delete: false, admin: false },
-                projectslist: { show: false, add: false, edit: false, delete: false, admin: false },
-                tasks: { show: true, add: true, edit: true, delete: true, admin: false },
-                team: { show: false, add: false, edit: false, delete: false, admin: false },
-                reports: { show: true, add: false, edit: false, delete: false, admin: false },
-                admin: { admin: false }
-            },
-            'System Analyst': {
-                dashboard: { show: true, add: false, edit: false, delete: false, admin: false },
-                projectslist: { show: false, add: false, edit: false, delete: false, admin: false },
-                tasks: { show: true, add: true, edit: true, delete: true, admin: false },
-                team: { show: false, add: false, edit: false, delete: false, admin: false },
-                reports: { show: true, add: false, edit: false, delete: false, admin: false },
-                admin: { admin: false }
-            },
-            'Developer': {
-                dashboard: { show: true, add: false, edit: false, delete: false, admin: false },
-                projectslist: { show: false, add: false, edit: false, delete: false, admin: false },
-                tasks: { show: true, add: true, edit: true, delete: false, admin: false },
-                team: { show: false, add: false, edit: false, delete: false, admin: false },
-                reports: { show: true, add: false, edit: false, delete: false, admin: false },
-                admin: { admin: false }
-            },
-            'QA Lead': {
-                dashboard: { show: true, add: false, edit: false, delete: false, admin: false },
-                projectslist: { show: false, add: false, edit: false, delete: false, admin: false },
-                tasks: { show: true, add: true, edit: true, delete: false, admin: false },
-                team: { show: false, add: false, edit: false, delete: false, admin: false },
-                reports: { show: true, add: false, edit: false, delete: false, admin: false },
-                admin: { admin: false }
+        // NOTE: All permissions MUST come from Firebase collection 'page_permissions'
+        // NO hardcoded default permissions allowed - this ensures all permission management is centralized in Firebase
+        // If a role/permission is not in Firebase, it defaults to false (no permission)
+        // To add permissions, use the Admin Panel to modify page_permissions/global document
+
+        // Reference for Firebase permission structure (for documentation only):
+        const FIREBASE_PERMISSION_REFERENCE = {
+            'pages': ['dashboard', 'projectslist', 'tasks', 'team', 'reports'],
+            'operations': ['show', 'add', 'edit', 'delete', 'admin'],
+            'example': {
+                'roleName': {
+                    'pageName': { show: true, add: true, edit: true, delete: true, admin: false }
+                }
             }
         };
 
@@ -4320,16 +4292,30 @@
                     });
                     // //console.log(`✅ Loaded ${rolesFromFirebase.size} roles from Firebase for permissions`);
                 } catch (error) {
-                    console.warn("⚠️ Could not load roles from Firebase, using default roles:", error);
-                    rolesFromFirebase = Object.keys(defaultPagePermissions).map(name => ({ name, id: name }));
+                    console.error("❌ CRITICAL: Could not load roles from Firebase. All permissions must come from Firebase!", error);
+                    // Empty array - no roles means no permissions can be configured
+                    rolesFromFirebase = [];
                 }
 
-                // If no roles from Firebase, use defaults
-                const rolesToDisplay = rolesFromFirebase.length > 0 ? rolesFromFirebase : Object.keys(defaultPagePermissions).map(name => ({ name, id: name }));
+                // If no roles from Firebase, show empty (permissions MUST be in Firebase)
+                const rolesToDisplay = rolesFromFirebase.length > 0 ? rolesFromFirebase : [];
+
+                if (rolesToDisplay.length === 0) {
+                    tableBody.insertAdjacentHTML('beforeend', `
+                        <tr>
+                            <td colspan="22" style="padding: 20px; text-align: center; color: #d32f2f; font-weight: bold;">
+                                ❌ ERROR: No roles found in Firebase 'roles' collection.
+                                Permissions can only be managed in Firebase. Please add roles to Firebase first.
+                            </td>
+                        </tr>
+                    `);
+                    return;
+                }
 
                 rolesToDisplay.forEach(roleObj => {
                     const roleName = roleObj.name;
-                    const permissions = savedPermissions[roleName] || defaultPagePermissions[roleName] || {};
+                    // ONLY use savedPermissions from Firebase - NO hardcoded defaults
+                    const permissions = savedPermissions[roleName] || {};
 
                     let row = `<tr style="border-bottom: 1px solid #e6e9ef;">
                         <td style="padding: 12px 16px; font-weight: 500; color: #323338; border-right: 1px solid #e6e9ef; text-align: left;">
@@ -4342,11 +4328,11 @@
                     // Iterate through each page
                     pages.forEach(page => {
                         const pagePerms = permissions[page];
-                        const defaultPerms = defaultPagePermissions[roleName]?.[page];
 
                         // Iterate through each operation (show, add, edit, delete, admin)
                         operations.forEach(op => {
-                            const permValue = pagePerms?.[op] !== undefined ? pagePerms[op] : (defaultPerms?.[op] ?? false);
+                            // ONLY use Firebase value - default to false if not in Firebase
+                            const permValue = pagePerms?.[op] ?? false;
                             const checkboxId = `perm-${roleName}-${page}-${op}`;
 
                             // Use checkbox (checked if true, unchecked if false)
@@ -4359,9 +4345,9 @@
 
                     // Add Admin page (only has admin operation)
                     const adminPerms = permissions['admin'];
-                    const defaultAdminPerms = defaultPagePermissions[roleName]?.['admin'];
                     const adminCheckboxId = `perm-${roleName}-admin-admin`;
-                    const adminIsChecked = adminPerms?.['admin'] !== undefined ? adminPerms['admin'] : (defaultAdminPerms?.['admin'] ?? false);
+                    // ONLY use Firebase value - default to false if not in Firebase
+                    const adminIsChecked = adminPerms?.['admin'] ?? false;
                     row += `<td style="padding: 8px 4px; text-align: center;">
                         <input type="checkbox" id="${adminCheckboxId}" ${adminIsChecked ? 'checked' : ''} style="width: 16px; height: 16px; cursor: pointer;">
                     </td>`;
@@ -4430,11 +4416,12 @@
             }
         }
 
-        // Reset page permissions to default
+        // Reset page permissions to EMPTY (all false)
+        // This removes all permissions - to grant permissions, use the Admin Panel to set them
         async function resetPagePermissionsToDefault() {
-            // //console.log("🔄 Resetting page permissions to default...");
+            // //console.log("🔄 Resetting page permissions to empty (all false)...");
 
-            if (!confirm("Are you sure you want to reset all permissions to default? This action cannot be undone.")) {
+            if (!confirm("⚠️ This will CLEAR all permissions for all roles (set all to false). You'll need to manually set permissions in the Admin Panel. Continue?")) {
                 return;
             }
 
@@ -4447,17 +4434,22 @@
                         rolesFromFirebase.push(doc.data().name);
                     });
                 } catch (error) {
-                    console.warn("⚠️ Could not load roles from Firebase, using default roles");
-                    rolesFromFirebase = Object.keys(defaultPagePermissions);
+                    console.error("❌ CRITICAL: Could not load roles from Firebase. All permissions must be in Firebase!");
+                    alert("❌ ERROR: Could not load roles from Firebase. Permissions can only be managed in Firebase.");
+                    return;
                 }
 
-                // Build default permissions for all current roles
-                const rolesToReset = rolesFromFirebase.length > 0 ? rolesFromFirebase : Object.keys(defaultPagePermissions);
-                const defaultPermissions = {};
+                if (rolesFromFirebase.length === 0) {
+                    alert("❌ No roles found in Firebase. Cannot reset permissions.");
+                    return;
+                }
 
-                rolesToReset.forEach(roleName => {
-                    // Use hardcoded defaults if available, otherwise set all to false
-                    defaultPermissions[roleName] = defaultPagePermissions[roleName] || {
+                // Build EMPTY permissions for all current roles (all false)
+                const emptyPermissions = {};
+
+                rolesFromFirebase.forEach(roleName => {
+                    // ALL permissions default to false - use Admin Panel to enable specific permissions
+                    emptyPermissions[roleName] = {
                         dashboard: { show: false, add: false, edit: false, delete: false, admin: false },
                         projectslist: { show: false, add: false, edit: false, delete: false, admin: false },
                         tasks: { show: false, add: false, edit: false, delete: false, admin: false },
@@ -4467,13 +4459,16 @@
                     };
                 });
 
-                // //console.log("📝 Default permissions to reset:", defaultPermissions);
+                // //console.log("📝 Empty permissions to reset:", emptyPermissions);
 
-                // Save default permissions to Firebase
-                await db.collection('page_permissions').doc('global').set(defaultPermissions, { merge: true });
+                // Save empty permissions to Firebase
+                await db.collection('page_permissions').doc('global').set(emptyPermissions, { merge: true });
 
-                // //console.log("✅ Page permissions reset to default");
-                alert("✅ Page permissions have been reset to default!");
+                // Clear permission cache
+                userPermissionsCache = null;
+
+                // //console.log("✅ Page permissions reset to empty (all false)");
+                alert("✅ All permissions have been cleared (set to false). Use the Admin Panel to grant permissions.");
 
                 // Re-render the table
                 await renderPagePermissionsTable();
