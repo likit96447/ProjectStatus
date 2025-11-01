@@ -10798,13 +10798,16 @@
 
             // Create a copy of the task with a new name
             // Only include fields that are not undefined to avoid Firebase errors
+            const currentUser = getCurrentUser();
             const clonedTask = {
                 name: task.name + ' (Copy)',
                 status: task.status || 'pending',
                 priority: task.priority || 'medium',
-                assignedTo: task.assignedTo || null,
-                person: task.person || null,
-                personName: task.personName || '',
+                // Assign cloned task to the user who clicked clone
+                assignedTo: currentUser.id,
+                assignedToIds: [currentUser.id],
+                person: currentUser.name,
+                personName: currentUser.name,
                 project: task.project || '',
                 projectId: task.projectId || null,
                 date: task.date || '',
