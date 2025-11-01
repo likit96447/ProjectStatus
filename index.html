@@ -5137,11 +5137,19 @@
                 const item = items[i];
                 const isItemOwner = isOwner(item);
 
-                // Edit button visibility: show if user has edit permission AND is owner
+                // Check if user is assigned to this item (for tasks)
+                let isUserAssignedToItem = false;
+                if (page === 'tasks' && item) {
+                    isUserAssignedToItem = item.assignedTo === currentUser?.email ||
+                                          item.assignedToNames?.includes(currentUser?.name) ||
+                                          item.assignedToNames?.includes(currentUser?.email);
+                }
+
+                // Edit button visibility: show if user has edit permission AND (is owner OR assigned to item)
                 const editBtnSelector = `[data-action="edit"][data-index="${i}"]`;
                 const editBtn = document.querySelector(editBtnSelector);
                 if (editBtn) {
-                    const canEditThis = canEditPerm && isItemOwner;
+                    const canEditThis = canEditPerm && (isItemOwner || isUserAssignedToItem);
                     editBtn.style.display = canEditThis ? '' : 'none';
                     editBtn.disabled = !canEditThis;
                     editBtn.title = canEditThis ? 'Edit' : 'You do not have permission to edit this item';
@@ -5149,7 +5157,16 @@
                     // Debug logging
                     if (page === 'tasks') {
                         const logMsg = canEditThis ? '✅' : '❌';
-                        const reason = !canEditPerm ? 'no edit permission' : !isItemOwner ? 'not owner' : 'can edit';
+                        let reason = '';
+                        if (!canEditPerm) {
+                            reason = 'no edit permission';
+                        } else if (isItemOwner) {
+                            reason = 'task owner';
+                        } else if (isUserAssignedToItem) {
+                            reason = 'assigned to task';
+                        } else {
+                            reason = 'not owner/assigned';
+                        }
                         console.log(`${logMsg} Task "${item.name}" - Edit button: ${canEditThis ? 'visible' : 'hidden'} (${reason})`);
                     }
                 }
