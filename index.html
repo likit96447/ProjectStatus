@@ -5310,8 +5310,22 @@
         async function canEditItem(item, page = 'tasks') {
             if (!item) return false;
             const hasEditPermission = await canEdit(page);
-            // Must have permission AND be owner
-            return hasEditPermission && isOwner(item);
+
+            // Must have edit permission first
+            if (!hasEditPermission) return false;
+
+            // For tasks: can edit if owner or assigned to task
+            if (page === 'tasks') {
+                const isTaskOwner = isOwner(item);
+                const currentUser = getCurrentUser();
+                const isUserAssignedToTask = item.assignedTo === currentUser?.email ||
+                                            item.assignedToNames?.includes(currentUser?.name) ||
+                                            item.assignedToNames?.includes(currentUser?.email);
+                return isTaskOwner || isUserAssignedToTask;
+            }
+
+            // For other pages: can edit only if owner
+            return isOwner(item);
         }
 
         /**
@@ -8384,12 +8398,24 @@
             const task = tasks[taskIndex];
             const hasEditPermission = await canEdit('tasks');
             const isTaskOwner = isOwner(task);
+            const currentUser = getCurrentUser();
 
-            if (!hasEditPermission || !isTaskOwner) {
-                console.log('🔒 User does not have permission to edit this task');
+            // Check if user is assigned to this task
+            const isUserAssignedToTask = task.assignedTo === currentUser?.email ||
+                                        task.assignedToNames?.includes(currentUser?.name) ||
+                                        task.assignedToNames?.includes(currentUser?.email);
+
+            // Can edit if has edit permission AND (is owner OR assigned to task)
+            const canEditThisTask = hasEditPermission && (isTaskOwner || isUserAssignedToTask);
+
+            if (!canEditThisTask) {
+                console.log(`🔒 User cannot inline edit task "${task.name}" - no permission or not assigned`);
                 alert('You do not have permission to edit this task');
                 return;
             }
+
+            console.log(`✅ User can inline edit task "${task.name}" - ${isTaskOwner ? 'owner' : 'assigned to task'}`);
+
 
             // Prevent multiple edits at once
             if (currentlyEditing) {
