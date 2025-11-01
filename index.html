@@ -5139,6 +5139,9 @@
             const canDeletePerm = await canDelete(page);
             const currentUser = getCurrentUser();
 
+            // Debug: Show permission status
+            console.log(`   📋 Edit permission: ${canEditPerm}, Delete permission: ${canDeletePerm}`);
+
             for (let i = 0; i < items.length; i++) {
                 const item = items[i];
                 const isItemOwner = isOwner(item);
@@ -5154,6 +5157,9 @@
                 // Edit button visibility: show if user has edit permission AND (is owner OR assigned to item)
                 const editBtnSelector = `[data-action="edit"][data-index="${i}"]`;
                 const editBtn = document.querySelector(editBtnSelector);
+                if (!editBtn && page === 'tasks') {
+                    console.warn(`   ⚠️ Edit button not found for index ${i} (selector: ${editBtnSelector})`);
+                }
                 if (editBtn) {
                     const canEditThis = canEditPerm && (isItemOwner || isUserAssignedToItem);
                     editBtn.style.display = canEditThis ? '' : 'none';
@@ -5180,6 +5186,9 @@
                 // Delete button visibility: show if user has delete permission AND (is owner OR assigned to item)
                 const deleteBtnSelector = `[data-action="delete"][data-index="${i}"]`;
                 const deleteBtn = document.querySelector(deleteBtnSelector);
+                if (!deleteBtn && page === 'tasks') {
+                    console.warn(`   ⚠️ Delete button not found for index ${i} (selector: ${deleteBtnSelector})`);
+                }
                 if (deleteBtn) {
                     const canDeleteThis = canDeletePerm && (isItemOwner || isUserAssignedToItem);
                     deleteBtn.style.display = canDeleteThis ? '' : 'none';
