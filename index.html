@@ -5315,10 +5315,10 @@
         }
 
         /**
-         * Check if user can edit a subtask based on parent task assignment
-         * Rules:
-         * - User NOT assigned to parent task: Can only edit their own subtasks
-         * - User IS assigned to parent task: Can edit ALL subtasks in that task
+         * Check if user can edit a subtask
+         * Rule: If user can see the subtask, they can edit it
+         * - User sees subtask if assigned to parent task
+         * - User sees subtask if assigned to that subtask
          * - Must have edit permission on tasks page
          */
         async function canEditSubtask(subtask, parentTask) {
@@ -5340,19 +5340,23 @@
                                           parentTask.assignedToNames?.includes(currentUser.email);
 
             if (isUserAssignedToParent) {
-                // User assigned to parent task can edit ALL subtasks
-                console.log(`✅ Subtask "${subtask.name}" - User assigned to parent task, can edit all subtasks`);
+                // User assigned to parent task can see and edit ALL subtasks
+                console.log(`✅ Subtask "${subtask.name}" - User can see/edit (assigned to parent task)`);
                 return true;
             }
 
-            // User NOT assigned to parent task can only edit their own subtasks
-            const isSubtaskOwner = isOwner(subtask);
-            if (isSubtaskOwner) {
-                console.log(`✅ Subtask "${subtask.name}" - User owns subtask, can edit own subtasks`);
+            // Check if user is assigned to the subtask itself
+            const isUserAssignedToSubtask = subtask.assignedTo === currentUser.email ||
+                                           subtask.personName === currentUser.name ||
+                                           subtask.personName === currentUser.email;
+
+            if (isUserAssignedToSubtask) {
+                // User assigned to subtask can see and edit it
+                console.log(`✅ Subtask "${subtask.name}" - User can see/edit (assigned to subtask)`);
                 return true;
             }
 
-            console.log(`❌ Subtask "${subtask.name}" - User not assigned to parent and doesn't own subtask`);
+            console.log(`❌ Subtask "${subtask.name}" - User cannot see/edit (not visible)`);
             return false;
         }
 
