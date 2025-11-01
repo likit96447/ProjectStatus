@@ -9189,16 +9189,26 @@
         // Render subtasks under their parent tasks
         function renderSubtasks() {
             const tableBody = document.getElementById('tableBody');
+            const currentUser = getCurrentUser();
 
             tasks.forEach((task, taskIndex) => {
                 // Find subtasks for this task
                 let taskSubtasks = subtasks.filter(st => st.parentTaskId === task.id);
 
+                // Check if user is assigned to the parent task
+                const isUserAssignedToTask = task.assignedTo === currentUser?.email ||
+                                            task.assignedToNames?.includes(currentUser?.name) ||
+                                            task.assignedToNames?.includes(currentUser?.email);
+
                 // Filter subtasks by assigned member if a filter is active
                 if (taskFilters.assignedTo) {
                     taskSubtasks = taskSubtasks.filter(st => st.assignedTo === taskFilters.assignedTo);
+                } else if (isUserAssignedToTask) {
+                    // If user is assigned to the parent task, show ALL subtasks
+                    console.log(`✅ User assigned to task "${task.name}" - showing all ${taskSubtasks.length} subtasks`);
+                    // Don't filter - show all subtasks
                 } else {
-                    // Filter subtasks by user assignment (permission-based filtering)
+                    // User not assigned to parent task - only show their assigned subtasks
                     taskSubtasks = filterSubtasksByUserAssignment(taskSubtasks);
                 }
 
