@@ -8293,7 +8293,7 @@
                     </div>
                     <div class="table-cell" data-label="Status">
                         <div class="status-badge-wrapper">
-                            <div class="status-badge status-${task.status}" onclick="toggleStatusPopup(event, ${originalIndex})">
+                            <div class="status-badge status-${task.status} editable-field" onclick="toggleStatusPopup(event, ${originalIndex})" title="Click to edit">
                                 ${getStatusText(task.status)}
                             </div>
                             <div class="status-popup" id="status-popup-${originalIndex}">
@@ -10528,13 +10528,26 @@
 
             // Check permission before allowing status change
             const hasEditPermission = await canEdit('tasks');
-            const isTaskOwner = isOwner(task);
-
-            if (!hasEditPermission || !isTaskOwner) {
-                console.log('🔒 User does not have permission to change task status');
+            if (!hasEditPermission) {
+                console.log('🔒 User does not have edit permission for tasks');
                 alert('You do not have permission to change the task status');
                 return;
             }
+
+            // Check if user is owner or assigned to task
+            const isTaskOwner = isOwner(task);
+            const currentUser = getCurrentUser();
+            const isUserAssignedToTask = task.assignedTo === currentUser?.email ||
+                                        task.assignedToNames?.includes(currentUser?.name) ||
+                                        task.assignedToNames?.includes(currentUser?.email);
+
+            if (!isTaskOwner && !isUserAssignedToTask) {
+                console.log('🔒 User is not owner or assigned to this task');
+                alert('You do not have permission to change the task status');
+                return;
+            }
+
+            console.log(`✅ User can change task status - ${isTaskOwner ? 'owner' : 'assigned to task'}`);
 
             // Close popup
             if (activeStatusPopup) {
@@ -13411,7 +13424,7 @@
                     </div>
                     <div class="table-cell" data-label="Status">
                         <div class="status-badge-wrapper">
-                            <div class="status-badge status-${task.status}" onclick="toggleStatusPopup(event, ${originalIndex})">
+                            <div class="status-badge status-${task.status} editable-field" onclick="toggleStatusPopup(event, ${originalIndex})" title="Click to edit">
                                 ${getStatusText(task.status)}
                             </div>
                             <div class="status-popup" id="status-popup-${originalIndex}">
