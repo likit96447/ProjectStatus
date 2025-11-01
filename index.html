@@ -5266,8 +5266,8 @@
 
         /**
          * Update subtask add button visibility based on permissions
-         * Users with "add" permission on tasks page can add subtasks
-         * Admin users can also add subtasks
+         * If user can see tasks (SHOW permission), they can add subtasks
+         * No separate ADD permission needed for subtasks
          * @param {Array} items - Array of items to check
          */
         async function updateSubtaskAddButtonVisibility(items) {
@@ -5275,25 +5275,16 @@
 
             if (!Array.isArray(items)) return;
 
-            // Check SHOW permission first - user must be able to see tasks
+            // If user has SHOW permission on tasks, they can add subtasks
             const canShowTasks = await canShow('tasks');
-            const canAddSubtask = await canAdd('tasks');
-            const isAdmin = await hasPermission('admin', 'admin');
-            const canAddAnything = (canShowTasks && (canAddSubtask || isAdmin));
 
             // Update all subtask add buttons
             const subtaskButtons = document.querySelectorAll('[data-action="subtask"]');
             subtaskButtons.forEach(btn => {
-                btn.style.display = canAddAnything ? '' : 'none';
-                btn.disabled = !canAddAnything;
-                if (!canShowTasks) {
-                    btn.title = 'You do not have permission to view tasks';
-                } else if (!canAddSubtask && !isAdmin) {
-                    btn.title = 'You do not have permission to add subtasks';
-                } else {
-                    btn.title = 'Add subtask';
-                }
-                //console.log(`🔘 Subtask add button: ${canAddAnything ? 'visible ✅' : 'hidden ❌'}`);
+                btn.style.display = canShowTasks ? '' : 'none';
+                btn.disabled = !canShowTasks;
+                btn.title = canShowTasks ? 'Add subtask' : 'You do not have permission to view tasks';
+                //console.log(`🔘 Subtask add button: ${canShowTasks ? 'visible ✅' : 'hidden ❌'}`);
             });
 
             //console.log(`✅ Subtask add button visibility updated`);
@@ -5377,14 +5368,14 @@
                     return;
                 }
 
-                // Edit button for subtask - use new canEditSubtask function
+                // Edit button for subtask - if user can see subtask, they can edit it
+                // Subtask visibility already checked by renderSubtasks (user assignment filtering)
                 const editBtn = document.querySelector(`.action-btn.edit-btn[onclick*="editSubtask('${subtask.id}')"]`);
                 if (editBtn) {
-                    canEditSubtask(subtask, parentTask).then(canEditThis => {
-                        editBtn.style.display = canEditThis ? '' : 'none';
-                        editBtn.disabled = !canEditThis;
-                        editBtn.title = canEditThis ? 'Edit subtask' : 'You do not have permission to edit this subtask';
-                    });
+                    // Subtask is visible = user can edit it (no separate EDIT permission needed)
+                    editBtn.style.display = ''; // Always show edit button
+                    editBtn.disabled = false;
+                    editBtn.title = 'Edit subtask';
                 }
 
                 // Delete button for subtask - show if user has delete permission
