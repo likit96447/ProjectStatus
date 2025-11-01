@@ -5336,17 +5336,28 @@
          * - Must have edit permission on tasks page
          */
         async function canEditSubtask(subtask, parentTask) {
-            if (!subtask || !parentTask) return false;
+            if (!subtask || !parentTask) {
+                console.log(`❌ Subtask edit check failed - missing subtask or parent task`);
+                return false;
+            }
 
             const currentUser = getCurrentUser();
-            if (!currentUser) return false;
+            if (!currentUser) {
+                console.log(`❌ Subtask edit check failed - no current user`);
+                return false;
+            }
+
+            console.log(`\n📋 Checking edit permission for subtask: "${subtask.name}"`);
+            console.log(`   Current user: ${currentUser.email || currentUser.name}`);
+            console.log(`   Parent task: "${parentTask.name}"`);
 
             // Must have edit permission on tasks page
             const hasEditPermission = await canEdit('tasks');
             if (!hasEditPermission) {
-                console.log(`❌ Subtask "${subtask.name}" - No edit permission on tasks page`);
+                console.log(`   ❌ DENIED: No edit permission on tasks page`);
                 return false;
             }
+            console.log(`   ✅ Has edit permission on tasks page`);
 
             // Check if user is assigned to parent task
             const isUserAssignedToParent = parentTask.assignedTo === currentUser.email ||
@@ -5355,9 +5366,14 @@
 
             if (isUserAssignedToParent) {
                 // User assigned to parent task can see and edit ALL subtasks
-                console.log(`✅ Subtask "${subtask.name}" - User can see/edit (assigned to parent task)`);
+                console.log(`   ✅ ALLOWED: User assigned to parent task "${parentTask.name}"`);
+                console.log(`      Parent assignedTo: ${parentTask.assignedTo}`);
+                console.log(`      Parent assignedToNames: [${parentTask.assignedToNames?.join(', ') || 'none'}]`);
                 return true;
             }
+            console.log(`   ❌ NOT assigned to parent task`);
+            console.log(`      Parent assignedTo: ${parentTask.assignedTo}`);
+            console.log(`      Parent assignedToNames: [${parentTask.assignedToNames?.join(', ') || 'none'}]`);
 
             // Check if user is assigned to the subtask itself
             const isUserAssignedToSubtask = subtask.assignedTo === currentUser.email ||
@@ -5366,11 +5382,16 @@
 
             if (isUserAssignedToSubtask) {
                 // User assigned to subtask can see and edit it
-                console.log(`✅ Subtask "${subtask.name}" - User can see/edit (assigned to subtask)`);
+                console.log(`   ✅ ALLOWED: User assigned to subtask "${subtask.name}"`);
+                console.log(`      Subtask assignedTo: ${subtask.assignedTo}`);
+                console.log(`      Subtask personName: ${subtask.personName}`);
                 return true;
             }
 
-            console.log(`❌ Subtask "${subtask.name}" - User cannot see/edit (not visible)`);
+            console.log(`   ❌ DENIED: User not assigned to parent task or subtask`);
+            console.log(`      Subtask assignedTo: ${subtask.assignedTo}`);
+            console.log(`      Subtask personName: ${subtask.personName}`);
+            console.log(`      Looking for: "${currentUser.email || currentUser.name}"\n`);
             return false;
         }
 
