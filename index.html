@@ -5201,6 +5201,16 @@
                     }
                 }
 
+                // Clone button visibility: show if user has edit permission (cloning creates new task)
+                const cloneBtnSelector = `[data-action="clone"][data-index="${i}"]`;
+                const cloneBtn = document.querySelector(cloneBtnSelector);
+                if (cloneBtn) {
+                    const canCloneThis = canEditPerm && (isItemOwner || isUserAssignedToItem);
+                    cloneBtn.style.display = canCloneThis ? '' : 'none';
+                    cloneBtn.disabled = !canCloneThis;
+                    cloneBtn.title = canCloneThis ? 'Clone task' : 'You do not have permission to clone this task';
+                }
+
                 // Delete button visibility: show if user has delete permission AND (is owner OR assigned to item)
                 const deleteBtnSelector = `[data-action="delete"][data-index="${i}"]`;
                 const deleteBtn = document.querySelector(deleteBtnSelector);
