@@ -4890,8 +4890,11 @@
             // Check email field (team members)
             if (data.email === currentUser.email) return true;
 
-            // Check assignedTo field (tasks, projects, subtasks)
-            if (data.assignedTo === currentUser.email) return true;
+            // Check assignedTo field (tasks, projects, subtasks) - can be UID or name
+            if (data.assignedTo === currentUser.id || data.assignedTo === currentUser.email) return true;
+
+            // Check assignedToIds array (multiple assignments)
+            if (data.assignedToIds?.includes(currentUser.id)) return true;
 
             // Check personName field (subtasks - person assigned to subtask)
             if (data.personName === currentUser.name || data.personName === currentUser.email) {
@@ -4900,7 +4903,7 @@
             }
 
             // Check createdBy field (audit)
-            if (data.createdBy === currentUser.email) return true;
+            if (data.createdBy === currentUser.id || data.createdBy === currentUser.email) return true;
 
             // Check createdByName field (backup)
             if (data.createdByName === currentUser.name) return true;
@@ -4950,7 +4953,9 @@
 
             const filteredTasks = tasksArray.filter(task => {
                 // Check if task is assigned to current user
-                const isTaskAssignedToUser = task.assignedTo === currentUser.email ||
+                // Compare with task.assignedTo (UID), task.assignedToIds (array of UIDs), and assignedToNames
+                const isTaskAssignedToUser = task.assignedTo === currentUser.id ||
+                                           task.assignedToIds?.includes(currentUser.id) ||
                                            task.assignedToNames?.includes(currentUser.name) ||
                                            task.assignedToNames?.includes(currentUser.email);
 
@@ -4962,7 +4967,7 @@
                 // Check if task has any subtasks assigned to current user
                 const userSubtasksInTask = subtasksArray.filter(st =>
                     st.parentTaskId === task.id &&
-                    (st.assignedTo === currentUser.email ||
+                    (st.assignedTo === currentUser.id ||
                      st.personName === currentUser.name ||
                      st.personName === currentUser.email)
                 );
@@ -4992,7 +4997,8 @@
             if (!currentUser) return [];
 
             return subtasksArray.filter(subtask => {
-                const isSubtaskAssignedToUser = subtask.assignedTo === currentUser.email ||
+                const isSubtaskAssignedToUser = subtask.assignedTo === currentUser.id ||
+                                               subtask.assignedTo === currentUser.email ||
                                                subtask.personName === currentUser.name ||
                                                subtask.personName === currentUser.email;
                 return isSubtaskAssignedToUser;
@@ -5019,12 +5025,13 @@
             // Filter by ownership/assignment
             return dataArray.filter(item => {
                 // Check if user is creator
-                if (item.createdBy === currentUser.email) return true;
+                if (item.createdBy === currentUser.id || item.createdBy === currentUser.email) return true;
                 if (item.createdByName === currentUser.name) return true;
 
-                // Check if user is assigned to the item
-                if (item.assignedTo === currentUser.email) return true;
+                // Check if user is assigned to the item (can be UID or name)
+                if (item.assignedTo === currentUser.id || item.assignedTo === currentUser.email) return true;
                 if (item.assignedTo === currentUser.name) return true;
+                if (item.assignedToIds?.includes(currentUser.id)) return true;
 
                 // For team members - show all (public data)
                 if (dataType === 'team') return true;
@@ -5183,7 +5190,8 @@
                 // Check if user is assigned to this item (for tasks)
                 let isUserAssignedToItem = false;
                 if (page === 'tasks' && item) {
-                    isUserAssignedToItem = item.assignedTo === currentUser?.email ||
+                    isUserAssignedToItem = item.assignedTo === currentUser?.id ||
+                                          item.assignedToIds?.includes(currentUser?.id) ||
                                           item.assignedToNames?.includes(currentUser?.name) ||
                                           item.assignedToNames?.includes(currentUser?.email);
                 }
@@ -5407,7 +5415,8 @@
             if (page === 'tasks') {
                 const isTaskOwner = isOwner(item);
                 const currentUser = getCurrentUser();
-                const isUserAssignedToTask = item.assignedTo === currentUser?.email ||
+                const isUserAssignedToTask = item.assignedTo === currentUser?.id ||
+                                            item.assignedToIds?.includes(currentUser?.id) ||
                                             item.assignedToNames?.includes(currentUser?.name) ||
                                             item.assignedToNames?.includes(currentUser?.email);
                 return isTaskOwner || isUserAssignedToTask;
@@ -5449,7 +5458,8 @@
             //console.log(`   ✅ Has edit permission on tasks page`);
 
             // Check if user is assigned to parent task
-            const isUserAssignedToParent = parentTask.assignedTo === currentUser.email ||
+            const isUserAssignedToParent = parentTask.assignedTo === currentUser.id ||
+                                          parentTask.assignedToIds?.includes(currentUser.id) ||
                                           parentTask.assignedToNames?.includes(currentUser.name) ||
                                           parentTask.assignedToNames?.includes(currentUser.email);
 
@@ -5465,7 +5475,8 @@
             //console.log(`      Parent assignedToNames: [${parentTask.assignedToNames?.join(', ') || 'none'}]`);
 
             // Check if user is assigned to the subtask itself
-            const isUserAssignedToSubtask = subtask.assignedTo === currentUser.email ||
+            const isUserAssignedToSubtask = subtask.assignedTo === currentUser.id ||
+                                           subtask.assignedTo === currentUser.email ||
                                            subtask.personName === currentUser.name ||
                                            subtask.personName === currentUser.email;
 
@@ -8515,7 +8526,8 @@
             const currentUser = getCurrentUser();
 
             // Check if user is assigned to this task
-            const isUserAssignedToTask = task.assignedTo === currentUser?.email ||
+            const isUserAssignedToTask = task.assignedTo === currentUser?.id ||
+                                        task.assignedToIds?.includes(currentUser?.id) ||
                                         task.assignedToNames?.includes(currentUser?.name) ||
                                         task.assignedToNames?.includes(currentUser?.email);
 

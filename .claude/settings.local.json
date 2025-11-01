@@ -8,7 +8,12 @@
       "Bash(git commit:*)",
       "Bash(cat:*)",
       "Bash(cd:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Read(//c/Users/**)",
+      "Bash(git reset:*)",
+      "Bash(dir:*)",
+      "Bash(perl -i.bak -pe:*)",
+      "Bash(node -c:*)"
     ],
     "deny": [],
     "ask": []
