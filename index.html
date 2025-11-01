@@ -5145,6 +5145,13 @@
                     editBtn.style.display = canEditThis ? '' : 'none';
                     editBtn.disabled = !canEditThis;
                     editBtn.title = canEditThis ? 'Edit' : 'You do not have permission to edit this item';
+
+                    // Debug logging
+                    if (page === 'tasks') {
+                        const logMsg = canEditThis ? '✅' : '❌';
+                        const reason = !canEditPerm ? 'no edit permission' : !isItemOwner ? 'not owner' : 'can edit';
+                        console.log(`${logMsg} Task "${item.name}" - Edit button: ${canEditThis ? 'visible' : 'hidden'} (${reason})`);
+                    }
                 }
 
                 // Delete button visibility: show if user has delete permission AND is owner
@@ -5244,19 +5251,26 @@
 
             if (!Array.isArray(subtasks)) return;
 
-            const canEditPerm = await canEdit('tasks');
             const canDeletePerm = await canDelete('tasks');
 
             subtasks.forEach((subtask) => {
                 const isSubtaskOwner = isOwner(subtask);
 
-                // Edit button for subtask
+                // Find parent task for this subtask
+                const parentTask = tasks.find(t => t.id === subtask.parentTaskId);
+                if (!parentTask) {
+                    console.warn(`⚠️ Parent task not found for subtask: ${subtask.name}`);
+                    return;
+                }
+
+                // Edit button for subtask - use new canEditSubtask function
                 const editBtn = document.querySelector(`.action-btn.edit-btn[onclick*="editSubtask('${subtask.id}')"]`);
                 if (editBtn) {
-                    const canEditThis = canEditPerm && isSubtaskOwner;
-                    editBtn.style.display = canEditThis ? '' : 'none';
-                    editBtn.disabled = !canEditThis;
-                    editBtn.title = canEditThis ? 'Edit subtask' : 'You do not have permission to edit this subtask';
+                    canEditSubtask(subtask, parentTask).then(canEditThis => {
+                        editBtn.style.display = canEditThis ? '' : 'none';
+                        editBtn.disabled = !canEditThis;
+                        editBtn.title = canEditThis ? 'Edit subtask' : 'You do not have permission to edit this subtask';
+                    });
                 }
 
                 // Delete button for subtask
@@ -5281,6 +5295,48 @@
             const hasEditPermission = await canEdit(page);
             // Must have permission AND be owner
             return hasEditPermission && isOwner(item);
+        }
+
+        /**
+         * Check if user can edit a subtask based on parent task assignment
+         * Rules:
+         * - User NOT assigned to parent task: Can only edit their own subtasks
+         * - User IS assigned to parent task: Can edit ALL subtasks in that task
+         * - Must have edit permission on tasks page
+         */
+        async function canEditSubtask(subtask, parentTask) {
+            if (!subtask || !parentTask) return false;
+
+            const currentUser = getCurrentUser();
+            if (!currentUser) return false;
+
+            // Must have edit permission on tasks page
+            const hasEditPermission = await canEdit('tasks');
+            if (!hasEditPermission) {
+                console.log(`❌ Subtask "${subtask.name}" - No edit permission on tasks page`);
+                return false;
+            }
+
+            // Check if user is assigned to parent task
+            const isUserAssignedToParent = parentTask.assignedTo === currentUser.email ||
+                                          parentTask.assignedToNames?.includes(currentUser.name) ||
+                                          parentTask.assignedToNames?.includes(currentUser.email);
+
+            if (isUserAssignedToParent) {
+                // User assigned to parent task can edit ALL subtasks
+                console.log(`✅ Subtask "${subtask.name}" - User assigned to parent task, can edit all subtasks`);
+                return true;
+            }
+
+            // User NOT assigned to parent task can only edit their own subtasks
+            const isSubtaskOwner = isOwner(subtask);
+            if (isSubtaskOwner) {
+                console.log(`✅ Subtask "${subtask.name}" - User owns subtask, can edit own subtasks`);
+                return true;
+            }
+
+            console.log(`❌ Subtask "${subtask.name}" - User not assigned to parent and doesn't own subtask`);
+            return false;
         }
 
         /**
