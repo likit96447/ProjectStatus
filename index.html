@@ -5387,19 +5387,14 @@
                     });
                 }
 
-                // Delete button for subtask - show if user has delete permission AND is subtask owner
+                // Delete button for subtask - show if user has delete permission
+                // User can see subtask means they already have visibility permission
                 const deleteBtn = document.querySelector(`.action-btn.delete-btn[onclick*="deleteSubtask('${subtask.id}')"]`);
                 if (deleteBtn) {
-                    const canDeleteThis = canDeletePerm && isSubtaskOwner;
+                    const canDeleteThis = canDeletePerm;
                     deleteBtn.style.display = canDeleteThis ? '' : 'none';
                     deleteBtn.disabled = !canDeleteThis;
-                    if (!canDeletePerm) {
-                        deleteBtn.title = 'You do not have permission to delete subtasks';
-                    } else if (!isSubtaskOwner) {
-                        deleteBtn.title = 'You can only delete your own subtasks';
-                    } else {
-                        deleteBtn.title = 'Delete subtask';
-                    }
+                    deleteBtn.title = canDeleteThis ? 'Delete subtask' : 'You do not have permission to delete subtasks';
                 }
             });
 
