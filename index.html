@@ -4011,14 +4011,14 @@
         const guestMode = isGuestMode();
         if (guestMode) {
             sessionStorage.setItem('guestMode', 'true');
-            // console.log('✅ Guest mode enabled - Dashboard view only');
+            // //console.log('✅ Guest mode enabled - Dashboard view only');
         }
 
         // Check authentication and session timeout
         function checkSession() {
             // If guest mode, skip authentication check
             if (guestMode) {
-                // console.log('⏭️ Skipping authentication - guest mode active');
+                // //console.log('⏭️ Skipping authentication - guest mode active');
                 return true;
             }
 
@@ -4037,7 +4037,7 @@
 
                 // Check if session has expired (no activity for 1 hour)
                 if (timeSinceActivity > SESSION_TIMEOUT) {
-                    // console.log('Session expired due to inactivity');
+                    // //console.log('Session expired due to inactivity');
                     sessionStorage.removeItem('loggedInUser');
                     alert('Your session has expired due to inactivity. Please login again.');
                     window.location.href = 'login.html';
@@ -4111,7 +4111,7 @@
 
         // Save Admin Rules to Firebase
         async function saveAdminRules() {
-            // console.log("💾 Saving admin rules...");
+            // //console.log("💾 Saving admin rules...");
 
             try {
                 // Collect all rule values
@@ -4125,13 +4125,13 @@
                     updatedBy: sessionStorage.getItem('loggedInUser') || 'admin'
                 };
 
-                // console.log("📝 Admin rules data:", adminRules);
+                // //console.log("📝 Admin rules data:", adminRules);
 
                 // Save to Firebase admin_rules collection
                 // Use a document ID of "global" for system-wide settings
                 await db.collection('admin_rules').doc('global').set(adminRules, { merge: true });
 
-                // console.log("✅ Admin rules saved successfully");
+                // //console.log("✅ Admin rules saved successfully");
                 alert("✅ Admin rules saved successfully!");
 
             } catch (error) {
@@ -4142,7 +4142,7 @@
 
         // Reset Admin Rules to Default
         async function resetAdminRules() {
-            // console.log("🔄 Resetting admin rules to default...");
+            // //console.log("🔄 Resetting admin rules to default...");
 
             if (!confirm("Are you sure you want to reset all rules to default? This action cannot be undone.")) {
                 return;
@@ -4169,7 +4169,7 @@
                 // Save default rules to Firebase
                 await db.collection('admin_rules').doc('global').set(defaultRules, { merge: true });
 
-                // console.log("✅ Admin rules reset to default");
+                // //console.log("✅ Admin rules reset to default");
                 alert("✅ Admin rules have been reset to default!");
 
             } catch (error) {
@@ -4180,14 +4180,14 @@
 
         // Load Admin Rules from Firebase on page load
         async function loadAdminRules() {
-            // console.log("📖 Loading admin rules from Firebase...");
+            // //console.log("📖 Loading admin rules from Firebase...");
 
             try {
                 const doc = await db.collection('admin_rules').doc('global').get();
 
                 if (doc.exists) {
                     const rules = doc.data();
-                    // console.log("✅ Admin rules loaded:", rules);
+                    // //console.log("✅ Admin rules loaded:", rules);
 
                     // Update checkboxes with saved values
                     document.getElementById('rule-task-completion').checked = rules.taskCompletionNotification !== false;
@@ -4196,7 +4196,7 @@
                     document.getElementById('rule-auto-archive').checked = rules.autoArchiveProjects === true;
                     document.getElementById('rule-subtask-sync').checked = rules.subtaskAutoSync !== false;
                 } else {
-                    // console.log("ℹ️ No admin rules found in Firebase, using defaults");
+                    // //console.log("ℹ️ No admin rules found in Firebase, using defaults");
                 }
 
             } catch (error) {
@@ -4250,7 +4250,7 @@
 
         // Toggle all checkboxes for a specific role
         function toggleAllCheckboxesForRole(role) {
-            // console.log(`🔄 Toggling all checkboxes for role: ${role}`);
+            // //console.log(`🔄 Toggling all checkboxes for role: ${role}`);
 
             const pages = ['dashboard', 'projectslist', 'tasks', 'team', 'reports'];
             const operations = ['show', 'add', 'edit', 'delete', 'admin'];
@@ -4273,12 +4273,12 @@
                 checkbox.checked = !allChecked;
             });
 
-            // console.log(`✅ Toggled all checkboxes for ${role}: ${!allChecked ? 'checked' : 'unchecked'}`);
+            // //console.log(`✅ Toggled all checkboxes for ${role}: ${!allChecked ? 'checked' : 'unchecked'}`);
         }
 
         // Render permissions table
         async function renderPagePermissionsTable() {
-            // console.log("📊 Rendering page permissions table...");
+            // //console.log("📊 Rendering page permissions table...");
             const tableBody = document.getElementById('permissionsTableBody');
             if (!tableBody) return;
 
@@ -4302,7 +4302,7 @@
                             name: doc.data().name
                         });
                     });
-                    // console.log(`✅ Loaded ${rolesFromFirebase.size} roles from Firebase for permissions`);
+                    // //console.log(`✅ Loaded ${rolesFromFirebase.size} roles from Firebase for permissions`);
                 } catch (error) {
                     console.warn("⚠️ Could not load roles from Firebase, using default roles:", error);
                     rolesFromFirebase = Object.keys(defaultPagePermissions).map(name => ({ name, id: name }));
@@ -4354,7 +4354,7 @@
                     tableBody.insertAdjacentHTML('beforeend', row);
                 });
 
-                // console.log(`✅ Page permissions table rendered with ${rolesToDisplay.length} roles`);
+                // //console.log(`✅ Page permissions table rendered with ${rolesToDisplay.length} roles`);
             } catch (error) {
                 console.error("❌ Error rendering page permissions table:", error);
             }
@@ -4362,7 +4362,7 @@
 
         // Save page permissions to Firebase
         async function savePagePermissions() {
-            // console.log("💾 Saving page permissions...");
+            // //console.log("💾 Saving page permissions...");
 
             try {
                 const pages = ['dashboard', 'projectslist', 'tasks', 'team', 'reports'];
@@ -4400,12 +4400,12 @@
                     };
                 });
 
-                // console.log("📝 Permissions data:", permissions);
+                // //console.log("📝 Permissions data:", permissions);
 
                 // Save to Firebase page_permissions collection
                 await db.collection('page_permissions').doc('global').set(permissions, { merge: true });
 
-                // console.log("✅ Page permissions saved successfully");
+                // //console.log("✅ Page permissions saved successfully");
                 alert("✅ Page permissions saved successfully!");
 
             } catch (error) {
@@ -4416,7 +4416,7 @@
 
         // Reset page permissions to default
         async function resetPagePermissionsToDefault() {
-            // console.log("🔄 Resetting page permissions to default...");
+            // //console.log("🔄 Resetting page permissions to default...");
 
             if (!confirm("Are you sure you want to reset all permissions to default? This action cannot be undone.")) {
                 return;
@@ -4451,12 +4451,12 @@
                     };
                 });
 
-                // console.log("📝 Default permissions to reset:", defaultPermissions);
+                // //console.log("📝 Default permissions to reset:", defaultPermissions);
 
                 // Save default permissions to Firebase
                 await db.collection('page_permissions').doc('global').set(defaultPermissions, { merge: true });
 
-                // console.log("✅ Page permissions reset to default");
+                // //console.log("✅ Page permissions reset to default");
                 alert("✅ Page permissions have been reset to default!");
 
                 // Re-render the table
@@ -4470,7 +4470,7 @@
 
         // Load page permissions from Firebase on page load
         async function loadPagePermissions() {
-            // console.log("📖 Loading page permissions from Firebase...");
+            // //console.log("📖 Loading page permissions from Firebase...");
 
             try {
                 // Render the table when switching to permissions page
@@ -4487,7 +4487,7 @@
 
         // Open Add Role Modal
         function openAddRoleModal() {
-            // console.log("➕ Opening add role modal...");
+            // //console.log("➕ Opening add role modal...");
             currentEditingRoleId = null;
             document.getElementById('roleModalTitle').textContent = 'Add New Role';
             document.getElementById('roleNameInput').value = '';
@@ -4498,7 +4498,7 @@
 
         // Close Role Modal
         function closeRoleModal() {
-            // console.log("✖️ Closing role modal...");
+            // //console.log("✖️ Closing role modal...");
             document.getElementById('roleModal').style.display = 'none';
             currentEditingRoleId = null;
         }
@@ -4512,7 +4512,7 @@
 
         // Save Role to Firebase
         async function saveRole() {
-            // console.log("💾 Saving role...");
+            // //console.log("💾 Saving role...");
 
             const roleName = document.getElementById('roleNameInput').value.trim();
             const roleDescription = document.getElementById('roleDescriptionInput').value.trim();
@@ -4533,7 +4533,7 @@
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                         updatedBy: sessionStorage.getItem('loggedInUser') || 'admin'
                     });
-                    // console.log("✅ Role updated successfully");
+                    // //console.log("✅ Role updated successfully");
                     alert("✅ Role updated successfully!");
                 } else {
                     // Create new role
@@ -4546,7 +4546,7 @@
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                         updatedBy: sessionStorage.getItem('loggedInUser') || 'admin'
                     });
-                    // console.log("✅ Role created successfully");
+                    // //console.log("✅ Role created successfully");
                     alert("✅ Role created successfully!");
                 }
 
@@ -4560,7 +4560,7 @@
 
         // Load Roles from Firebase
         async function loadRolesFromFirebase() {
-            // console.log("📖 Loading roles from Firebase...");
+            // //console.log("📖 Loading roles from Firebase...");
 
             try {
                 const querySnapshot = await db.collection('roles').get();
@@ -4606,7 +4606,7 @@
                     rolesTableBody.insertAdjacentHTML('beforeend', row);
                 }
 
-                // console.log("✅ Roles loaded successfully");
+                // //console.log("✅ Roles loaded successfully");
             } catch (error) {
                 console.error("❌ Error loading roles:", error);
             }
@@ -4625,7 +4625,7 @@
 
         // Edit Role
         async function editRole(roleId, roleName, roleDescription) {
-            // console.log(`✏️ Editing role: ${roleName}`);
+            // //console.log(`✏️ Editing role: ${roleName}`);
             currentEditingRoleId = roleId;
             document.getElementById('roleModalTitle').textContent = 'Edit Role';
             document.getElementById('roleNameInput').value = roleName;
@@ -4651,7 +4651,7 @@
             const newActiveStatus = checkboxElement.checked;
             const previousStatus = !newActiveStatus; // Store for reverting if error
 
-            // console.log(`🔄 Toggling role active status to ${newActiveStatus}...`);
+            // //console.log(`🔄 Toggling role active status to ${newActiveStatus}...`);
 
             try {
                 await db.collection('roles').doc(roleId).update({
@@ -4660,7 +4660,7 @@
                     updatedBy: sessionStorage.getItem('loggedInUser') || 'admin'
                 });
 
-                // console.log(`✅ Role active status updated to ${newActiveStatus}`);
+                // //console.log(`✅ Role active status updated to ${newActiveStatus}`);
 
                 // Also reload member role dropdown in case it's open, to reflect active status changes
                 const memberRoleSelect = document.getElementById('memberRoleSelect');
@@ -4677,7 +4677,7 @@
 
         // Delete Role
         async function deleteRole(roleId, roleName) {
-            // console.log(`🗑️ Deleting role: ${roleName}`);
+            // //console.log(`🗑️ Deleting role: ${roleName}`);
 
             if (!confirm(`Are you sure you want to delete the role "${roleName}"? Users assigned to this role will need to be reassigned.`)) {
                 return;
@@ -4692,7 +4692,7 @@
                 }
 
                 await db.collection('roles').doc(roleId).delete();
-                // console.log("✅ Role deleted successfully");
+                // //console.log("✅ Role deleted successfully");
                 alert("✅ Role deleted successfully!");
                 await loadRolesFromFirebase();
             } catch (error) {
@@ -4768,7 +4768,7 @@
                 const permissions = doc.exists ? doc.data() : {};
                 userPermissionsCache = permissions[userRole] || {};
 
-                // console.log(`✅ Loaded permissions for role: ${userRole}`, userPermissionsCache);
+                // //console.log(`✅ Loaded permissions for role: ${userRole}`, userPermissionsCache);
                 return userPermissionsCache;
             } catch (error) {
                 console.error("❌ Error loading user permissions:", error);
@@ -4796,13 +4796,13 @@
             // For settings pages (admin-only), check the 'admin' section
             if (['adminRules', 'pagePermissions', 'roleManagement'].includes(page)) {
                 const adminPermission = permissions['admin']?.[operation] === true;
-                // console.log(`🔐 Checking admin permission for ${page}/${operation}: ${adminPermission}`);
+                // //console.log(`🔐 Checking admin permission for ${page}/${operation}: ${adminPermission}`);
                 return adminPermission;
             }
 
             // For regular pages, check the specific page permissions
             const pagePermission = permissions[page]?.[operation] === true;
-            // console.log(`🔐 Checking permission ${userRole}/${page}/${operation}: ${pagePermission}`);
+            // //console.log(`🔐 Checking permission ${userRole}/${page}/${operation}: ${pagePermission}`);
             return pagePermission;
         }
 
@@ -4826,7 +4826,7 @@
         async function isAdmin() {
             const permissions = await loadUserPermissions();
             const isAdminUser = permissions['admin']?.['admin'] === true;
-            // console.log(`🔐 Checking admin status: ${isAdminUser}`);
+            // //console.log(`🔐 Checking admin status: ${isAdminUser}`);
             return isAdminUser;
         }
 
@@ -4884,7 +4884,7 @@
 
             // Check personName field (subtasks - person assigned to subtask)
             if (data.personName === currentUser.name || data.personName === currentUser.email) {
-                console.log(`✅ User is subtask owner: ${currentUser.email || currentUser.name} === ${data.personName}`);
+                //console.log(`✅ User is subtask owner: ${currentUser.email || currentUser.name} === ${data.personName}`);
                 return true;
             }
 
@@ -4896,7 +4896,7 @@
 
             // Check if user is project manager (for projects)
             if (data.projectManager === currentUser.email || data.projectManager === currentUser.name) {
-                // console.log(`✅ User is PM (single): ${currentUser.email || currentUser.name} === ${data.projectManager}`);
+                // //console.log(`✅ User is PM (single): ${currentUser.email || currentUser.name} === ${data.projectManager}`);
                 return true;
             }
 
@@ -4904,11 +4904,11 @@
             if (data.projectManagers &&
                 (data.projectManagers.includes(currentUser.email) ||
                  data.projectManagers.includes(currentUser.name))) {
-                // console.log(`✅ User is PM (array): ${currentUser.email || currentUser.name} in [${data.projectManagers.join(', ')}]`);
+                // //console.log(`✅ User is PM (array): ${currentUser.email || currentUser.name} in [${data.projectManagers.join(', ')}]`);
                 return true;
             }
 
-            // console.log(`❌ User is NOT owner of ${data.name || 'item'}: currentUser=${currentUser.email || currentUser.name}`);
+            // //console.log(`❌ User is NOT owner of ${data.name || 'item'}: currentUser=${currentUser.email || currentUser.name}`);
             return false;
         }
 
@@ -4918,7 +4918,7 @@
         function clearPermissionCache() {
             userPermissionsCache = null;
             userRoleCache = null;
-            // console.log("✅ Permission cache cleared");
+            // //console.log("✅ Permission cache cleared");
         }
 
         /**
@@ -4944,7 +4944,7 @@
                                            task.assignedToNames?.includes(currentUser.email);
 
                 if (isTaskAssignedToUser) {
-                    console.log(`📋 Task "${task.name}" shown (directly assigned to user)`);
+                    //console.log(`📋 Task "${task.name}" shown (directly assigned to user)`);
                     return true;
                 }
 
@@ -4957,16 +4957,16 @@
                 );
 
                 if (userSubtasksInTask.length > 0) {
-                    console.log(`📋 Task "${task.name}" shown (has ${userSubtasksInTask.length} assigned subtask(s))`);
+                    //console.log(`📋 Task "${task.name}" shown (has ${userSubtasksInTask.length} assigned subtask(s))`);
                     return true;
                 }
 
                 // Hide task if user has no assignment
-                console.log(`❌ Task "${task.name}" hidden (not assigned to user, no assigned subtasks)`);
+                //console.log(`❌ Task "${task.name}" hidden (not assigned to user, no assigned subtasks)`);
                 return false;
             });
 
-            console.log(`🔍 Task Filtering: Showing ${filteredTasks.length} of ${tasksArray.length} tasks`);
+            //console.log(`🔍 Task Filtering: Showing ${filteredTasks.length} of ${tasksArray.length} tasks`);
             return filteredTasks;
         }
 
@@ -5034,7 +5034,7 @@
          * Update menu visibility based on user permissions
          */
         async function updateMenuVisibility() {
-            // console.log("🔒 Updating menu visibility based on permissions...");
+            // //console.log("🔒 Updating menu visibility based on permissions...");
 
             try {
                 // Dashboard
@@ -5087,7 +5087,7 @@
                 // Update action button visibility
                 await updateActionButtonVisibility();
 
-                // console.log("✅ Menu visibility updated");
+                // //console.log("✅ Menu visibility updated");
             } catch (error) {
                 console.error("❌ Error updating menu visibility:", error);
             }
@@ -5097,7 +5097,7 @@
          * Update action button visibility based on user permissions
          */
         async function updateActionButtonVisibility() {
-            // console.log("🔘 Updating action button visibility...");
+            // //console.log("🔘 Updating action button visibility...");
 
             try {
                 // New Project button
@@ -5118,7 +5118,7 @@
                     newTaskBtn.title = canAddTask ? '' : 'You do not have permission to add tasks';
                 }
 
-                // console.log("✅ Action button visibility updated");
+                // //console.log("✅ Action button visibility updated");
             } catch (error) {
                 console.error("❌ Error updating action button visibility:", error);
             }
@@ -5131,7 +5131,7 @@
          * @param {Array} items - Array of items to check
          */
         async function updateEditDeleteButtonVisibility(page, items) {
-            // console.log(`🔘 Updating edit/delete button visibility for ${page}...`);
+            // //console.log(`🔘 Updating edit/delete button visibility for ${page}...`);
 
             if (!Array.isArray(items)) return;
 
@@ -5140,8 +5140,8 @@
             const currentUser = getCurrentUser();
 
             // Debug: Show permission status
-            // console.log(`   📋 Edit permission: ${canEditPerm}, Delete permission: ${canDeletePerm}`);
-            // console.log(`   📊 Total items: ${items.length}, Updating visible buttons only...`);
+            // //console.log(`   📋 Edit permission: ${canEditPerm}, Delete permission: ${canDeletePerm}`);
+            // //console.log(`   📊 Total items: ${items.length}, Updating visible buttons only...`);
 
             let editButtonsUpdated = 0;
             let deleteButtonsUpdated = 0;
@@ -5181,7 +5181,7 @@
                         } else {
                             reason = 'not owner/assigned';
                         }
-                        console.log(`${logMsg} Task "${item.name}" - Edit button: ${canEditThis ? 'visible' : 'hidden'} (${reason})`);
+                        //console.log(`${logMsg} Task "${item.name}" - Edit button: ${canEditThis ? 'visible' : 'hidden'} (${reason})`);
                     }
                 }
 
@@ -5208,13 +5208,13 @@
                         } else {
                             reason = 'not owner/assigned';
                         }
-                        console.log(`${logMsg} Task "${item.name}" - Delete button: ${canDeleteThis ? 'visible' : 'hidden'} (${reason})`);
+                        //console.log(`${logMsg} Task "${item.name}" - Delete button: ${canDeleteThis ? 'visible' : 'hidden'} (${reason})`);
                     }
                 }
             }
 
             // Summary: How many buttons were actually updated vs total items
-            console.log(`✅ Edit/delete button visibility updated - ${editButtonsUpdated}/${items.length} edit buttons, ${deleteButtonsUpdated}/${items.length} delete buttons (${items.length - editButtonsUpdated} tasks filtered out)`);
+            //console.log(`✅ Edit/delete button visibility updated - ${editButtonsUpdated}/${items.length} edit buttons, ${deleteButtonsUpdated}/${items.length} delete buttons (${items.length - editButtonsUpdated} tasks filtered out)`);
         }
 
         /**
@@ -5224,7 +5224,7 @@
          * @param {Array} items - Array of items to check
          */
         async function updateSubtaskAddButtonVisibility(items) {
-            console.log(`🔘 Updating subtask add button visibility...`);
+            //console.log(`🔘 Updating subtask add button visibility...`);
 
             if (!Array.isArray(items)) return;
 
@@ -5238,10 +5238,10 @@
                 btn.style.display = canAddAnything ? '' : 'none';
                 btn.disabled = !canAddAnything;
                 btn.title = canAddAnything ? 'Add subtask' : 'You do not have permission to add subtasks';
-                console.log(`🔘 Subtask add button: ${canAddAnything ? 'visible ✅' : 'hidden ❌'}`);
+                //console.log(`🔘 Subtask add button: ${canAddAnything ? 'visible ✅' : 'hidden ❌'}`);
             });
 
-            console.log(`✅ Subtask add button visibility updated`);
+            //console.log(`✅ Subtask add button visibility updated`);
         }
 
         /**
@@ -5249,7 +5249,7 @@
          * @param {Array} projects - Array of projects to check
          */
         async function updateProjectEditDeleteButtonVisibility(projects) {
-            // console.log(`🔘 Updating project edit/delete button visibility...`);
+            // //console.log(`🔘 Updating project edit/delete button visibility...`);
 
             if (!Array.isArray(projects)) return;
 
@@ -5266,7 +5266,7 @@
                 // Find the project card for this specific project using data-project-id
                 const projectCard = document.querySelector(`.project-card[data-project-id="${project.id}"]`);
                 if (!projectCard) {
-                    // console.log(`⚠️ Project card not found for: ${project.name}`);
+                    // //console.log(`⚠️ Project card not found for: ${project.name}`);
                     continue;
                 }
 
@@ -5276,7 +5276,7 @@
                     editBtn.style.display = canEditThis ? '' : 'none';
                     editBtn.disabled = !canEditThis;
                     editBtn.title = canEditThis ? 'Edit' : 'You do not have permission to edit this project';
-                    // console.log(`🔘 Project "${project.name}" | Edit button: ${canEditThis ? 'visible ✅' : 'hidden ❌'}`);
+                    // //console.log(`🔘 Project "${project.name}" | Edit button: ${canEditThis ? 'visible ✅' : 'hidden ❌'}`);
                 }
 
                 // Find and update ONLY the delete button within this card
@@ -5288,7 +5288,7 @@
                 }
             }
 
-            // console.log(`✅ Project edit/delete button visibility updated for all cards`);
+            // //console.log(`✅ Project edit/delete button visibility updated for all cards`);
         }
 
         /**
@@ -5296,7 +5296,7 @@
          * @param {Array} subtasks - Array of subtasks to check
          */
         async function updateSubtaskEditDeleteButtonVisibility(subtasks) {
-            console.log(`🔘 Updating subtask edit/delete button visibility...`);
+            //console.log(`🔘 Updating subtask edit/delete button visibility...`);
 
             if (!Array.isArray(subtasks)) return;
 
@@ -5332,7 +5332,7 @@
                 }
             });
 
-            console.log(`✅ Subtask edit/delete button visibility updated`);
+            //console.log(`✅ Subtask edit/delete button visibility updated`);
         }
 
         /**
@@ -5369,27 +5369,27 @@
          */
         async function canEditSubtask(subtask, parentTask) {
             if (!subtask || !parentTask) {
-                console.log(`❌ Subtask edit check failed - missing subtask or parent task`);
+                //console.log(`❌ Subtask edit check failed - missing subtask or parent task`);
                 return false;
             }
 
             const currentUser = getCurrentUser();
             if (!currentUser) {
-                console.log(`❌ Subtask edit check failed - no current user`);
+                //console.log(`❌ Subtask edit check failed - no current user`);
                 return false;
             }
 
-            console.log(`\n📋 Checking edit permission for subtask: "${subtask.name}"`);
-            // console.log(`   Current user: ${currentUser.email || currentUser.name}`);
-            console.log(`   Parent task: "${parentTask.name}"`);
+            //console.log(`\n📋 Checking edit permission for subtask: "${subtask.name}"`);
+            // //console.log(`   Current user: ${currentUser.email || currentUser.name}`);
+            //console.log(`   Parent task: "${parentTask.name}"`);
 
             // Must have edit permission on tasks page
             const hasEditPermission = await canEdit('tasks');
             if (!hasEditPermission) {
-                console.log(`   ❌ DENIED: No edit permission on tasks page`);
+                //console.log(`   ❌ DENIED: No edit permission on tasks page`);
                 return false;
             }
-            console.log(`   ✅ Has edit permission on tasks page`);
+            //console.log(`   ✅ Has edit permission on tasks page`);
 
             // Check if user is assigned to parent task
             const isUserAssignedToParent = parentTask.assignedTo === currentUser.email ||
@@ -5398,14 +5398,14 @@
 
             if (isUserAssignedToParent) {
                 // User assigned to parent task can see and edit ALL subtasks
-                console.log(`   ✅ ALLOWED: User assigned to parent task "${parentTask.name}"`);
-                console.log(`      Parent assignedTo: ${parentTask.assignedTo}`);
-                console.log(`      Parent assignedToNames: [${parentTask.assignedToNames?.join(', ') || 'none'}]`);
+                //console.log(`   ✅ ALLOWED: User assigned to parent task "${parentTask.name}"`);
+                //console.log(`      Parent assignedTo: ${parentTask.assignedTo}`);
+                //console.log(`      Parent assignedToNames: [${parentTask.assignedToNames?.join(', ') || 'none'}]`);
                 return true;
             }
-            console.log(`   ❌ NOT assigned to parent task`);
-            console.log(`      Parent assignedTo: ${parentTask.assignedTo}`);
-            console.log(`      Parent assignedToNames: [${parentTask.assignedToNames?.join(', ') || 'none'}]`);
+            //console.log(`   ❌ NOT assigned to parent task`);
+            //console.log(`      Parent assignedTo: ${parentTask.assignedTo}`);
+            //console.log(`      Parent assignedToNames: [${parentTask.assignedToNames?.join(', ') || 'none'}]`);
 
             // Check if user is assigned to the subtask itself
             const isUserAssignedToSubtask = subtask.assignedTo === currentUser.email ||
@@ -5414,16 +5414,16 @@
 
             if (isUserAssignedToSubtask) {
                 // User assigned to subtask can see and edit it
-                console.log(`   ✅ ALLOWED: User assigned to subtask "${subtask.name}"`);
-                console.log(`      Subtask assignedTo: ${subtask.assignedTo}`);
-                console.log(`      Subtask personName: ${subtask.personName}`);
+                //console.log(`   ✅ ALLOWED: User assigned to subtask "${subtask.name}"`);
+                //console.log(`      Subtask assignedTo: ${subtask.assignedTo}`);
+                //console.log(`      Subtask personName: ${subtask.personName}`);
                 return true;
             }
 
-            console.log(`   ❌ DENIED: User not assigned to parent task or subtask`);
-            console.log(`      Subtask assignedTo: ${subtask.assignedTo}`);
-            console.log(`      Subtask personName: ${subtask.personName}`);
-            // console.log(`      Looking for: "${currentUser.email || currentUser.name}"\n`);
+            //console.log(`   ❌ DENIED: User not assigned to parent task or subtask`);
+            //console.log(`      Subtask assignedTo: ${subtask.assignedTo}`);
+            //console.log(`      Subtask personName: ${subtask.personName}`);
+            // //console.log(`      Looking for: "${currentUser.email || currentUser.name}"\n`);
             return false;
         }
 
@@ -5444,7 +5444,7 @@
         async function checkEditPermission(item, page) {
             const canEdit = await canEditItem(item, page);
             if (!canEdit) {
-                // console.log('🔒 User does not have permission to edit this item');
+                // //console.log('🔒 User does not have permission to edit this item');
                 alert('You do not have permission to edit this item');
                 return false;
             }
@@ -5457,7 +5457,7 @@
         async function checkDeletePermission(item, page) {
             const canDelete = await canDeleteItem(item, page);
             if (!canDelete) {
-                // console.log('🔒 User does not have permission to delete this item');
+                // //console.log('🔒 User does not have permission to delete this item');
                 alert('You do not have permission to delete this item');
                 return false;
             }
@@ -5469,7 +5469,7 @@
         try {
             firebase.initializeApp(firebaseConfig);
             db = firebase.firestore();
-            // console.log("✅ Firebase initialized successfully!");
+            // //console.log("✅ Firebase initialized successfully!");
         } catch (error) {
             console.error("❌ Firebase initialization error:", error);
         }
@@ -5923,7 +5923,7 @@
 
                 currentTeamMembers = teamMembers;
                 renderTeamMembers(teamMembers);
-                console.log(`✅ Loaded ${teamMembers.length} team members with real task counts and projects`);
+                //console.log(`✅ Loaded ${teamMembers.length} team members with real task counts and projects`);
 
             } catch (error) {
                 console.error("❌ Error loading team members:", error);
@@ -5943,13 +5943,13 @@
                 // First, try to get all team members (more reliable)
                 const snapshot = await db.collection('team_members').get();
 
-                // console.log(`📊 Found ${snapshot.size} total team members in database`);
+                // //console.log(`📊 Found ${snapshot.size} total team members in database`);
 
                 const activeMembers = [];
 
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    // console.log(`👤 Member: ${data.name}, active: ${data.active}, status: ${data.status}`);
+                    // //console.log(`👤 Member: ${data.name}, active: ${data.active}, status: ${data.status}`);
 
                     // Include member if:
                     // 1. active field is explicitly true, OR
@@ -5970,7 +5970,7 @@
                 // Sort alphabetically by name
                 activeMembers.sort((a, b) => a.name.localeCompare(b.name));
 
-                // console.log(`✅ Loaded ${activeMembers.length} active team members for dropdown`);
+                // //console.log(`✅ Loaded ${activeMembers.length} active team members for dropdown`);
                 return activeMembers;
 
             } catch (error) {
@@ -5997,7 +5997,7 @@
 
         // Populate assign to dropdown
         async function populateAssignToDropdown() {
-            // console.log('🔄 populateAssignToDropdown() called');
+            // //console.log('🔄 populateAssignToDropdown() called');
 
             const personSelect = document.getElementById('itemPerson');
             if (!personSelect) {
@@ -6005,15 +6005,15 @@
                 return;
             }
 
-            // console.log('✅ Found itemPerson select element');
+            // //console.log('✅ Found itemPerson select element');
 
             // Show loading state
             personSelect.innerHTML = '<option value="" disabled>Loading active members...</option>';
-            // console.log('⏳ Loading state set, calling loadActiveTeamMembers()...');
+            // //console.log('⏳ Loading state set, calling loadActiveTeamMembers()...');
 
             // Get active members with IDs
             const activeMembers = await loadActiveTeamMembers();
-            // console.log('📦 Received activeMembers array:', activeMembers);
+            // //console.log('📦 Received activeMembers array:', activeMembers);
 
             if (activeMembers.length === 0) {
                 personSelect.innerHTML = '<option value="" disabled>No team members found</option>';
@@ -6054,12 +6054,12 @@
                 personSelect.appendChild(option);
             });
 
-            // console.log(`✅ Populated dropdown with ${activeMembers.length} active members`);
+            // //console.log(`✅ Populated dropdown with ${activeMembers.length} active members`);
         }
 
         // Populate project dropdown for task form
         async function populateTaskProjectDropdown() {
-            console.log('🔄 populateTaskProjectDropdown() called');
+            //console.log('🔄 populateTaskProjectDropdown() called');
             const projectSelect = document.getElementById('itemProject');
 
             if (!projectSelect) {
@@ -6078,7 +6078,7 @@
 
             try {
                 const snapshot = await db.collection('projects').get();
-                // console.log(`📦 Found ${snapshot.size} projects in database`);
+                // //console.log(`📦 Found ${snapshot.size} projects in database`);
 
                 // Clear and add default option
                 projectSelect.innerHTML = '<option value="">No Project</option>';
@@ -6099,11 +6099,11 @@
                         option.setAttribute('data-project-name', project.name);
                         projectSelect.appendChild(option);
                         addedCount++;
-                        // console.log(`📁 Added project: ${project.name}`);
+                        // //console.log(`📁 Added project: ${project.name}`);
                     }
                 });
 
-                // console.log(`✅ Populated project dropdown with ${addedCount} projects`);
+                // //console.log(`✅ Populated project dropdown with ${addedCount} projects`);
 
             } catch (error) {
                 console.error('❌ Error loading projects for dropdown:', error);
@@ -6154,7 +6154,7 @@
 
                 // ========== TASKS ==========
                 if (tasksSnapshot.empty) {
-                    console.log("📦 Adding sample tasks...");
+                    //console.log("📦 Adding sample tasks...");
                     const sampleTasks = [
                         { name: 'Website Redesign', status: 'working', priority: 'high', person: 'Sarah Lee', project: 'Website Redesign', date: '2025-11-15', timeline: '3 weeks', workspace: 'Marketing', category: 'Design', tags: ['design', 'frontend', 'urgent'] },
                         { name: 'Mobile App Development', status: 'working', priority: 'high', person: 'Mike Chen', project: 'Mobile App Development', date: '2025-12-01', timeline: '6 weeks', workspace: 'Development', category: 'Development', tags: ['mobile', 'ios', 'android'] },
@@ -6174,12 +6174,12 @@
                         });
                         addedCount++;
                     }
-                    console.log(`✅ Added ${sampleTasks.length} tasks`);
+                    //console.log(`✅ Added ${sampleTasks.length} tasks`);
                 }
 
                 // ========== TEAM MEMBERS ==========
                 if (membersSnapshot.empty) {
-                    // console.log("📦 Adding team members...");
+                    // //console.log("📦 Adding team members...");
                     const sampleMembers = [
                         { name: 'Sarah Lee', email: 'sarah.lee@company.com', role: 'Project Manager', department: 'Marketing', avatar: 'SL', status: 'Active', active: true, skills: ['management', 'planning', 'coordination'] },
                         { name: 'Mike Chen', email: 'mike.chen@company.com', role: 'Lead Developer', department: 'Development', avatar: 'MC', status: 'Active', active: true, skills: ['javascript', 'react', 'node.js'] },
@@ -6199,12 +6199,12 @@
                         });
                         addedCount++;
                     }
-                    // console.log(`✅ Added ${sampleMembers.length} team members`);
+                    // //console.log(`✅ Added ${sampleMembers.length} team members`);
                 }
 
                 // ========== WORKSPACES ==========
                 if (workspacesSnapshot.empty) {
-                    // console.log("📦 Adding workspaces...");
+                    // //console.log("📦 Adding workspaces...");
                     const sampleWorkspaces = [
                         { name: 'Marketing', icon: '🎯', color: '#667eea', description: 'Marketing team workspace', memberCount: 3, taskCount: 5, active: true },
                         { name: 'Development', icon: '💻', color: '#764ba2', description: 'Development team workspace', memberCount: 5, taskCount: 8, active: true },
@@ -6220,12 +6220,12 @@
                         });
                         addedCount++;
                     }
-                    // console.log(`✅ Added ${sampleWorkspaces.length} workspaces`);
+                    // //console.log(`✅ Added ${sampleWorkspaces.length} workspaces`);
                 }
 
                 // ========== PROJECTS ==========
                 if (projectsSnapshot.empty) {
-                    // console.log("📦 Adding projects...");
+                    // //console.log("📦 Adding projects...");
                     const sampleProjects = [
                         { name: 'Website Redesign', description: 'Complete redesign of company website', status: 'in-progress', priority: 'high', workspace: 'Marketing', startDate: '2025-10-01', endDate: '2025-11-30', progress: 75, budget: 50000, teamMembers: ['Sarah Lee', 'Jordan Park'], tags: ['website', 'design', 'frontend'] },
                         { name: 'Mobile App Development', description: 'iOS and Android app development', status: 'in-progress', priority: 'high', workspace: 'Development', startDate: '2025-09-15', endDate: '2025-12-31', progress: 60, budget: 120000, teamMembers: ['Mike Chen', 'Taylor Wong'], tags: ['mobile', 'app', 'ios', 'android'] },
@@ -6241,7 +6241,7 @@
                         });
                         addedCount++;
                     }
-                    // console.log(`✅ Added ${sampleProjects.length} projects`);
+                    // //console.log(`✅ Added ${sampleProjects.length} projects`);
                 }
 
                 // Success feedback
@@ -6305,7 +6305,7 @@
                 const snapshot = await db.collection('tasks').limit(1).get();
                 
                 if (snapshot.empty) {
-                    // console.log("📦 Initializing sample data...");
+                    // //console.log("📦 Initializing sample data...");
                     
                     for (const task of sampleTasks) {
                         await db.collection('tasks').add({
@@ -6315,9 +6315,9 @@
                         });
                     }
                     
-                    // console.log("✅ Sample data initialized!");
+                    // //console.log("✅ Sample data initialized!");
                 } else {
-                    // console.log("ℹ️ Data already exists in Firebase");
+                    // //console.log("ℹ️ Data already exists in Firebase");
                 }
             } catch (error) {
                 console.error("❌ Error initializing data:", error);
@@ -6337,13 +6337,13 @@
 
             // Prevent concurrent loading
             if (isLoadingTasks) {
-                console.log("⏭️ Task loading already in progress, skipping...");
+                //console.log("⏭️ Task loading already in progress, skipping...");
                 return;
             }
 
             isLoadingTasks = true;
             showSpinner('Loading tasks...');
-            console.log("📥 Loading tasks from Firebase...");
+            //console.log("📥 Loading tasks from Firebase...");
 
             try {
                 // Fetch all data in parallel for better performance
@@ -6401,10 +6401,10 @@
                 const hasActiveFilters = taskFilters && Object.values(taskFilters).some(v => v !== '');
 
                 if (hasActiveFilters || currentProjectFilter) {
-                    // console.log(`🔄 Re-applying active filters`);
+                    // //console.log(`🔄 Re-applying active filters`);
                     applyTaskFilters();
                 } else if (isMyTasksActive) {
-                    console.log(`🔄 Re-applying My Tasks filter`);
+                    //console.log(`🔄 Re-applying My Tasks filter`);
                     toggleMyTasks();
                     toggleMyTasks(); // Toggle twice to refresh with new data
                 } else {
@@ -6412,7 +6412,7 @@
                 }
 
                 updateDashboardStats();
-                console.log(`✅ Loaded ${tasks.length} tasks from Firebase (optimized batch loading)`);
+                //console.log(`✅ Loaded ${tasks.length} tasks from Firebase (optimized batch loading)`);
             } catch (error) {
                 console.error("❌ Error loading tasks:", error);
             } finally {
@@ -6432,7 +6432,7 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
-                console.log("✅ Task added with ID:", docRef.id);
+                //console.log("✅ Task added with ID:", docRef.id);
                 return docRef.id;
             } catch (error) {
                 console.error("❌ Error adding task:", error);
@@ -6449,7 +6449,7 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
-                console.log("✅ Task updated:", taskId);
+                //console.log("✅ Task updated:", taskId);
             } catch (error) {
                 console.error("❌ Error updating task:", error);
             }
@@ -6461,7 +6461,7 @@
 
             try {
                 await db.collection('tasks').doc(taskId).delete();
-                console.log("✅ Task deleted:", taskId);
+                //console.log("✅ Task deleted:", taskId);
             } catch (error) {
                 console.error("❌ Error deleting task:", error);
             }
@@ -6478,28 +6478,28 @@
 
             // Prevent setting up multiple listeners
             if (realtimeListenerUnsubscribe) {
-                // console.log("⏭️ Real-time listener already set up, skipping...");
+                // //console.log("⏭️ Real-time listener already set up, skipping...");
                 return;
             }
 
-            // console.log("📡 Setting up real-time listener...");
+            // //console.log("📡 Setting up real-time listener...");
             realtimeListenerUnsubscribe = db.collection('tasks').onSnapshot(async (snapshot) => {
                 // Skip the initial snapshot (data already loaded)
                 if (isInitialSnapshot) {
-                    // console.log("⏭️ Skipping initial snapshot (data already loaded)");
+                    // //console.log("⏭️ Skipping initial snapshot (data already loaded)");
                     isInitialSnapshot = false;
                     return;
                 }
 
                 // Skip if we're in the middle of a manual operation
                 if (isManualOperation) {
-                    // console.log("⏭️ Skipping real-time update (manual operation in progress)");
+                    // //console.log("⏭️ Skipping real-time update (manual operation in progress)");
                     return;
                 }
 
                 const changes = snapshot.docChanges();
                 if (changes.length > 0) {
-                    console.log("📡 Real-time update detected, reloading tasks...");
+                    //console.log("📡 Real-time update detected, reloading tasks...");
                     await loadTasksFromFirebase();
                     await loadSubtasksFromFirebase();
 
@@ -6634,7 +6634,7 @@
             // In guest mode, only allow dashboard and projects pages
             const allowedGuestPages = ['dashboard', 'projectslist'];
             if (guestMode && !allowedGuestPages.includes(pageName)) {
-                // console.log('⛔ Guest mode: Cannot access ' + pageName + ' page');
+                // //console.log('⛔ Guest mode: Cannot access ' + pageName + ' page');
                 alert('Guest access is limited to Dashboard and Projects only');
                 switchPage('projectslist');
                 return;
@@ -6658,7 +6658,7 @@
                 const operation = ['adminRules', 'pagePermissions', 'roleManagement'].includes(pageName) ? 'admin' : 'show';
                 const canAccess = await hasPermission(permissionPage, operation);
                 if (!canAccess) {
-                    // console.log(`🔒 User does not have permission to access: ${pageName}`);
+                    // //console.log(`🔒 User does not have permission to access: ${pageName}`);
                     alert(`You do not have permission to access the ${pageName} page`);
                     return;
                 }
@@ -6686,7 +6686,7 @@
             });
             if (targetButton) {
                 targetButton.classList.add('active');
-                // console.log(`✅ Activated nav button: ${targetButton.textContent.trim()}`);
+                // //console.log(`✅ Activated nav button: ${targetButton.textContent.trim()}`);
             }
 
             // Reload data when switching to specific pages
@@ -6719,7 +6719,7 @@
         }
 
         function updateDashboardStats() {
-            // console.log('📊 Updating dashboard with real-time data...');
+            // //console.log('📊 Updating dashboard with real-time data...');
 
             // Get filtered projects based on chart selections
             let filteredProjects = [...projects];
@@ -6757,7 +6757,7 @@
             // document.getElementById('doneItems').textContent = doneTasks;
             // document.getElementById('stuckItems').textContent = stuckTasks;
 
-            console.log(`✅ Task stats: ${totalTasks} total, ${workingTasks} in progress, ${doneTasks} done, ${stuckTasks} stuck`);
+            //console.log(`✅ Task stats: ${totalTasks} total, ${workingTasks} in progress, ${doneTasks} done, ${stuckTasks} stuck`);
 
             // Update project progress
             renderProjectProgress();
@@ -6862,7 +6862,7 @@
                 `;
             }).join('');
 
-            // console.log(`✅ Rendered ${sortedProjects.length} projects on dashboard`);
+            // //console.log(`✅ Rendered ${sortedProjects.length} projects on dashboard`);
         }
 
         // Global chart instances
@@ -6998,7 +6998,7 @@
             });
 
             document.getElementById('projectTypeChart').style.display = 'none';
-            // console.log(`✅ Rendered project type chart with ${labels.length} types`);
+            // //console.log(`✅ Rendered project type chart with ${labels.length} types`);
         }
 
         // Render project health grouping chart
@@ -7132,7 +7132,7 @@
             });
 
             document.getElementById('projectHealthChart').style.display = 'none';
-            // console.log(`✅ Rendered project health chart with ${labels.length} health statuses`);
+            // //console.log(`✅ Rendered project health chart with ${labels.length} health statuses`);
         }
 
         // Render project manager grouping chart
@@ -7304,7 +7304,7 @@
             });
 
             document.getElementById('projectManagerChart').style.display = 'none';
-            // console.log(`✅ Rendered project manager chart with ${labels.length} managers`);
+            // //console.log(`✅ Rendered project manager chart with ${labels.length} managers`);
         }
 
         // Setup click-outside detection for chart filtering
@@ -8242,7 +8242,7 @@
                 `;
             }).join('');
 
-            console.log(`✅ Rendered ${recentTasks.length} recent activities`);
+            //console.log(`✅ Rendered ${recentTasks.length} recent activities`);
         }
 
         // Helper function to calculate time ago
@@ -8462,12 +8462,12 @@
             const canEditThisTask = hasEditPermission && (isTaskOwner || isUserAssignedToTask);
 
             if (!canEditThisTask) {
-                console.log(`🔒 User cannot inline edit task "${task.name}" - no permission or not assigned`);
+                //console.log(`🔒 User cannot inline edit task "${task.name}" - no permission or not assigned`);
                 alert('You do not have permission to edit this task');
                 return;
             }
 
-            console.log(`✅ User can inline edit task "${task.name}" - ${isTaskOwner ? 'owner' : 'assigned to task'}`);
+            //console.log(`✅ User can inline edit task "${task.name}" - ${isTaskOwner ? 'owner' : 'assigned to task'}`);
 
 
             // Prevent multiple edits at once
@@ -8495,21 +8495,21 @@
                 const input = document.getElementById(`inline-edit-input-${taskIndex}`);
                 const cancelBtn = document.getElementById(`cancel-btn-${taskIndex}`);
 
-                // console.log('Cancel button element:', cancelBtn);
+                // //console.log('Cancel button element:', cancelBtn);
 
                 input.focus();
                 input.select();
 
                 // Add button handlers (use mousedown to prevent blur from firing)
                 cancelBtn.addEventListener('mousedown', (e) => {
-                    // console.log('Cancel mousedown triggered');
+                    // //console.log('Cancel mousedown triggered');
                     e.preventDefault();
                     e.stopPropagation();
                     cancelInlineEdit();
                 });
 
                 cancelBtn.addEventListener('click', (e) => {
-                    // console.log('Cancel click triggered');
+                    // //console.log('Cancel click triggered');
                     e.preventDefault();
                     e.stopPropagation();
                     cancelInlineEdit();
@@ -8565,14 +8565,14 @@
 
                 // Add button handlers (use mousedown to prevent blur from firing)
                 cancelBtn.addEventListener('mousedown', (e) => {
-                    // console.log('Cancel mousedown triggered (date)');
+                    // //console.log('Cancel mousedown triggered (date)');
                     e.preventDefault();
                     e.stopPropagation();
                     cancelInlineEdit();
                 });
 
                 cancelBtn.addEventListener('click', (e) => {
-                    // console.log('Cancel click triggered (date)');
+                    // //console.log('Cancel click triggered (date)');
                     e.preventDefault();
                     e.stopPropagation();
                     cancelInlineEdit();
@@ -8713,14 +8713,14 @@
 
                 // Add button handlers (use mousedown to prevent blur from firing)
                 cancelBtn.addEventListener('mousedown', (e) => {
-                    // console.log('Cancel mousedown triggered (assignedTo)');
+                    // //console.log('Cancel mousedown triggered (assignedTo)');
                     e.preventDefault();
                     e.stopPropagation();
                     cancelInlineEdit();
                 });
 
                 cancelBtn.addEventListener('click', (e) => {
-                    // console.log('Cancel click triggered (assignedTo)');
+                    // //console.log('Cancel click triggered (assignedTo)');
                     e.preventDefault();
                     e.stopPropagation();
                     cancelInlineEdit();
@@ -8858,7 +8858,7 @@
         function cancelInlineEdit() {
             if (!currentlyEditing) return;
 
-            // console.log('Cancelling inline edit');
+            // //console.log('Cancelling inline edit');
 
             // Clear editing state first
             currentlyEditing.cell.classList.remove('editing-mode');
@@ -8897,7 +8897,7 @@
             // Check permissions: user must have edit permission and be able to see the subtask
             const hasEditPermission = await canEdit('tasks');
             if (!hasEditPermission) {
-                console.log('🔒 User does not have edit permission for subtasks');
+                //console.log('🔒 User does not have edit permission for subtasks');
                 alert('You do not have permission to edit subtasks');
                 return;
             }
@@ -8905,7 +8905,7 @@
             // Check if user can see/edit this subtask
             const canEditThisSubtask = await canEditSubtask(subtask, parentTask);
             if (!canEditThisSubtask) {
-                console.log(`🔒 User cannot edit subtask "${subtask.name}" - not visible to them`);
+                //console.log(`🔒 User cannot edit subtask "${subtask.name}" - not visible to them`);
                 alert('You do not have permission to edit this subtask');
                 return;
             }
@@ -8915,7 +8915,7 @@
                                            subtask.personName === currentUser?.name ||
                                            subtask.personName === currentUser?.email;
 
-            console.log(`✅ User can inline edit subtask "${subtask.name}" - ${isUserAssignedToSubtask ? 'assigned to subtask' : 'assigned to parent task'}`);
+            //console.log(`✅ User can inline edit subtask "${subtask.name}" - ${isUserAssignedToSubtask ? 'assigned to subtask' : 'assigned to parent task'}`);
 
             const cell = element.closest('.table-cell');
             currentlyEditingSubtask = { subtaskId, field, element, cell, originalValue: element.innerHTML };
@@ -9259,7 +9259,7 @@
         function cancelSubtaskInlineEdit() {
             if (!currentlyEditingSubtask) return;
 
-            console.log('Cancelling subtask inline edit');
+            //console.log('Cancelling subtask inline edit');
 
             // Clear editing state first
             currentlyEditingSubtask.cell.classList.remove('editing-mode');
@@ -9300,7 +9300,7 @@
                 const currentUser = JSON.parse(loggedInUserData);
                 const currentUserId = currentUser.id;
 
-                console.log(`Activating My Tasks filter for user ID: ${currentUserId}`);
+                //console.log(`Activating My Tasks filter for user ID: ${currentUserId}`);
 
                 // Ensure filter dropdowns are populated
                 await populateFilterDropdowns();
@@ -9323,7 +9323,7 @@
                 // Deactivate My Tasks filter
                 myTasksBtn.classList.remove('active');
 
-                console.log(`Deactivating My Tasks filter`);
+                //console.log(`Deactivating My Tasks filter`);
 
                 // Remove the assignedTo filter
                 taskFilters.assignedTo = '';
@@ -9398,7 +9398,7 @@
                     });
                 });
 
-                console.log(`✅ Loaded ${subtasks.length} subtasks from Firestore (optimized batch loading)`);
+                //console.log(`✅ Loaded ${subtasks.length} subtasks from Firestore (optimized batch loading)`);
             } catch (error) {
                 console.error('❌ Error loading subtasks:', error);
             }
@@ -9423,7 +9423,7 @@
                     taskSubtasks = taskSubtasks.filter(st => st.assignedTo === taskFilters.assignedTo);
                 } else if (isUserAssignedToTask) {
                     // If user is assigned to the parent task, show ALL subtasks
-                    console.log(`✅ User assigned to task "${task.name}" - showing all ${taskSubtasks.length} subtasks`);
+                    //console.log(`✅ User assigned to task "${task.name}" - showing all ${taskSubtasks.length} subtasks`);
                     // Don't filter - show all subtasks
                 } else {
                     // User not assigned to parent task - only show their assigned subtasks
@@ -9553,7 +9553,7 @@
                     const subtaskId = target.getAttribute('data-subtask-id');
                     const field = target.getAttribute('data-field');
 
-                    console.log('Subtask inline edit clicked:', subtaskId, field);
+                    //console.log('Subtask inline edit clicked:', subtaskId, field);
                     startSubtaskInlineEdit(subtaskId, field, target);
                 }
             };
@@ -9579,7 +9579,7 @@
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/html', e.currentTarget.innerHTML);
 
-            console.log('Dragging subtask:', draggedSubtask.subtaskId);
+            //console.log('Dragging subtask:', draggedSubtask.subtaskId);
         }
 
         function handleSubtaskDragEnd(e) {
@@ -9650,7 +9650,7 @@
                 return;
             }
 
-            console.log('Dropping subtask on task:', newParentTask.name);
+            //console.log('Dropping subtask on task:', newParentTask.name);
 
             // Show spinner while moving subtask
             showSpinner('Moving subtask...');
@@ -9662,7 +9662,7 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                console.log('✅ Subtask parent updated');
+                //console.log('✅ Subtask parent updated');
 
                 // Reload subtasks and re-render
                 await loadSubtasksFromFirebase();
@@ -9691,7 +9691,7 @@
         let currentInlineAddSubtask = null;
 
         async function showInlineAddSubtask(taskIndex) {
-            console.log("🔄 showInlineAddSubtask() called with index:", taskIndex);
+            //console.log("🔄 showInlineAddSubtask() called with index:", taskIndex);
 
             // Check if user can add subtasks
             // Users with "add" permission on tasks page can add subtasks
@@ -9700,7 +9700,7 @@
             const isAdmin = await hasPermission('admin', 'admin');
 
             if (!canAddSubtask && !isAdmin) {
-                console.log('🔒 User does not have permission to add subtasks');
+                //console.log('🔒 User does not have permission to add subtasks');
                 alert('You do not have permission to add subtasks. Only users with "add" permission or admin access can create subtasks.');
                 return;
             }
@@ -9711,7 +9711,7 @@
             }
 
             const task = tasks[taskIndex];
-            console.log("📋 Task found:", task);
+            //console.log("📋 Task found:", task);
 
             const tableBody = document.getElementById('tableBody');
 
@@ -9722,7 +9722,7 @@
                 console.error("❌ Task row not found for task ID:", task.id);
                 return;
             }
-            console.log("✅ Task row found at position");
+            //console.log("✅ Task row found at position");
 
             // Load active team members for dropdown
             const activeMembers = await loadActiveTeamMembers();
@@ -9845,7 +9845,7 @@
         }
 
         async function saveInlineAddSubtask(taskIndex) {
-            console.log("💾 saveInlineAddSubtask() called with index:", taskIndex);
+            //console.log("💾 saveInlineAddSubtask() called with index:", taskIndex);
 
             if (!currentInlineAddSubtask) {
                 console.error("❌ currentInlineAddSubtask is null");
@@ -9859,7 +9859,7 @@
             const startDate = document.getElementById(`inline-subtask-startdate-${taskIndex}`).value;
             const date = document.getElementById(`inline-subtask-date-${taskIndex}`).value;
 
-            console.log("📝 Subtask data:", { name, status, assignedTo, projectId, startDate, date });
+            //console.log("📝 Subtask data:", { name, status, assignedTo, projectId, startDate, date });
 
             // Validate
             if (!name) {
@@ -9905,14 +9905,14 @@
                 }
 
                 // Add to Firebase
-                console.log("📤 Adding subtask to Firebase...");
+                //console.log("📤 Adding subtask to Firebase...");
                 const docRef = await db.collection('subtasks').add(subtaskData);
-                console.log('✅ Subtask created with ID:', docRef.id);
+                //console.log('✅ Subtask created with ID:', docRef.id);
 
                 // Reload subtasks
-                console.log("🔄 Reloading subtasks from Firebase...");
+                //console.log("🔄 Reloading subtasks from Firebase...");
                 await loadSubtasksFromFirebase();
-                console.log("✅ Subtasks reloaded");
+                //console.log("✅ Subtasks reloaded");
 
                 // Remove inline add row
                 cancelInlineAddSubtask();
@@ -9920,15 +9920,15 @@
                 // Re-render with filters maintained
                 const hasActiveFilters = (taskFilters && Object.values(taskFilters).some(v => v !== '' && (Array.isArray(v) ? v.length > 0 : true))) || isMyTasksActive;
                 if (hasActiveFilters) {
-                    console.log("🔍 Re-applying filters after subtask creation");
+                    //console.log("🔍 Re-applying filters after subtask creation");
                     applyTaskFilters();
                 } else {
-                    console.log("📊 Re-rendering tasks after subtask creation");
+                    //console.log("📊 Re-rendering tasks after subtask creation");
                     renderTasks();
                 }
 
                 hideSpinner();
-                console.log("✅ Subtask save completed successfully");
+                //console.log("✅ Subtask save completed successfully");
 
             } catch (error) {
                 console.error('❌ Error creating subtask:', error);
@@ -9955,7 +9955,7 @@
             // Check permission before allowing subtask creation
             const hasAddPermission = await canAdd('tasks');
             if (!hasAddPermission) {
-                console.log('🔒 User does not have permission to add subtasks');
+                //console.log('🔒 User does not have permission to add subtasks');
                 alert('You do not have permission to add subtasks');
                 return;
             }
@@ -10008,7 +10008,7 @@
 
         // Populate assign to dropdown for subtask
         async function populateSubtaskAssignToDropdown() {
-            console.log('🔄 populateSubtaskAssignToDropdown() called');
+            //console.log('🔄 populateSubtaskAssignToDropdown() called');
 
             const select = document.getElementById('subtaskPerson');
             if (!select) {
@@ -10016,15 +10016,15 @@
                 return;
             }
 
-            console.log('✅ Found subtaskPerson select element');
+            //console.log('✅ Found subtaskPerson select element');
 
             // Show loading state
             select.innerHTML = '<option value="" disabled selected>Loading active members...</option>';
-            // console.log('⏳ Loading state set, calling loadActiveTeamMembers()...');
+            // //console.log('⏳ Loading state set, calling loadActiveTeamMembers()...');
 
             // Get active members with IDs (using the same function as main task modal)
             const activeMembers = await loadActiveTeamMembers();
-            // console.log('📦 Received activeMembers array:', activeMembers);
+            // //console.log('📦 Received activeMembers array:', activeMembers);
 
             if (activeMembers.length === 0) {
                 select.innerHTML = '<option value="" disabled selected>No team members found</option>';
@@ -10044,12 +10044,12 @@
                 select.appendChild(option);
             });
 
-            console.log(`✅ Populated subtask dropdown with ${activeMembers.length} active members`);
+            //console.log(`✅ Populated subtask dropdown with ${activeMembers.length} active members`);
         }
 
         // Populate project dropdown for subtask
         async function populateSubtaskProjectDropdown() {
-            console.log('🔄 populateSubtaskProjectDropdown() called');
+            //console.log('🔄 populateSubtaskProjectDropdown() called');
             const select = document.getElementById('subtaskProject');
 
             if (!select) {
@@ -10068,7 +10068,7 @@
 
             try {
                 const snapshot = await db.collection('projects').get();
-                // console.log(`📦 Found ${snapshot.size} projects in database`);
+                // //console.log(`📦 Found ${snapshot.size} projects in database`);
 
                 // Clear and add default option
                 select.innerHTML = '<option value="">No Project</option>';
@@ -10092,7 +10092,7 @@
                     }
                 });
 
-                console.log(`✅ Populated subtask project dropdown with ${addedCount} projects`);
+                //console.log(`✅ Populated subtask project dropdown with ${addedCount} projects`);
             } catch (error) {
                 console.error('❌ Error loading projects:', error);
             }
@@ -10122,11 +10122,11 @@
                         ...subtaskData,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    console.log('✅ Subtask updated');
+                    //console.log('✅ Subtask updated');
                 } else {
                     // Create new subtask
                     await db.collection('subtasks').add(subtaskData);
-                    console.log('✅ Subtask created');
+                    //console.log('✅ Subtask created');
                 }
 
                 closeSubtaskModal();
@@ -10156,7 +10156,7 @@
             // Check permission before opening modal using canEditSubtask
             const canEditThisSubtask = await canEditSubtask(subtask, parentTask);
             if (!canEditThisSubtask) {
-                console.log(`🔒 User cannot edit subtask "${subtask.name}" - not visible to them`);
+                //console.log(`🔒 User cannot edit subtask "${subtask.name}" - not visible to them`);
                 alert('You do not have permission to edit this subtask');
                 return;
             }
@@ -10208,7 +10208,7 @@
             // Check if user has delete permission
             const hasDeletePermission = await canDelete('tasks');
             if (!hasDeletePermission) {
-                console.log('🔒 User does not have delete permission for tasks');
+                //console.log('🔒 User does not have delete permission for tasks');
                 alert('You do not have permission to delete subtasks');
                 return;
             }
@@ -10216,12 +10216,12 @@
             // Check if user can see this subtask (using same logic as edit)
             const canDeleteThisSubtask = await canEditSubtask(subtask, parentTask);
             if (!canDeleteThisSubtask) {
-                console.log(`🔒 User cannot delete subtask "${subtask.name}" - not visible to them`);
+                //console.log(`🔒 User cannot delete subtask "${subtask.name}" - not visible to them`);
                 alert('You can only delete subtasks you can see');
                 return;
             }
 
-            console.log(`✅ User can delete subtask "${subtask.name}"`);
+            //console.log(`✅ User can delete subtask "${subtask.name}"`);
 
             if (!confirm(`Are you sure you want to delete this subtask "${subtask.name}"?\n\nThis action cannot be undone.`)) {
                 return;
@@ -10229,7 +10229,7 @@
 
             try {
                 await db.collection('subtasks').doc(subtaskId).delete();
-                console.log('✅ Subtask deleted:', subtaskId);
+                //console.log('✅ Subtask deleted:', subtaskId);
 
                 await loadSubtasksFromFirebase();
                 renderTasks();
@@ -10254,7 +10254,7 @@
 
         // Change subtask status
         async function changeSubtaskStatus(subtaskId, newStatus) {
-            console.log(`🔄 Changing subtask status to: ${newStatus}`);
+            //console.log(`🔄 Changing subtask status to: ${newStatus}`);
 
             // Check permission before allowing status change
             const subtask = subtasks.find(st => st.id === subtaskId);
@@ -10267,7 +10267,7 @@
             const isSubtaskOwner = isOwner(subtask);
 
             if (!hasEditPermission || !isSubtaskOwner) {
-                console.log('🔒 User does not have permission to change subtask status');
+                //console.log('🔒 User does not have permission to change subtask status');
                 alert('You do not have permission to change the subtask status');
                 return;
             }
@@ -10278,7 +10278,7 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                console.log(`✅ Subtask status updated to ${newStatus}`);
+                //console.log(`✅ Subtask status updated to ${newStatus}`);
 
                 // Update local array
                 const subtask = subtasks.find(st => st.id === subtaskId);
@@ -10291,10 +10291,10 @@
 
                 // Re-render with filters maintained
                 if (hasActiveFilters) {
-                    // console.log("🔍 Re-applying active filters after status change");
+                    // //console.log("🔍 Re-applying active filters after status change");
                     applyTaskFilters();
                 } else {
-                    console.log("📊 Rendering all tasks (no active filters)");
+                    //console.log("📊 Rendering all tasks (no active filters)");
                     renderTasks();
                 }
             } catch (error) {
@@ -10436,7 +10436,7 @@
             // Check permission before allowing deletion
             const hasDeletePermission = await canDelete('tasks');
             if (!hasDeletePermission) {
-                console.log('🔒 User does not have delete permission for tasks');
+                //console.log('🔒 User does not have delete permission for tasks');
                 alert('You do not have permission to delete tasks');
                 return;
             }
@@ -10449,7 +10449,7 @@
                                         task.assignedToNames?.includes(currentUser?.email);
 
             if (!isTaskOwner && !isUserAssignedToTask) {
-                console.log(`🔒 User cannot delete task "${task.name}" - not assigned to task`);
+                //console.log(`🔒 User cannot delete task "${task.name}" - not assigned to task`);
                 alert('You can only delete tasks you are assigned to');
                 return;
             }
@@ -10457,12 +10457,12 @@
             // Check if task has subtasks - cannot delete if it has subtasks
             const taskSubtasks = subtasks.filter(st => st.parentTaskId === task.id);
             if (taskSubtasks.length > 0) {
-                console.log(`🔒 Cannot delete task "${task.name}" - has ${taskSubtasks.length} subtask(s)`);
+                //console.log(`🔒 Cannot delete task "${task.name}" - has ${taskSubtasks.length} subtask(s)`);
                 alert(`Cannot delete task "${task.name}" because it has ${taskSubtasks.length} subtask(s). Please delete subtasks first.`);
                 return;
             }
 
-            console.log(`✅ User can delete task "${task.name}" - assigned to task and has no subtasks`);
+            //console.log(`✅ User can delete task "${task.name}" - assigned to task and has no subtasks`);
 
             // Show confirmation dialog with task name
             if (!confirm(`Are you sure you want to delete the task "${task.name}"?\n\nThis action cannot be undone.`)) {
@@ -10476,7 +10476,7 @@
                 // Delete from Firebase if task has an ID
                 if (task.id && db) {
                     await deleteTaskFromFirebase(task.id);
-                    console.log("✅ Task deleted from Firebase:", task.id);
+                    //console.log("✅ Task deleted from Firebase:", task.id);
                 }
 
                 // Reload tasks and subtasks from Firebase to prevent duplicates
@@ -10486,7 +10486,7 @@
                 // Re-enable real-time listener after a short delay
                 setTimeout(() => {
                     isManualOperation = false;
-                    // console.log("✅ Real-time listener re-enabled");
+                    // //console.log("✅ Real-time listener re-enabled");
                 }, 1000);
 
             } catch (error) {
@@ -10622,7 +10622,7 @@
             // Check permission before allowing status change
             const hasEditPermission = await canEdit('tasks');
             if (!hasEditPermission) {
-                console.log('🔒 User does not have edit permission for tasks');
+                //console.log('🔒 User does not have edit permission for tasks');
                 alert('You do not have permission to change the task status');
                 return;
             }
@@ -10635,12 +10635,12 @@
                                         task.assignedToNames?.includes(currentUser?.email);
 
             if (!isTaskOwner && !isUserAssignedToTask) {
-                console.log('🔒 User is not owner or assigned to this task');
+                //console.log('🔒 User is not owner or assigned to this task');
                 alert('You do not have permission to change the task status');
                 return;
             }
 
-            console.log(`✅ User can change task status - ${isTaskOwner ? 'owner' : 'assigned to task'}`);
+            //console.log(`✅ User can change task status - ${isTaskOwner ? 'owner' : 'assigned to task'}`);
 
             // Close popup
             if (activeStatusPopup) {
@@ -10657,7 +10657,7 @@
                     status: newStatus
                 });
 
-                console.log(`✅ Task status updated to ${newStatus}`);
+                //console.log(`✅ Task status updated to ${newStatus}`);
 
                 // Update local array
                 task.status = newStatus;
@@ -10665,10 +10665,10 @@
                 // Re-render tasks (will apply filters if active)
                 const hasActiveFilters = (taskFilters && Object.values(taskFilters).some(v => v !== '' && (Array.isArray(v) ? v.length > 0 : true))) || isMyTasksActive;
                 if (hasActiveFilters) {
-                    console.log("🔍 Re-applying active filters after task status change");
+                    //console.log("🔍 Re-applying active filters after task status change");
                     applyTaskFilters();
                 } else {
-                    console.log("📊 Rendering all tasks (no active filters)");
+                    //console.log("📊 Rendering all tasks (no active filters)");
                     renderTasks();
                 }
 
@@ -10693,7 +10693,7 @@
         });
 
         async function cloneTask(index) {
-            console.log("🔄 cloneTask() called with index:", index);
+            //console.log("🔄 cloneTask() called with index:", index);
 
             if (!tasks || !tasks[index]) {
                 console.error("❌ Task not found at index:", index);
@@ -10702,23 +10702,23 @@
             }
 
             const task = tasks[index];
-            console.log("📋 Task to clone:", task);
+            //console.log("📋 Task to clone:", task);
 
             // Check permission before allowing clone
             const hasAddPermission = await canAdd('tasks');
             if (!hasAddPermission) {
-                console.log('🔒 User does not have permission to clone tasks');
+                //console.log('🔒 User does not have permission to clone tasks');
                 alert('You do not have permission to clone tasks');
                 return;
             }
 
             // Show confirmation dialog
             if (!confirm(`Are you sure you want to duplicate the task "${task.name}"?`)) {
-                console.log("⛔ User cancelled cloning task");
+                //console.log("⛔ User cancelled cloning task");
                 return; // User cancelled
             }
 
-            // console.log("✅ User confirmed cloning");
+            // //console.log("✅ User confirmed cloning");
 
             // Set flag to prevent real-time listener interference
             isManualOperation = true;
@@ -10753,7 +10753,7 @@
                 clonedTask.tags = task.tags;
             }
 
-            console.log("📝 Cloned task data:", clonedTask);
+            //console.log("📝 Cloned task data:", clonedTask);
 
             try {
                 // Add cloned task to Firebase
@@ -10761,7 +10761,7 @@
                     throw new Error("Database connection not available");
                 }
 
-                console.log("📤 Adding cloned task to Firebase...");
+                //console.log("📤 Adding cloned task to Firebase...");
                 const taskId = await addTaskToFirebase(clonedTask);
 
                 // Check if task was actually added (taskId should exist)
@@ -10769,12 +10769,12 @@
                     throw new Error("Failed to create cloned task - no task ID returned from Firebase");
                 }
 
-                console.log("✅ Task cloned successfully with ID:", taskId);
+                //console.log("✅ Task cloned successfully with ID:", taskId);
 
                 // Reload tasks from Firebase to prevent duplicates
-                console.log("🔄 Reloading tasks from Firebase...");
+                //console.log("🔄 Reloading tasks from Firebase...");
                 await loadTasksFromFirebase();
-                console.log("✅ Tasks reloaded");
+                //console.log("✅ Tasks reloaded");
 
                 // Show success message AFTER confirming task was added and reloaded
                 alert(`✅ Task "${clonedTask.name}" cloned successfully!`);
@@ -10782,7 +10782,7 @@
                 // Re-enable real-time listener after a short delay
                 setTimeout(() => {
                     isManualOperation = false;
-                    // console.log("✅ Real-time listener re-enabled");
+                    // //console.log("✅ Real-time listener re-enabled");
                 }, 1000);
 
             } catch (error) {
@@ -10799,7 +10799,7 @@
         }
 
         async function openModal() {
-            // console.log('🚪 openModal() called');
+            // //console.log('🚪 openModal() called');
 
             // Check if user can add tasks
             // Users with "add" permission on tasks page can add NEW parent tasks
@@ -10808,7 +10808,7 @@
             const isAdmin = await hasPermission('admin', 'admin');
 
             if (!canAddTask && !isAdmin) {
-                console.log('🔒 User does not have permission to add tasks');
+                //console.log('🔒 User does not have permission to add tasks');
                 alert('You do not have permission to add tasks. Only users with "add" permission or admin access can create new tasks.');
                 return;
             }
@@ -10818,14 +10818,14 @@
             document.getElementById('taskForm').reset();
 
             // Populate dropdowns
-            // console.log('📞 Calling populateAssignToDropdown()...');
+            // //console.log('📞 Calling populateAssignToDropdown()...');
             populateAssignToDropdown();
 
-            console.log('📞 Calling populateTaskProjectDropdown()...');
+            //console.log('📞 Calling populateTaskProjectDropdown()...');
             populateTaskProjectDropdown();
 
             document.getElementById('taskModal').classList.add('active');
-            // console.log('✅ Modal opened');
+            // //console.log('✅ Modal opened');
 
             // Reset button text
             const submitBtn = document.querySelector('#taskForm button[type="submit"]');
@@ -10894,13 +10894,13 @@
                     // Update in Firebase if task has an ID
                     if (task.id && db) {
                         await updateTaskInFirebase(task.id, newTask);
-                        console.log("✅ Task updated in Firebase:", task.id);
+                        //console.log("✅ Task updated in Firebase:", task.id);
                     }
                 } else {
                     // Add to Firebase
                     if (db) {
                         const taskId = await addTaskToFirebase(newTask);
-                        console.log("✅ Task added to Firebase:", taskId);
+                        //console.log("✅ Task added to Firebase:", taskId);
                     }
                 }
 
@@ -10912,7 +10912,7 @@
                 // Re-enable real-time listener after a short delay
                 setTimeout(() => {
                     isManualOperation = false;
-                    // console.log("✅ Real-time listener re-enabled");
+                    // //console.log("✅ Real-time listener re-enabled");
                 }, 1000);
                 
             } catch (error) {
@@ -10943,7 +10943,7 @@
 
         // Populate Member Role Dropdown
         async function populateMemberRoleDropdown() {
-            // console.log("📋 Loading active roles for member dropdown...");
+            // //console.log("📋 Loading active roles for member dropdown...");
 
             try {
                 const roleSelect = document.getElementById('memberRoleSelect');
@@ -10960,7 +10960,7 @@
                         option.textContent = role.name;
                         roleSelect.appendChild(option);
                     });
-                    // console.log("✅ Default roles loaded in member dropdown");
+                    // //console.log("✅ Default roles loaded in member dropdown");
                     return;
                 }
 
@@ -10975,7 +10975,7 @@
                         option.textContent = role.name;
                         roleSelect.appendChild(option);
                     });
-                    // console.log("✅ Default roles loaded in member dropdown");
+                    // //console.log("✅ Default roles loaded in member dropdown");
                 } else {
                     // Load only ACTIVE roles from Firebase
                     let activeRolesCount = 0;
@@ -10990,7 +10990,7 @@
                             activeRolesCount++;
                         }
                     });
-                    // console.log(`✅ Loaded ${activeRolesCount} active roles from Firebase (${rolesSnapshot.size} total roles)`);
+                    // //console.log(`✅ Loaded ${activeRolesCount} active roles from Firebase (${rolesSnapshot.size} total roles)`);
 
                     // If no active roles found, use defaults
                     if (activeRolesCount === 0) {
@@ -11014,7 +11014,7 @@
                     option.textContent = role.name;
                     roleSelect.appendChild(option);
                 });
-                // console.log("✅ Default roles loaded as fallback");
+                // //console.log("✅ Default roles loaded as fallback");
             }
         }
 
@@ -11107,12 +11107,12 @@
                             ...memberData,
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
-                        // console.log("✅ Member updated:", editingMemberId);
+                        // //console.log("✅ Member updated:", editingMemberId);
                     }
                     
                     // If name changed, update all tasks assigned to this member
                     if (nameChanged && db) {
-                        console.log(`📝 Name changed from "${oldMemberData.name}" to "${memberData.name}", updating tasks...`);
+                        //console.log(`📝 Name changed from "${oldMemberData.name}" to "${memberData.name}", updating tasks...`);
                         
                         const tasksSnapshot = await db.collection('tasks')
                             .where('assignedTo', '==', editingMemberId)
@@ -11131,7 +11131,7 @@
                         
                         if (updateCount > 0) {
                             await batch.commit();
-                            console.log(`✅ Updated ${updateCount} tasks with new member name`);
+                            //console.log(`✅ Updated ${updateCount} tasks with new member name`);
                         }
                     }
                 } else {
@@ -11142,7 +11142,7 @@
                             joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
-                        // console.log("✅ Member added");
+                        // //console.log("✅ Member added");
                     }
                 }
 
@@ -11586,7 +11586,7 @@
             const isProjectOwner = isOwner(project);
 
             if (!hasEditPermission || !isProjectOwner) {
-                // console.log('🔒 User does not have permission to change project status');
+                // //console.log('🔒 User does not have permission to change project status');
                 return;
             }
 
@@ -11611,7 +11611,7 @@
             const isProjectOwner = isOwner(project);
 
             if (!hasEditPermission || !isProjectOwner) {
-                // console.log('🔒 User does not have permission to change project SDLC phase');
+                // //console.log('🔒 User does not have permission to change project SDLC phase');
                 return;
             }
 
@@ -11680,7 +11680,7 @@
             const isProjectOwner = isOwner(project);
 
             if (!hasEditPermission || !isProjectOwner) {
-                // console.log('🔒 User does not have permission to change project status');
+                // //console.log('🔒 User does not have permission to change project status');
                 alert('You do not have permission to change the project status');
                 return;
             }
@@ -11703,7 +11703,7 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                // console.log('✅ Project status updated');
+                // //console.log('✅ Project status updated');
 
                 // Update local array
                 projects[projectIndex].status = newStatus;
@@ -11728,7 +11728,7 @@
             const isProjectOwner = isOwner(project);
 
             if (!hasEditPermission || !isProjectOwner) {
-                // console.log('🔒 User does not have permission to change project SDLC phase');
+                // //console.log('🔒 User does not have permission to change project SDLC phase');
                 alert('You do not have permission to change the project SDLC phase');
                 return;
             }
@@ -11751,7 +11751,7 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
 
-                // console.log('✅ Project SDLC updated');
+                // //console.log('✅ Project SDLC updated');
 
                 // Update local array
                 projects[projectIndex].sdlc = newSDLC;
@@ -11795,7 +11795,7 @@
                     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                // console.log('✅ Project added to Firebase with ID:', docRef.id);
+                // //console.log('✅ Project added to Firebase with ID:', docRef.id);
                 return docRef.id;
             } catch (error) {
                 console.error('❌ Error adding project to Firebase:', error);
@@ -11815,7 +11815,7 @@
                     ...projectData,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
-                // console.log('✅ Project updated in Firebase:', projectId);
+                // //console.log('✅ Project updated in Firebase:', projectId);
             } catch (error) {
                 console.error('❌ Error updating project in Firebase:', error);
                 throw error;
@@ -11831,7 +11831,7 @@
 
             try {
                 await db.collection('projects').doc(projectId).delete();
-                // console.log('✅ Project deleted from Firebase:', projectId);
+                // //console.log('✅ Project deleted from Firebase:', projectId);
             } catch (error) {
                 console.error('❌ Error deleting project from Firebase:', error);
                 throw error;
@@ -11847,7 +11847,7 @@
 
             // Prevent concurrent loading
             if (isLoadingProjects) {
-                // console.log("⏭️ Project loading already in progress, skipping...");
+                // //console.log("⏭️ Project loading already in progress, skipping...");
                 return;
             }
 
@@ -11867,7 +11867,7 @@
                     });
                 });
 
-                // console.log(`✅ Loaded ${projects.length} projects from Firebase`);
+                // //console.log(`✅ Loaded ${projects.length} projects from Firebase`);
                 populateProjectManagerFilterDropdown();
                 renderProjects();
             } catch (error) {
@@ -11882,7 +11882,7 @@
                             ...doc.data()
                         });
                     });
-                    // console.log(`✅ Loaded ${projects.length} projects from Firebase (fallback)`);
+                    // //console.log(`✅ Loaded ${projects.length} projects from Firebase (fallback)`);
                     populateProjectManagerFilterDropdown();
                     renderProjects();
                 } catch (fallbackError) {
@@ -11896,7 +11896,7 @@
 
         // Populate team members dropdown for project form
         async function populateProjectTeamMembersDropdown() {
-            // console.log('🔄 populateProjectTeamMembersDropdown() called');
+            // //console.log('🔄 populateProjectTeamMembersDropdown() called');
             const selectElement = document.getElementById('projectTeamMembers');
 
             if (!db) {
@@ -11907,10 +11907,10 @@
 
             try {
                 // FIXED: Changed from 'teamMembers' to 'team_members' to match the actual collection name
-                // console.log('📊 Loading from team_members collection...');
+                // //console.log('📊 Loading from team_members collection...');
                 const membersSnapshot = await db.collection('team_members').get();
 
-                // console.log(`📦 Found ${membersSnapshot.size} team members`);
+                // //console.log(`📦 Found ${membersSnapshot.size} team members`);
 
                 if (membersSnapshot.empty) {
                     console.warn('⚠️ No team members found in database');
@@ -11952,11 +11952,11 @@
                         option.textContent = `${member.name} - ${member.role || 'Team Member'}`;
                         selectElement.appendChild(option);
                         loadedCount++;
-                        // console.log(`👤 Added: ${member.name} (${member.role || 'N/A'})`);
+                        // //console.log(`👤 Added: ${member.name} (${member.role || 'N/A'})`);
                     }
                 });
 
-                // console.log(`✅ Populated project dropdown with ${loadedCount} active team members`);
+                // //console.log(`✅ Populated project dropdown with ${loadedCount} active team members`);
 
                 if (loadedCount === 0) {
                     selectElement.innerHTML = '<option value="">No active team members</option>';
@@ -11970,7 +11970,7 @@
         }
 
         async function populateProjectManagerDropdown() {
-            // console.log('🔄 populateProjectManagerDropdown() called');
+            // //console.log('🔄 populateProjectManagerDropdown() called');
             const selectElement = document.getElementById('projectManager');
 
             if (!db) {
@@ -11980,10 +11980,10 @@
             }
 
             try {
-                // console.log('📊 Loading from team_members collection...');
+                // //console.log('📊 Loading from team_members collection...');
                 const membersSnapshot = await db.collection('team_members').get();
 
-                // console.log(`📦 Found ${membersSnapshot.size} team members`);
+                // //console.log(`📦 Found ${membersSnapshot.size} team members`);
 
                 if (membersSnapshot.empty) {
                     console.warn('⚠️ No team members found in database');
@@ -12010,11 +12010,11 @@
                         option.textContent = `${member.name} - ${member.role || 'Team Member'}`;
                         selectElement.appendChild(option);
                         loadedCount++;
-                        // console.log(`👤 Added: ${member.name} (${member.role || 'N/A'})`);
+                        // //console.log(`👤 Added: ${member.name} (${member.role || 'N/A'})`);
                     }
                 });
 
-                // console.log(`✅ Populated project manager dropdown with ${loadedCount} active team members`);
+                // //console.log(`✅ Populated project manager dropdown with ${loadedCount} active team members`);
 
                 if (loadedCount === 0) {
                     selectElement.innerHTML = '<option value="">No active team members</option>';
@@ -12073,7 +12073,7 @@
                     optionsContainer.appendChild(optionDiv);
                 });
 
-                // console.log(`✅ Populated project manager filter with ${sortedManagers.length} unique managers`);
+                // //console.log(`✅ Populated project manager filter with ${sortedManagers.length} unique managers`);
 
             } catch (error) {
                 console.error('❌ Error populating project manager filter:', error);
@@ -12081,12 +12081,12 @@
         }
 
         async function openProjectModal() {
-            // console.log('🚪 openProjectModal() called');
+            // //console.log('🚪 openProjectModal() called');
 
             // Check permission before opening modal
             const canAddProject = await canAdd('projectslist');
             if (!canAddProject) {
-                // console.log('🔒 User does not have permission to add projects');
+                // //console.log('🔒 User does not have permission to add projects');
                 alert('You do not have permission to add projects');
                 return;
             }
@@ -12101,15 +12101,15 @@
             document.getElementById('projectStartDate').value = today;
 
             // Populate team members dropdown
-            // console.log('📞 Calling populateProjectTeamMembersDropdown()...');
+            // //console.log('📞 Calling populateProjectTeamMembersDropdown()...');
             populateProjectTeamMembersDropdown();
 
             // Populate project manager dropdown
-            // console.log('📞 Calling populateProjectManagerDropdown()...');
+            // //console.log('📞 Calling populateProjectManagerDropdown()...');
             populateProjectManagerDropdown();
 
             document.getElementById('projectModal').classList.add('active');
-            // console.log('✅ Project modal opened');
+            // //console.log('✅ Project modal opened');
         }
 
         function closeProjectModal() {
@@ -12211,7 +12211,7 @@
                     // Delete from Firebase if project has an ID
                     if (project.id && db) {
                         await deleteProjectFromFirebase(project.id);
-                        // console.log('✅ Project deleted from Firebase:', project.id);
+                        // //console.log('✅ Project deleted from Firebase:', project.id);
                         alert('✅ Project deleted successfully!');
 
                         // Reload projects from Firebase
@@ -12249,7 +12249,7 @@
 
             // Ensure we have Firebase data loaded (7 projects), not just mock data (4 projects)
             if (projects.length <= 4) {
-                // console.log('⏳ Timeline 2 - Waiting for Firebase projects to load...');
+                // //console.log('⏳ Timeline 2 - Waiting for Firebase projects to load...');
                 showSpinner('Loading timeline...');
 
                 // Wait for Firebase data to load
@@ -12261,8 +12261,8 @@
             // Pass filtered projects to the iframe
             // The iframe's ganttchart.html will read from window.parent.filteredProjectsForGantt
             window.filteredProjectsForGantt = currentFilteredProjects || projects;
-            // console.log('✅ Timeline 2 - Passing', window.filteredProjectsForGantt.length, 'projects to iframe');
-            // console.log('📊 Project names:', window.filteredProjectsForGantt.map(p => p.name).join(', '));
+            // //console.log('✅ Timeline 2 - Passing', window.filteredProjectsForGantt.length, 'projects to iframe');
+            // //console.log('📊 Project names:', window.filteredProjectsForGantt.map(p => p.name).join(', '));
 
             modal.style.display = 'flex';
 
@@ -12271,7 +12271,7 @@
                 const ganttIframe = document.getElementById('ganttIframe');
                 if (ganttIframe && ganttIframe.contentWindow && ganttIframe.contentWindow.restartTimelinePoller) {
                     ganttIframe.contentWindow.restartTimelinePoller();
-                    // console.log('✅ Timeline 2 - Restarted iframe data poller');
+                    // //console.log('✅ Timeline 2 - Restarted iframe data poller');
                 }
             } catch (error) {
                 console.warn('Timeline 2 - Could not restart iframe poller:', error);
@@ -12537,7 +12537,7 @@
                 const canDeleteThis = canDeleteProjects && isProjectOwner;
 
                 // Debug logging
-                // console.log(`📋 Project: ${project.name} | Edit Permission: ${canEditProjects} | Delete Permission: ${canDeleteProjects} | Is Owner: ${isProjectOwner} | Can Edit: ${canEditThis} | Can Delete: ${canDeleteThis}`);
+                // //console.log(`📋 Project: ${project.name} | Edit Permission: ${canEditProjects} | Delete Permission: ${canDeleteProjects} | Is Owner: ${isProjectOwner} | Can Edit: ${canEditThis} | Can Delete: ${canDeleteThis}`);
 
                 // Build status badge - conditionally include onclick based on permission
                 const statusBadgeOnclick = canEditBadges ? `onclick="toggleProjectStatusPopup(event, '${project.id}', ${index})"` : '';
@@ -12827,7 +12827,7 @@
 
         // View tasks for a specific project
         function viewProjectTasks(projectId, projectName) {
-            console.log(`📋 Viewing tasks for project: ${projectName} (ID: ${projectId})`);
+            //console.log(`📋 Viewing tasks for project: ${projectName} (ID: ${projectId})`);
 
             // Switch to tasks page (skip filter clearing)
             switchPage('tasks', true);
@@ -12842,7 +12842,7 @@
                 const projectCheckbox = document.querySelector(`#projectFilterOptions input[value="${projectId}"]`);
 
                 if (projectCheckbox) {
-                    // console.log(`✅ Found project checkbox for: ${projectName}`);
+                    // //console.log(`✅ Found project checkbox for: ${projectName}`);
                     // Check the checkbox
                     projectCheckbox.checked = true;
 
@@ -12865,7 +12865,7 @@
 
         // Clear project filter (legacy function - now redirects to clearAllTaskFilters)
         function clearProjectFilter() {
-            // console.log('🔄 Clearing project filter');
+            // //console.log('🔄 Clearing project filter');
             clearAllTaskFilters();
         }
 
@@ -12876,8 +12876,8 @@
 
             // Wait for page to load and tasks to be fetched from Firebase
             setTimeout(async () => {
-                // console.log(`🔍 Starting filter for member: ${memberName} (${memberId})`);
-                console.log(`📋 Total tasks available: ${tasks.length}`);
+                // //console.log(`🔍 Starting filter for member: ${memberName} (${memberId})`);
+                //console.log(`📋 Total tasks available: ${tasks.length}`);
 
                 // Open filter panel and populate dropdowns
                 const filterPanel = document.getElementById('taskFilterPanel');
@@ -12887,29 +12887,29 @@
 
                     // Populate filter dropdowns first
                     await populateFilterDropdowns();
-                    // console.log(`✅ Dropdowns populated`);
+                    // //console.log(`✅ Dropdowns populated`);
                 }
 
                 // Set filter values - filter by assigned member
                 const assignedToSelect = document.getElementById('filterAssignedTo');
                 if (assignedToSelect) {
                     assignedToSelect.value = memberId;
-                    // console.log(`✅ Set assignedTo dropdown to: ${memberId}`);
-                    // console.log(`📋 Dropdown options count: ${assignedToSelect.options.length}`);
+                    // //console.log(`✅ Set assignedTo dropdown to: ${memberId}`);
+                    // //console.log(`📋 Dropdown options count: ${assignedToSelect.options.length}`);
                 }
 
                 // Check status checkboxes for all non-done statuses (blank, working, stuck)
                 const statusCheckboxes = document.querySelectorAll('#statusFilterOptions input[type="checkbox"]');
-                // console.log(`📦 Found ${statusCheckboxes.length} status checkboxes`);
+                // //console.log(`📦 Found ${statusCheckboxes.length} status checkboxes`);
 
                 statusCheckboxes.forEach(checkbox => {
                     // Check all except "done"
                     if (checkbox.value !== 'done') {
                         checkbox.checked = true;
-                        // console.log(`✅ Checked checkbox: ${checkbox.value}`);
+                        // //console.log(`✅ Checked checkbox: ${checkbox.value}`);
                     } else {
                         checkbox.checked = false;
-                        // console.log(`❌ Unchecked checkbox: ${checkbox.value}`);
+                        // //console.log(`❌ Unchecked checkbox: ${checkbox.value}`);
                     }
                 });
 
@@ -12927,7 +12927,7 @@
                 taskFilters.priority = '';
                 taskFilters.projects = [];
 
-                console.log(`🎯 Filter object:`, taskFilters);
+                //console.log(`🎯 Filter object:`, taskFilters);
 
                 // Update status filter display to show the selected statuses
                 updateStatusFilterDisplay();
@@ -12943,13 +12943,13 @@
                     const matches = isMember && isNotDone;
 
                     if (isMember) {
-                        console.log(`  Task "${task.name}": isMember=true, status=${task.status}, isNotDone=${isNotDone}`);
+                        //console.log(`  Task "${task.name}": isMember=true, status=${task.status}, isNotDone=${isNotDone}`);
                     }
 
                     return matches;
                 });
 
-                console.log(`📊 Filtered ${filteredTasks.length} remaining tasks (excluding done) for member: ${memberName}`);
+                //console.log(`📊 Filtered ${filteredTasks.length} remaining tasks (excluding done) for member: ${memberName}`);
 
                 // Render filtered tasks
                 renderFilteredTasks(filteredTasks);
@@ -12964,7 +12964,7 @@
             const tableBody = document.getElementById('tableBody');
             const filteredTasks = tasks.filter(task => task.projectId === projectId);
 
-            console.log(`📊 Found ${filteredTasks.length} tasks for project ID: ${projectId}`);
+            //console.log(`📊 Found ${filteredTasks.length} tasks for project ID: ${projectId}`);
 
             if (filteredTasks.length === 0) {
                 tableBody.innerHTML = `
@@ -12979,7 +12979,7 @@
 
             // Render filtered tasks
             tableBody.innerHTML = filteredTasks.map((task, displayIndex) => {
-                const index = tasks.indexOf(task); // Get original index
+                const originalIndex = tasks.indexOf(task); // Get original index
                 const fullName = task.personName || task.person || 'Unknown';
                 const displayName = formatNameWithInitial(fullName);
                 const avatarText = fullName.split(' ').map(n => n[0]).join('');
@@ -12989,7 +12989,7 @@
                 const overdueClass = isOverdue ? ' overdue' : '';
 
                 return `
-                <div class="table-row${overdueClass}" data-index="${index}" data-task-id="${task.id}">
+                <div class="table-row${overdueClass}" data-index="${originalIndex}" data-task-id="${task.id}">
                     <div class="table-cell" data-label="#">
                         <span class="row-number">${displayIndex + 1}</span>
                     </div>
@@ -13299,7 +13299,7 @@
             const allMembers = [...taskMembers, ...subtaskMembers];
             const uniqueMembers = [...new Set(allMembers)];
 
-            console.log(`📋 Found ${taskMembers.length} task assignments and ${subtaskMembers.length} subtask assignments`);
+            //console.log(`📋 Found ${taskMembers.length} task assignments and ${subtaskMembers.length} subtask assignments`);
 
             // Get member names
             const memberOptions = await Promise.all(
@@ -13464,7 +13464,7 @@
             }
 
             tableBody.innerHTML = filteredTasks.map((task, displayIndex) => {
-                const index = tasks.indexOf(task);
+                const originalIndex = tasks.indexOf(task);
 
                 // Handle multiple assignees
                 let assignedToHTML = '';
@@ -13508,7 +13508,7 @@
                 const overdueClass = isOverdue ? ' overdue' : '';
 
                 return `
-                <div class="table-row${overdueClass}" data-index="${index}" data-task-id="${task.id}">
+                <div class="table-row${overdueClass}" data-index="${originalIndex}" data-task-id="${task.id}">
                     <div class="table-cell" data-label="#">
                         <span class="row-number">${displayIndex + 1}</span>
                     </div>
@@ -13601,7 +13601,7 @@
                 });
             });
 
-            console.log(`✅ Filtered to ${filteredTasks.length} tasks`);
+            //console.log(`✅ Filtered to ${filteredTasks.length} tasks`);
         }
 
         // Update active filters display
@@ -13702,7 +13702,7 @@
             renderTasks();
             updateActiveFiltersDisplay();
 
-            console.log('✅ All task filters cleared');
+            //console.log('✅ All task filters cleared');
         }
 
         // Handle project form submission
@@ -13760,7 +13760,7 @@
                     // Update in Firebase if project has an ID
                     if (project.id && db) {
                         await updateProjectInFirebase(project.id, projectData);
-                        // console.log('✅ Project updated in Firebase:', project.id);
+                        // //console.log('✅ Project updated in Firebase:', project.id);
                         alert('✅ Project updated successfully!');
                     } else {
                         // Fallback to local storage if no ID
@@ -13771,7 +13771,7 @@
                     // Add new project to Firebase
                     if (db) {
                         const projectId = await addProjectToFirebase(projectData);
-                        // console.log('✅ Project added to Firebase with ID:', projectId);
+                        // //console.log('✅ Project added to Firebase with ID:', projectId);
                         alert('✅ Project created successfully!');
                     } else {
                         // Fallback to local storage if Firebase not available
@@ -13811,7 +13811,7 @@
             if (overlay && spinnerText) {
                 spinnerText.textContent = 'Loading dashboard...';
                 overlay.classList.add('active');
-                // console.log('📊 Starting unified dashboard load...');
+                // //console.log('📊 Starting unified dashboard load...');
             }
 
             try {
@@ -13850,7 +13850,7 @@
                     // Restore original spinner functions
                     window.showSpinner = originalShowSpinner;
                     window.hideSpinner = originalHideSpinner;
-                    // console.log('✅ All data loaded successfully');
+                    // //console.log('✅ All data loaded successfully');
                 } else {
                     renderTasks();
                     renderProjects();
@@ -13860,18 +13860,18 @@
                 // Hide the unified spinner after all loads complete
                 if (overlay) {
                     overlay.classList.remove('active');
-                    // console.log('📊 Dashboard load complete');
+                    // //console.log('📊 Dashboard load complete');
                 }
             }
 
             // Ensure proper page is activated (Projects for guests, Dashboard for regular users)
             const defaultPage = guestMode ? 'projectslist' : 'dashboard';
             switchPage(defaultPage);
-            // console.log(`📊 ${guestMode ? 'Projects' : 'Dashboard'} page activated (default for ${guestMode ? 'guest' : 'user'})`);
+            // //console.log(`📊 ${guestMode ? 'Projects' : 'Dashboard'} page activated (default for ${guestMode ? 'guest' : 'user'})`);
 
             // Setup guest mode UI
             if (guestMode) {
-                // console.log('🎫 Setting up guest mode UI - hiding restricted nav buttons');
+                // //console.log('🎫 Setting up guest mode UI - hiding restricted nav buttons');
                 // Hide restricted nav buttons for guest users (Tasks, Team, Reports)
                 // Projects button will remain visible
                 const restrictedButtons = ['tasksNavBtn', 'teamNavBtn', 'reportsNavBtn'];
@@ -13879,7 +13879,7 @@
                     const btn = document.getElementById(btnId);
                     if (btn) {
                         btn.style.display = 'none';
-                        // console.log(`  ✅ Hidden button: ${btnId}`);
+                        // //console.log(`  ✅ Hidden button: ${btnId}`);
                     }
                 });
             } else {
