@@ -6,6 +6,21 @@
     <meta http-equiv="Permissions-Policy" content="unload=(self)">
     <title>ProjectFlow - Modern Work Management</title>
 
+    <!-- Suppress third-party Permissions-Policy warnings -->
+    <script>
+        // Override console.warn to suppress third-party extension warnings
+        (function() {
+            const originalWarn = console.warn;
+            console.warn = function(...args) {
+                // Suppress Grammarly and other extension permission violations
+                if (args[0]?.includes?.('[Violation]') && args[0]?.includes?.('Permissions policy')) {
+                    return; // Silently suppress
+                }
+                originalWarn.apply(console, args);
+            };
+        })();
+    </script>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
