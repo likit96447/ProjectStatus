@@ -8834,6 +8834,36 @@
             const subtask = subtasks.find(st => st.id === subtaskId);
             if (!subtask) return;
 
+            // Find parent task
+            const parentTask = tasks.find(t => t.id === subtask.parentTaskId);
+            if (!parentTask) {
+                console.warn('Parent task not found for subtask:', subtaskId);
+                return;
+            }
+
+            // Check permissions: user must have edit permission and be able to see the subtask
+            const hasEditPermission = await canEdit('tasks');
+            if (!hasEditPermission) {
+                console.log('🔒 User does not have edit permission for subtasks');
+                alert('You do not have permission to edit subtasks');
+                return;
+            }
+
+            // Check if user can see/edit this subtask
+            const canEditThisSubtask = await canEditSubtask(subtask, parentTask);
+            if (!canEditThisSubtask) {
+                console.log(`🔒 User cannot edit subtask "${subtask.name}" - not visible to them`);
+                alert('You do not have permission to edit this subtask');
+                return;
+            }
+
+            const currentUser = getCurrentUser();
+            const isUserAssignedToSubtask = subtask.assignedTo === currentUser?.email ||
+                                           subtask.personName === currentUser?.name ||
+                                           subtask.personName === currentUser?.email;
+
+            console.log(`✅ User can inline edit subtask "${subtask.name}" - ${isUserAssignedToSubtask ? 'assigned to subtask' : 'assigned to parent task'}`);
+
             const cell = element.closest('.table-cell');
             currentlyEditingSubtask = { subtaskId, field, element, cell, originalValue: element.innerHTML };
 
@@ -10062,8 +10092,19 @@
 
             const subtask = subtasks[subtaskIndex];
 
-            // Check permission before opening modal
-            if (!await checkEditPermission(subtask, 'tasks')) {
+            // Find parent task
+            const parentTask = tasks.find(t => t.id === subtask.parentTaskId);
+            if (!parentTask) {
+                console.warn('Parent task not found for subtask:', subtaskId);
+                alert('Error: Parent task not found');
+                return;
+            }
+
+            // Check permission before opening modal using canEditSubtask
+            const canEditThisSubtask = await canEditSubtask(subtask, parentTask);
+            if (!canEditThisSubtask) {
+                console.log(`🔒 User cannot edit subtask "${subtask.name}" - not visible to them`);
+                alert('You do not have permission to edit this subtask');
                 return;
             }
 
