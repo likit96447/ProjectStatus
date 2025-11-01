@@ -681,7 +681,7 @@
 
             // Add drag listeners to the entire bar
             bar.addEventListener('mousedown', handleDragStart);
-            bar.addEventListener('touchstart', handleDragStart);
+            bar.addEventListener('touchstart', handleDragStart, { passive: false });
         });
     };
 
