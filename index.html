@@ -10171,18 +10171,39 @@
             const subtask = subtasks.find(st => st.id === subtaskId);
             if (!subtask) return;
 
-            // Check permission before allowing deletion
-            if (!await checkDeletePermission(subtask, 'tasks')) {
+            // Find parent task
+            const parentTask = tasks.find(t => t.id === subtask.parentTaskId);
+            if (!parentTask) {
+                console.warn('Parent task not found for subtask:', subtaskId);
+                alert('Error: Parent task not found');
                 return;
             }
 
-            if (!confirm('Are you sure you want to delete this subtask?')) {
+            // Check if user has delete permission
+            const hasDeletePermission = await canDelete('tasks');
+            if (!hasDeletePermission) {
+                console.log('🔒 User does not have delete permission for tasks');
+                alert('You do not have permission to delete subtasks');
+                return;
+            }
+
+            // Check if user can see this subtask (using same logic as edit)
+            const canDeleteThisSubtask = await canEditSubtask(subtask, parentTask);
+            if (!canDeleteThisSubtask) {
+                console.log(`🔒 User cannot delete subtask "${subtask.name}" - not visible to them`);
+                alert('You can only delete subtasks you can see');
+                return;
+            }
+
+            console.log(`✅ User can delete subtask "${subtask.name}"`);
+
+            if (!confirm(`Are you sure you want to delete this subtask "${subtask.name}"?\n\nThis action cannot be undone.`)) {
                 return;
             }
 
             try {
                 await db.collection('subtasks').doc(subtaskId).delete();
-                console.log('✅ Subtask deleted');
+                console.log('✅ Subtask deleted:', subtaskId);
 
                 await loadSubtasksFromFirebase();
                 renderTasks();
@@ -10387,9 +10408,35 @@
             const task = tasks[index];
 
             // Check permission before allowing deletion
-            if (!await checkDeletePermission(task, 'tasks')) {
+            const hasDeletePermission = await canDelete('tasks');
+            if (!hasDeletePermission) {
+                console.log('🔒 User does not have delete permission for tasks');
+                alert('You do not have permission to delete tasks');
                 return;
             }
+
+            // Check if user is assigned to task
+            const isTaskOwner = isOwner(task);
+            const currentUser = getCurrentUser();
+            const isUserAssignedToTask = task.assignedTo === currentUser?.email ||
+                                        task.assignedToNames?.includes(currentUser?.name) ||
+                                        task.assignedToNames?.includes(currentUser?.email);
+
+            if (!isTaskOwner && !isUserAssignedToTask) {
+                console.log(`🔒 User cannot delete task "${task.name}" - not assigned to task`);
+                alert('You can only delete tasks you are assigned to');
+                return;
+            }
+
+            // Check if task has subtasks - cannot delete if it has subtasks
+            const taskSubtasks = subtasks.filter(st => st.parentTaskId === task.id);
+            if (taskSubtasks.length > 0) {
+                console.log(`🔒 Cannot delete task "${task.name}" - has ${taskSubtasks.length} subtask(s)`);
+                alert(`Cannot delete task "${task.name}" because it has ${taskSubtasks.length} subtask(s). Please delete subtasks first.`);
+                return;
+            }
+
+            console.log(`✅ User can delete task "${task.name}" - assigned to task and has no subtasks`);
 
             // Show confirmation dialog with task name
             if (!confirm(`Are you sure you want to delete the task "${task.name}"?\n\nThis action cannot be undone.`)) {
@@ -10402,13 +10449,6 @@
             try {
                 // Delete from Firebase if task has an ID
                 if (task.id && db) {
-                    // First, delete all subtasks of this task
-                    const taskSubtasks = subtasks.filter(st => st.parentTaskId === task.id);
-                    for (const subtask of taskSubtasks) {
-                        await db.collection('subtasks').doc(subtask.id).delete();
-                        console.log("✅ Subtask deleted:", subtask.id);
-                    }
-
                     await deleteTaskFromFirebase(task.id);
                     console.log("✅ Task deleted from Firebase:", task.id);
                 }
