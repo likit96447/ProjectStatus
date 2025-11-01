@@ -4916,6 +4916,73 @@
         }
 
         /**
+         * Filter tasks based on user's task and subtask assignments
+         * User sees:
+         * - Tasks assigned directly to them
+         * - Tasks that have subtasks assigned to them
+         * When showing a task's subtasks:
+         * - Show ALL subtasks if user has any subtask in that task
+         * - Hide the entire task if user has NO subtasks
+         * @param {Array} tasksArray - Array of tasks to filter
+         * @param {Array} subtasksArray - Array of all subtasks
+         * @returns {Array} Filtered tasks
+         */
+        function filterTasksByUserAssignment(tasksArray, subtasksArray = []) {
+            const currentUser = getCurrentUser();
+            if (!currentUser) return [];
+
+            const filteredTasks = tasksArray.filter(task => {
+                // Check if task is assigned to current user
+                const isTaskAssignedToUser = task.assignedTo === currentUser.email ||
+                                           task.assignedToNames?.includes(currentUser.name) ||
+                                           task.assignedToNames?.includes(currentUser.email);
+
+                if (isTaskAssignedToUser) {
+                    console.log(`📋 Task "${task.name}" shown (directly assigned to user)`);
+                    return true;
+                }
+
+                // Check if task has any subtasks assigned to current user
+                const userSubtasksInTask = subtasksArray.filter(st =>
+                    st.parentTaskId === task.id &&
+                    (st.assignedTo === currentUser.email ||
+                     st.personName === currentUser.name ||
+                     st.personName === currentUser.email)
+                );
+
+                if (userSubtasksInTask.length > 0) {
+                    console.log(`📋 Task "${task.name}" shown (has ${userSubtasksInTask.length} assigned subtask(s))`);
+                    return true;
+                }
+
+                // Hide task if user has no assignment
+                console.log(`❌ Task "${task.name}" hidden (not assigned to user, no assigned subtasks)`);
+                return false;
+            });
+
+            console.log(`🔍 Task Filtering: Showing ${filteredTasks.length} of ${tasksArray.length} tasks`);
+            return filteredTasks;
+        }
+
+        /**
+         * Filter subtasks based on user assignment
+         * Shows only subtasks assigned to the current user
+         * @param {Array} subtasksArray - Array of subtasks to filter
+         * @returns {Array} Filtered subtasks
+         */
+        function filterSubtasksByUserAssignment(subtasksArray) {
+            const currentUser = getCurrentUser();
+            if (!currentUser) return [];
+
+            return subtasksArray.filter(subtask => {
+                const isSubtaskAssignedToUser = subtask.assignedTo === currentUser.email ||
+                                               subtask.personName === currentUser.name ||
+                                               subtask.personName === currentUser.email;
+                return isSubtaskAssignedToUser;
+            });
+        }
+
+        /**
          * Filter data based on user permissions
          * - Admins see all data
          * - Other users see only data they created/own or data assigned to them
@@ -8050,7 +8117,13 @@
 
         function renderTasks() {
             const tableBody = document.getElementById('tableBody');
-            tableBody.innerHTML = tasks.map((task, index) => {
+
+            // Filter tasks by user assignment (based on task page permission)
+            const filteredTasks = filterTasksByUserAssignment(tasks, subtasks);
+
+            tableBody.innerHTML = filteredTasks.map((task, index) => {
+                // Get the original index in the full tasks array for event handlers
+                const originalIndex = tasks.indexOf(task);
                 // Handle multiple assignees
                 let assignedToHTML = '';
                 if (task.assignedToNames && task.assignedToNames.length > 0) {
@@ -8093,29 +8166,29 @@
                 const overdueClass = isOverdue ? ' overdue' : '';
 
                 return `
-                <div class="table-row${overdueClass}" data-index="${index}" data-task-id="${task.id}">
+                <div class="table-row${overdueClass}" data-index="${originalIndex}" data-task-id="${task.id}">
                     <div class="table-cell" data-label="#">
-                        <span class="row-number">${index + 1}</span>
+                        <span class="row-number">${filteredTasks.indexOf(task) + 1}</span>
                     </div>
                     <div class="table-cell" data-label="Task">
-                        <span class="task-name editable-field" onclick="startInlineEdit(${index}, 'name', this)" title="Click to edit">${task.name}</span>
+                        <span class="task-name editable-field" onclick="startInlineEdit(${originalIndex}, 'name', this)" title="Click to edit">${task.name}</span>
                     </div>
                     <div class="table-cell" data-label="Status">
                         <div class="status-badge-wrapper">
-                            <div class="status-badge status-${task.status}" onclick="toggleStatusPopup(event, ${index})">
+                            <div class="status-badge status-${task.status}" onclick="toggleStatusPopup(event, ${originalIndex})">
                                 ${getStatusText(task.status)}
                             </div>
-                            <div class="status-popup" id="status-popup-${index}">
-                                <div class="status-popup-option blank" onclick="changeTaskStatus(${index}, 'blank')">
+                            <div class="status-popup" id="status-popup-${originalIndex}">
+                                <div class="status-popup-option blank" onclick="changeTaskStatus(${originalIndex}, 'blank')">
                                     Not Started
                                 </div>
-                                <div class="status-popup-option working" onclick="changeTaskStatus(${index}, 'working')">
+                                <div class="status-popup-option working" onclick="changeTaskStatus(${originalIndex}, 'working')">
                                     Working on it
                                 </div>
-                                <div class="status-popup-option stuck" onclick="changeTaskStatus(${index}, 'stuck')">
+                                <div class="status-popup-option stuck" onclick="changeTaskStatus(${originalIndex}, 'stuck')">
                                     Stuck
                                 </div>
-                                <div class="status-popup-option done" onclick="changeTaskStatus(${index}, 'done')">
+                                <div class="status-popup-option done" onclick="changeTaskStatus(${originalIndex}, 'done')">
                                     Done
                                 </div>
                             </div>
@@ -8128,7 +8201,7 @@
                         </div>
                     </div>
                     <div class="table-cell" data-label="Assigned To">
-                        <div class="editable-field" onclick="startInlineEdit(${index}, 'assignedTo', this)" title="Click to edit">
+                        <div class="editable-field" onclick="startInlineEdit(${originalIndex}, 'assignedTo', this)" title="Click to edit">
                             ${assignedToHTML}
                         </div>
                     </div>
@@ -8136,23 +8209,23 @@
                         ${task.project ? `<span class="project-badge" title="${task.project}">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
                     </div>
                     <div class="table-cell" data-label="Start Date">
-                        <span class="date-cell editable-field" onclick="startInlineEdit(${index}, 'startDate', this)" title="Click to edit">${formatDateForDisplay(task.startDate)}</span>
+                        <span class="date-cell editable-field" onclick="startInlineEdit(${originalIndex}, 'startDate', this)" title="Click to edit">${formatDateForDisplay(task.startDate)}</span>
                     </div>
                     <div class="table-cell" data-label="Due Date">
-                        <span class="date-cell editable-field" onclick="startInlineEdit(${index}, 'date', this)" title="Click to edit">${formatDateForDisplay(task.date)}</span>
+                        <span class="date-cell editable-field" onclick="startInlineEdit(${originalIndex}, 'date', this)" title="Click to edit">${formatDateForDisplay(task.date)}</span>
                     </div>
                     <div class="table-cell" data-label="Actions">
                         <div class="action-buttons">
-                            <button class="action-btn subtask-btn" data-action="subtask" data-index="${index}" title="Add subtask">
+                            <button class="action-btn subtask-btn" data-action="subtask" data-index="${originalIndex}" title="Add subtask">
                                 ➕
                             </button>
-                            <button class="action-btn edit-btn" data-action="edit" data-index="${index}" title="Edit task">
+                            <button class="action-btn edit-btn" data-action="edit" data-index="${originalIndex}" title="Edit task">
                                 ✏️
                             </button>
-                            <button class="action-btn clone-btn" data-action="clone" data-index="${index}" title="Clone task">
+                            <button class="action-btn clone-btn" data-action="clone" data-index="${originalIndex}" title="Clone task">
                                 📋
                             </button>
-                            <button class="action-btn delete-btn" data-action="delete" data-index="${index}" title="Delete task">
+                            <button class="action-btn delete-btn" data-action="delete" data-index="${originalIndex}" title="Delete task">
                                 🗑️
                             </button>
                         </div>
@@ -9124,6 +9197,9 @@
                 // Filter subtasks by assigned member if a filter is active
                 if (taskFilters.assignedTo) {
                     taskSubtasks = taskSubtasks.filter(st => st.assignedTo === taskFilters.assignedTo);
+                } else {
+                    // Filter subtasks by user assignment (permission-based filtering)
+                    taskSubtasks = filterSubtasksByUserAssignment(taskSubtasks);
                 }
 
                 if (taskSubtasks.length > 0) {
@@ -12624,7 +12700,7 @@
                         </div>
                     </div>
                     <div class="table-cell" data-label="Assigned To">
-                        <div class="editable-field" onclick="startInlineEdit(${index}, 'assignedTo', this)" title="Click to edit">
+                        <div class="editable-field" onclick="startInlineEdit(${originalIndex}, 'assignedTo', this)" title="Click to edit">
                             ${assignedToHTML}
                         </div>
                     </div>
@@ -12632,23 +12708,23 @@
                         ${task.project ? `<span class="project-badge" title="${task.project}">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
                     </div>
                     <div class="table-cell" data-label="Start Date">
-                        <span class="date-cell editable-field" onclick="startInlineEdit(${index}, 'startDate', this)" title="Click to edit">${formatDateForDisplay(task.startDate)}</span>
+                        <span class="date-cell editable-field" onclick="startInlineEdit(${originalIndex}, 'startDate', this)" title="Click to edit">${formatDateForDisplay(task.startDate)}</span>
                     </div>
                     <div class="table-cell" data-label="Due Date">
-                        <span class="date-cell editable-field" onclick="startInlineEdit(${index}, 'date', this)" title="Click to edit">${formatDateForDisplay(task.date)}</span>
+                        <span class="date-cell editable-field" onclick="startInlineEdit(${originalIndex}, 'date', this)" title="Click to edit">${formatDateForDisplay(task.date)}</span>
                     </div>
                     <div class="table-cell" data-label="Actions">
                         <div class="action-buttons">
-                            <button class="action-btn subtask-btn" data-action="subtask" data-index="${index}" title="Add subtask">
+                            <button class="action-btn subtask-btn" data-action="subtask" data-index="${originalIndex}" title="Add subtask">
                                 ➕
                             </button>
-                            <button class="action-btn edit-btn" data-action="edit" data-index="${index}" title="Edit task">
+                            <button class="action-btn edit-btn" data-action="edit" data-index="${originalIndex}" title="Edit task">
                                 ✏️
                             </button>
-                            <button class="action-btn clone-btn" data-action="clone" data-index="${index}" title="Clone task">
+                            <button class="action-btn clone-btn" data-action="clone" data-index="${originalIndex}" title="Clone task">
                                 📋
                             </button>
-                            <button class="action-btn delete-btn" data-action="delete" data-index="${index}" title="Delete task">
+                            <button class="action-btn delete-btn" data-action="delete" data-index="${originalIndex}" title="Delete task">
                                 🗑️
                             </button>
                         </div>
@@ -13129,24 +13205,24 @@
                         <span class="row-number">${displayIndex + 1}</span>
                     </div>
                     <div class="table-cell" data-label="Task">
-                        <span class="task-name editable-field" onclick="startInlineEdit(${index}, 'name', this)" title="Click to edit">${task.name}</span>
+                        <span class="task-name editable-field" onclick="startInlineEdit(${originalIndex}, 'name', this)" title="Click to edit">${task.name}</span>
                     </div>
                     <div class="table-cell" data-label="Status">
                         <div class="status-badge-wrapper">
-                            <div class="status-badge status-${task.status}" onclick="toggleStatusPopup(event, ${index})">
+                            <div class="status-badge status-${task.status}" onclick="toggleStatusPopup(event, ${originalIndex})">
                                 ${getStatusText(task.status)}
                             </div>
-                            <div class="status-popup" id="status-popup-${index}">
-                                <div class="status-popup-option blank" onclick="changeTaskStatus(${index}, 'blank')">
+                            <div class="status-popup" id="status-popup-${originalIndex}">
+                                <div class="status-popup-option blank" onclick="changeTaskStatus(${originalIndex}, 'blank')">
                                     Not Started
                                 </div>
-                                <div class="status-popup-option working" onclick="changeTaskStatus(${index}, 'working')">
+                                <div class="status-popup-option working" onclick="changeTaskStatus(${originalIndex}, 'working')">
                                     Working on it
                                 </div>
-                                <div class="status-popup-option stuck" onclick="changeTaskStatus(${index}, 'stuck')">
+                                <div class="status-popup-option stuck" onclick="changeTaskStatus(${originalIndex}, 'stuck')">
                                     Stuck
                                 </div>
-                                <div class="status-popup-option done" onclick="changeTaskStatus(${index}, 'done')">
+                                <div class="status-popup-option done" onclick="changeTaskStatus(${originalIndex}, 'done')">
                                     Done
                                 </div>
                             </div>
@@ -13159,7 +13235,7 @@
                         </div>
                     </div>
                     <div class="table-cell" data-label="Assigned To">
-                        <div class="editable-field" onclick="startInlineEdit(${index}, 'assignedTo', this)" title="Click to edit">
+                        <div class="editable-field" onclick="startInlineEdit(${originalIndex}, 'assignedTo', this)" title="Click to edit">
                             ${assignedToHTML}
                         </div>
                     </div>
@@ -13167,23 +13243,23 @@
                         ${task.project ? `<span class="project-badge" title="${task.project}">${task.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
                     </div>
                     <div class="table-cell" data-label="Start Date">
-                        <span class="date-cell editable-field" onclick="startInlineEdit(${index}, 'startDate', this)" title="Click to edit">${formatDateForDisplay(task.startDate)}</span>
+                        <span class="date-cell editable-field" onclick="startInlineEdit(${originalIndex}, 'startDate', this)" title="Click to edit">${formatDateForDisplay(task.startDate)}</span>
                     </div>
                     <div class="table-cell" data-label="Due Date">
-                        <span class="date-cell editable-field" onclick="startInlineEdit(${index}, 'date', this)" title="Click to edit">${formatDateForDisplay(task.date)}</span>
+                        <span class="date-cell editable-field" onclick="startInlineEdit(${originalIndex}, 'date', this)" title="Click to edit">${formatDateForDisplay(task.date)}</span>
                     </div>
                     <div class="table-cell" data-label="Actions">
                         <div class="action-buttons">
-                            <button class="action-btn subtask-btn" data-action="subtask" data-index="${index}" title="Add subtask">
+                            <button class="action-btn subtask-btn" data-action="subtask" data-index="${originalIndex}" title="Add subtask">
                                 ➕
                             </button>
-                            <button class="action-btn edit-btn" data-action="edit" data-index="${index}" title="Edit task">
+                            <button class="action-btn edit-btn" data-action="edit" data-index="${originalIndex}" title="Edit task">
                                 ✏️
                             </button>
-                            <button class="action-btn clone-btn" data-action="clone" data-index="${index}" title="Clone task">
+                            <button class="action-btn clone-btn" data-action="clone" data-index="${originalIndex}" title="Clone task">
                                 📋
                             </button>
-                            <button class="action-btn delete-btn" data-action="delete" data-index="${index}" title="Delete task">
+                            <button class="action-btn delete-btn" data-action="delete" data-index="${originalIndex}" title="Delete task">
                                 🗑️
                             </button>
                         </div>
