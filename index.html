@@ -5125,13 +5125,21 @@
                     newProjectBtn.title = canAddProject ? '' : 'You do not have permission to add projects';
                 }
 
-                // New Task button
+                // New Task button - requires BOTH show and add permissions
                 const newTaskBtn = document.getElementById('newTaskBtn');
                 if (newTaskBtn) {
+                    const canShowTasks = await canShow('tasks');
                     const canAddTask = await canAdd('tasks');
-                    newTaskBtn.style.display = canAddTask ? '' : 'none';
-                    newTaskBtn.disabled = !canAddTask;
-                    newTaskBtn.title = canAddTask ? '' : 'You do not have permission to add tasks';
+                    const canShowAndAdd = canShowTasks && canAddTask;
+                    newTaskBtn.style.display = canShowAndAdd ? '' : 'none';
+                    newTaskBtn.disabled = !canShowAndAdd;
+                    if (!canShowTasks) {
+                        newTaskBtn.title = 'You do not have permission to view tasks';
+                    } else if (!canAddTask) {
+                        newTaskBtn.title = 'You do not have permission to add tasks';
+                    } else {
+                        newTaskBtn.title = '';
+                    }
                 }
 
                 // //console.log("✅ Action button visibility updated");
@@ -5151,12 +5159,23 @@
 
             if (!Array.isArray(items)) return;
 
+            // Check SHOW permission first - user must be able to see the page
+            const canShowPage = await canShow(page);
+            if (!canShowPage && page === 'tasks') {
+                // Hide all action buttons if user cannot see tasks
+                document.querySelectorAll('[data-action="subtask"], [data-action="edit"], [data-action="clone"], [data-action="delete"]').forEach(btn => {
+                    btn.style.display = 'none';
+                });
+                return;
+            }
+
             const canEditPerm = await canEdit(page);
             const canDeletePerm = await canDelete(page);
+            const canAddPerm = await canAdd(page);
             const currentUser = getCurrentUser();
 
             // Debug: Show permission status
-            // //console.log(`   📋 Edit permission: ${canEditPerm}, Delete permission: ${canDeletePerm}`);
+            // //console.log(`   📋 Edit permission: ${canEditPerm}, Delete permission: ${canDeletePerm}, Add permission: ${canAddPerm}`);
             // //console.log(`   📊 Total items: ${items.length}, Updating visible buttons only...`);
 
             let editButtonsUpdated = 0;
@@ -5201,14 +5220,21 @@
                     }
                 }
 
-                // Clone button visibility: show if user has edit permission (cloning creates new task)
+                // Clone button visibility: show if user has ADD permission (cloning creates new task)
+                // Clone is controlled by ADD permission (creating new task), not EDIT
                 const cloneBtnSelector = `[data-action="clone"][data-index="${i}"]`;
                 const cloneBtn = document.querySelector(cloneBtnSelector);
                 if (cloneBtn) {
-                    const canCloneThis = canEditPerm && (isItemOwner || isUserAssignedToItem);
+                    const canCloneThis = canAddPerm && (isItemOwner || isUserAssignedToItem);
                     cloneBtn.style.display = canCloneThis ? '' : 'none';
                     cloneBtn.disabled = !canCloneThis;
-                    cloneBtn.title = canCloneThis ? 'Clone task' : 'You do not have permission to clone this task';
+                    if (!canAddPerm) {
+                        cloneBtn.title = 'You do not have permission to clone tasks (requires add permission)';
+                    } else if (!isItemOwner && !isUserAssignedToItem) {
+                        cloneBtn.title = 'You are not assigned to this task';
+                    } else {
+                        cloneBtn.title = 'Clone task';
+                    }
                 }
 
                 // Delete button visibility: show if user has delete permission AND (is owner OR assigned to item)
@@ -5254,16 +5280,24 @@
 
             if (!Array.isArray(items)) return;
 
+            // Check SHOW permission first - user must be able to see tasks
+            const canShowTasks = await canShow('tasks');
             const canAddSubtask = await canAdd('tasks');
             const isAdmin = await hasPermission('admin', 'admin');
-            const canAddAnything = canAddSubtask || isAdmin;
+            const canAddAnything = (canShowTasks && (canAddSubtask || isAdmin));
 
             // Update all subtask add buttons
             const subtaskButtons = document.querySelectorAll('[data-action="subtask"]');
             subtaskButtons.forEach(btn => {
                 btn.style.display = canAddAnything ? '' : 'none';
                 btn.disabled = !canAddAnything;
-                btn.title = canAddAnything ? 'Add subtask' : 'You do not have permission to add subtasks';
+                if (!canShowTasks) {
+                    btn.title = 'You do not have permission to view tasks';
+                } else if (!canAddSubtask && !isAdmin) {
+                    btn.title = 'You do not have permission to add subtasks';
+                } else {
+                    btn.title = 'Add subtask';
+                }
                 //console.log(`🔘 Subtask add button: ${canAddAnything ? 'visible ✅' : 'hidden ❌'}`);
             });
 
@@ -5326,6 +5360,16 @@
 
             if (!Array.isArray(subtasks)) return;
 
+            // Check SHOW permission first - user must be able to see tasks
+            const canShowTasks = await canShow('tasks');
+            if (!canShowTasks) {
+                // Hide all subtask buttons if user cannot see tasks
+                document.querySelectorAll(`.action-btn[onclick*="editSubtask"], .action-btn[onclick*="deleteSubtask"]`).forEach(btn => {
+                    btn.style.display = 'none';
+                });
+                return;
+            }
+
             const canDeletePerm = await canDelete('tasks');
 
             subtasks.forEach((subtask) => {
@@ -5348,13 +5392,19 @@
                     });
                 }
 
-                // Delete button for subtask
+                // Delete button for subtask - show if user has delete permission AND is subtask owner
                 const deleteBtn = document.querySelector(`.action-btn.delete-btn[onclick*="deleteSubtask('${subtask.id}')"]`);
                 if (deleteBtn) {
                     const canDeleteThis = canDeletePerm && isSubtaskOwner;
                     deleteBtn.style.display = canDeleteThis ? '' : 'none';
                     deleteBtn.disabled = !canDeleteThis;
-                    deleteBtn.title = canDeleteThis ? 'Delete subtask' : 'You do not have permission to delete this subtask';
+                    if (!canDeletePerm) {
+                        deleteBtn.title = 'You do not have permission to delete subtasks';
+                    } else if (!isSubtaskOwner) {
+                        deleteBtn.title = 'You can only delete your own subtasks';
+                    } else {
+                        deleteBtn.title = 'Delete subtask';
+                    }
                 }
             });
 
