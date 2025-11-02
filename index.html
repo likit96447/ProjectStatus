@@ -4833,6 +4833,12 @@
          * @returns {Promise<boolean>} True if user has permission
          */
         async function hasPermission(page, operation) {
+            // In guest mode, grant full permissions for projectslist and dashboard pages
+            if (guestMode && (page === 'projectslist' || page === 'dashboard')) {
+                // //console.log(`🎫 Guest mode: Granting ${operation} permission for ${page}`);
+                return true;
+            }
+
             const userRole = getCurrentUserRole();
 
             if (!userRole) {
@@ -4923,6 +4929,12 @@
          * @returns {boolean} True if user owns the data
          */
         function isOwner(data) {
+            // In guest mode, always return true for project data (bypass ownership check)
+            if (guestMode && (data.projectManager !== undefined || data.projectManagers !== undefined)) {
+                // //console.log('🎫 Guest mode: Granting ownership for project');
+                return true;
+            }
+
             const currentUser = getCurrentUser();
             if (!currentUser) return false;
 
@@ -4987,6 +4999,12 @@
          * @returns {Array} Filtered tasks
          */
         function filterTasksByUserAssignment(tasksArray, subtasksArray = []) {
+            // In guest mode, show all tasks without filtering
+            if (guestMode) {
+                // //console.log('🎫 Guest mode: Showing all tasks without assignment filtering');
+                return tasksArray;
+            }
+
             const currentUser = getCurrentUser();
             if (!currentUser) return [];
 
@@ -5032,6 +5050,12 @@
          * @returns {Array} Filtered subtasks
          */
         function filterSubtasksByUserAssignment(subtasksArray) {
+            // In guest mode, show all subtasks without filtering
+            if (guestMode) {
+                // //console.log('🎫 Guest mode: Showing all subtasks without assignment filtering');
+                return subtasksArray;
+            }
+
             const currentUser = getCurrentUser();
             if (!currentUser) return [];
 
@@ -5052,6 +5076,12 @@
          * NOTE: This function is now async to properly check Firebase permissions
          */
         async function filterDataByOwnership(dataArray, dataType = 'generic') {
+            // In guest mode, show all data without ownership filtering
+            if (guestMode) {
+                // //console.log('🎫 Guest mode: Showing all data without ownership filtering');
+                return dataArray;
+            }
+
             const currentUser = getCurrentUser();
             if (!currentUser) return [];
 
@@ -11710,6 +11740,12 @@
          * @returns {Promise<Array>} Filtered projects
          */
         async function filterProjectsByUserAccess(projectsArray) {
+            // In guest mode, show all projects without filtering
+            if (guestMode) {
+                // //console.log('🎫 Guest mode: Showing all projects without assignment filtering');
+                return projectsArray;
+            }
+
             const currentUser = getCurrentUser();
             if (!currentUser) return [];
 
