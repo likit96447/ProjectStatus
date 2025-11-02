@@ -9501,7 +9501,7 @@
             let subtasksToDisplay = filterSubtasksForKanban();
 
             // Define status columns
-            const statuses = ['blank', 'working', 'stuck', 'done', 'overdue'];
+            const statuses = ['blank', 'overdue', 'working', 'done', 'stuck'];
             const statusLabels = {
                 'blank': 'Not Started',
                 'working': 'Working on it',
@@ -9522,7 +9522,18 @@
             let kanbanHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; overflow-x: auto; padding: 10px 0;">';
 
             statuses.forEach(status => {
-                const statusSubtasks = subtasksToDisplay.filter(st => st.status === status);
+                const statusSubtasks = subtasksToDisplay.filter(st => {
+                    // Check if subtask is overdue dynamically
+                    const isSubtaskOverdue = st.date && new Date(st.date) < new Date(new Date().setHours(0, 0, 0, 0)) && st.status !== 'done';
+
+                    if (status === 'overdue') {
+                        // Show overdue subtasks in overdue column
+                        return isSubtaskOverdue;
+                    } else {
+                        // Show non-overdue subtasks in their respective status columns
+                        return st.status === status && !isSubtaskOverdue;
+                    }
+                });
                 const bgColor = statusColors[status] || '#E0E3E8';
 
                 kanbanHTML += `
@@ -9546,6 +9557,14 @@
                     const parentTask = tasks.find(t => t.id === subtask.parentTaskId);
                     const parentTaskName = parentTask ? parentTask.name : 'Unknown Task';
 
+                    // Calculate due date to display
+                    let displayDueDate = 'No due date';
+                    if (subtask.date) {
+                        displayDueDate = formatDateForDisplay(subtask.date);
+                    } else if (parentTask && parentTask.dueDate) {
+                        displayDueDate = formatDateForDisplay(parentTask.dueDate);
+                    }
+
                     kanbanHTML += `
                         <div class="kanban-card" draggable="true" data-subtask-id="${subtask.id}" style="background: white; border-radius: 8px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: grab; transition: all 0.2s; border-left: 4px solid ${priorityColor};"
                              onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'; this.style.transform='translateY(-2px)'; this.style.cursor='grab';"
@@ -9560,7 +9579,7 @@
                             <div style="font-size: 13px; color: #676879; margin-bottom: 8px;">${subtask.project || 'No Project'}</div>
                             <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #999;">
                                 <span>${memberName}</span>
-                                <span>${subtask.dueDate ? formatDate(subtask.dueDate) : 'No due date'}</span>
+                                <span>${displayDueDate}</span>
                             </div>
                         </div>
                     `;
