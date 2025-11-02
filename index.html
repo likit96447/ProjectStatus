@@ -1095,6 +1095,36 @@
             transform: scale(1.1);
         }
 
+        .team-card:hover .team-delete-btn {
+            opacity: 1;
+        }
+
+        .team-delete-btn {
+            position: absolute;
+            top: 12px;
+            right: 56px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: white;
+            border: 2px solid #e6e9ef;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            opacity: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .team-delete-btn:hover {
+            background: #e44258;
+            border-color: #e44258;
+            color: white;
+            transform: scale(1.1);
+        }
+
         .change-password-btn {
             width: 100%;
             margin-top: 16px;
@@ -3063,6 +3093,10 @@
                                 <span>📤</span>
                                 <span>Export</span>
                             </button>
+                            <button class="btn btn-secondary" id="kanbanToggleBtn" onclick="toggleTaskViewMode()">
+                                <span>📊</span>
+                                <span id="kanbanToggleBtnText">Kanban View</span>
+                            </button>
                         </div>
                     </div>
 
@@ -3135,6 +3169,11 @@
                             <div style="font-size: 12px; font-weight: 600; color: #676879; margin-bottom: 6px;">Active Filters:</div>
                             <div id="activeFilterTags" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
                         </div>
+                    </div>
+
+                    <!-- Kanban Board Container -->
+                    <div id="kanbanBoardContainer" style="display: none; padding: 20px 0;">
+                        <!-- Kanban board will be rendered here -->
                     </div>
 
                     <div class="table-container">
@@ -5877,6 +5916,9 @@
                     <button class="team-edit-btn" data-action="edit-member" data-member-index="${index}" title="Edit member">
                         ✏️
                     </button>
+                    <button class="team-delete-btn" data-action="delete-member" data-member-id="${member.id}" data-member-name="${member.name}" title="Delete member">
+                        🗑️
+                    </button>
                     <div class="team-avatar-large" style="background: ${gradients[index % gradients.length]};">
                         ${member.name.split(' ').map(n => n[0]).join('')}
                     </div>
@@ -5911,6 +5953,16 @@
                     e.stopPropagation();
                     const index = parseInt(this.getAttribute('data-member-index'));
                     editMember(activeMembers[index], index);
+                });
+            });
+
+            // Add event listeners to delete buttons
+            document.querySelectorAll('[data-action="delete-member"]').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const memberId = this.getAttribute('data-member-id');
+                    const memberName = this.getAttribute('data-member-name');
+                    deleteMember(memberId, memberName);
                 });
             });
 
@@ -9352,6 +9404,7 @@
         // ========================================
         let isMyTasksActive = false;
         let allTasks = []; // Store original tasks
+        let taskViewMode = 'table'; // 'table' or 'kanban'
 
         async function toggleMyTasks() {
             const myTasksBtn = document.getElementById('myTasksBtn');
@@ -9413,6 +9466,314 @@
                 // Update active filters display to remove the filter tag
                 updateActiveFiltersDisplay();
             }
+        }
+
+        // ========================================
+        // KANBAN VIEW TOGGLE
+        // ========================================
+        async function toggleTaskViewMode() {
+            const btn = document.getElementById('kanbanToggleBtn');
+            const tableContainer = document.querySelector('.table-container');
+            const kanbanContainer = document.getElementById('kanbanBoardContainer');
+
+            if (taskViewMode === 'table') {
+                taskViewMode = 'kanban';
+                tableContainer.style.display = 'none';
+                kanbanContainer.style.display = 'block';
+                btn.classList.add('active');
+                document.getElementById('kanbanToggleBtnText').textContent = 'Table View';
+                renderKanbanBoard();
+            } else {
+                taskViewMode = 'table';
+                tableContainer.style.display = 'block';
+                kanbanContainer.style.display = 'none';
+                btn.classList.remove('active');
+                document.getElementById('kanbanToggleBtnText').textContent = 'Kanban View';
+                renderTasks();
+            }
+        }
+
+        function renderKanbanBoard() {
+            const kanbanContainer = document.getElementById('kanbanBoardContainer');
+            if (!kanbanContainer) return;
+
+            // Get filtered subtasks using the same logic as the table
+            let subtasksToDisplay = filterSubtasksForKanban();
+
+            // Define status columns
+            const statuses = ['blank', 'working', 'stuck', 'done', 'overdue'];
+            const statusLabels = {
+                'blank': 'Not Started',
+                'working': 'Working on it',
+                'stuck': 'Stuck',
+                'done': 'Done',
+                'overdue': 'Overdue'
+            };
+
+            const statusColors = {
+                'blank': '#E0E3E8',
+                'working': '#85DBDB',
+                'stuck': '#FF6B6B',
+                'done': '#51CF66',
+                'overdue': '#FFB740'
+            };
+
+            // Build kanban board HTML
+            let kanbanHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; overflow-x: auto; padding: 10px 0;">';
+
+            statuses.forEach(status => {
+                const statusSubtasks = subtasksToDisplay.filter(st => st.status === status);
+                const bgColor = statusColors[status] || '#E0E3E8';
+
+                kanbanHTML += `
+                    <div class="kanban-column" data-status="${status}" style="background: #f8f9fa; border-radius: 12px; padding: 16px; min-width: 280px; max-height: 600px; overflow-y: auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s;">
+                        <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                            <div style="width: 12px; height: 12px; background: ${bgColor}; border-radius: 3px; margin-right: 8px;"></div>
+                            <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: #323338;">${statusLabels[status]}</h3>
+                            <span style="margin-left: auto; background: #e6e9ef; padding: 4px 8px; border-radius: 4px; font-size: 13px; color: #676879; font-weight: 600;">${statusSubtasks.length}</span>
+                        </div>
+                        <div class="kanban-drop-zone" data-status="${status}" style="display: flex; flex-direction: column; gap: 12px; min-height: 300px;">
+                `;
+
+                statusSubtasks.forEach(subtask => {
+                    const priorityColor = {
+                        'high': '#FF6B6B',
+                        'medium': '#FFB740',
+                        'low': '#85DBDB'
+                    }[subtask.priority] || '#E0E3E8';
+
+                    const memberName = subtask.personName || 'Unassigned';
+                    const parentTask = tasks.find(t => t.id === subtask.parentTaskId);
+                    const parentTaskName = parentTask ? parentTask.name : 'Unknown Task';
+
+                    kanbanHTML += `
+                        <div class="kanban-card" draggable="true" data-subtask-id="${subtask.id}" style="background: white; border-radius: 8px; padding: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: grab; transition: all 0.2s; border-left: 4px solid ${priorityColor};"
+                             onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'; this.style.transform='translateY(-2px)'; this.style.cursor='grab';"
+                             onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'; this.style.transform='translateY(0)'"
+                             ondragstart="handleKanbanDragStart(event)"
+                             ondragend="handleKanbanDragEnd(event)">
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px;">
+                                <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: #323338; flex: 1; word-wrap: break-word;">${subtask.name}</h4>
+                                <div style="width: 8px; height: 8px; background: ${priorityColor}; border-radius: 50%; flex-shrink: 0; margin-left: 8px;"></div>
+                            </div>
+                            <div style="font-size: 12px; color: #999; margin-bottom: 6px;">Parent: ${parentTaskName}</div>
+                            <div style="font-size: 13px; color: #676879; margin-bottom: 8px;">${subtask.project || 'No Project'}</div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #999;">
+                                <span>${memberName}</span>
+                                <span>${subtask.dueDate ? formatDate(subtask.dueDate) : 'No due date'}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                kanbanHTML += `
+                        </div>
+                    </div>
+                `;
+            });
+
+            kanbanHTML += '</div>';
+            kanbanContainer.innerHTML = kanbanHTML;
+
+            // Set up drag and drop event listeners
+            setupKanbanDragAndDrop();
+        }
+
+        // Filter subtasks for kanban board using the same logic as table filters
+        function filterSubtasksForKanban() {
+            // First, get the filtered tasks from the table view logic
+            const filteredTasks = getFilteredTasksForDisplay();
+            const currentUser = getCurrentUser();
+
+            // Then get only subtasks from those filtered tasks with visibility rules
+            let filteredSubtasks = [];
+            filteredTasks.forEach(task => {
+                let taskSubtasks = subtasks.filter(st => st.parentTaskId === task.id);
+
+                // Apply the same visibility rules as renderSubtasks
+                // Check if user is assigned to the parent task
+                const isUserAssignedToTask = task.assignedTo === currentUser?.email ||
+                                            task.assignedToNames?.includes(currentUser?.name) ||
+                                            task.assignedToNames?.includes(currentUser?.email);
+
+                // Filter subtasks by assigned member if a filter is active
+                if (taskFilters.assignedTo) {
+                    taskSubtasks = taskSubtasks.filter(st => st.assignedTo === taskFilters.assignedTo);
+                } else if (isUserAssignedToTask) {
+                    // If user is assigned to the parent task, show ALL subtasks
+                    // Don't filter - show all subtasks
+                } else {
+                    // User not assigned to parent task - only show their assigned subtasks
+                    taskSubtasks = filterSubtasksByUserAssignment(taskSubtasks);
+                }
+
+                filteredSubtasks = filteredSubtasks.concat(taskSubtasks);
+            });
+
+            // Apply additional subtask-specific filters
+            filteredSubtasks = applySubtaskFilters(filteredSubtasks);
+
+            return filteredSubtasks;
+        }
+
+        // Get filtered tasks using the same logic as the table
+        function getFilteredTasksForDisplay() {
+            let filteredTasks = tasks;
+
+            // Check if any filter is active
+            const hasActiveFilters = taskFilters.status.length > 0 ||
+                                      taskFilters.priority !== '' ||
+                                      taskFilters.assignedTo !== '' ||
+                                      (taskFilters.projects && taskFilters.projects.length > 0);
+
+            // Filter by multiple statuses (OR logic)
+            if (taskFilters.status && taskFilters.status.length > 0) {
+                filteredTasks = filteredTasks.filter(t => {
+                    // Handle "overdue" filter specially
+                    if (taskFilters.status.includes('overdue')) {
+                        const isTaskOverdue = isTaskOrSubtaskOverdue(t);
+                        const hasOverdueInFilter = taskFilters.status.includes('overdue');
+                        const hasOtherStatuses = taskFilters.status.some(s => s !== 'overdue');
+
+                        if (hasOverdueInFilter && hasOtherStatuses) {
+                            const otherStatuses = taskFilters.status.filter(s => s !== 'overdue');
+                            return isTaskOverdue || otherStatuses.includes(t.status);
+                        } else if (hasOverdueInFilter) {
+                            return isTaskOverdue;
+                        }
+                    }
+                    // Regular status filter
+                    return taskFilters.status.includes(t.status);
+                });
+            }
+
+            if (taskFilters.priority) {
+                filteredTasks = filteredTasks.filter(t => t.priority === taskFilters.priority);
+            }
+
+            if (taskFilters.assignedTo) {
+                filteredTasks = filteredTasks.filter(t => {
+                    // Check task assignment
+                    const isTaskAssigned = t.assignedTo === taskFilters.assignedTo ||
+                           (t.assignedToIds && t.assignedToIds.includes(taskFilters.assignedTo)) ||
+                           (t.person && document.getElementById('filterAssignedTo').selectedOptions[0] &&
+                            t.person === document.getElementById('filterAssignedTo').selectedOptions[0].text);
+
+                    if (isTaskAssigned) return true;
+
+                    // Check if any subtask is assigned to this member
+                    const taskSubtasks = subtasks.filter(st => st.parentTaskId === t.id);
+                    const hasSubtaskAssignment = taskSubtasks.some(st => st.assignedTo === taskFilters.assignedTo);
+
+                    return hasSubtaskAssignment;
+                });
+            }
+
+            // Filter by multiple projects (OR logic)
+            if (taskFilters.projects && taskFilters.projects.length > 0) {
+                filteredTasks = filteredTasks.filter(t => taskFilters.projects.includes(t.projectId));
+            }
+
+            // Apply user assignment filtering (show only tasks assigned to current user)
+            // unless a specific filter is set
+            if (!taskFilters.assignedTo && !isMyTasksActive) {
+                filteredTasks = filterTasksByUserAssignment(filteredTasks, subtasks);
+            } else if (isMyTasksActive) {
+                filteredTasks = filterTasksByUserAssignment(filteredTasks, subtasks);
+            }
+
+            return filteredTasks;
+        }
+
+        // Apply filters specific to subtasks
+        function applySubtaskFilters(subtasksArray) {
+            let filtered = subtasksArray;
+
+            // Filter by status if active
+            if (taskFilters.status && taskFilters.status.length > 0) {
+                filtered = filtered.filter(st => taskFilters.status.includes(st.status));
+            }
+
+            // Filter by priority if active
+            if (taskFilters.priority) {
+                filtered = filtered.filter(st => st.priority === taskFilters.priority);
+            }
+
+            // Filter by assigned member if active
+            if (taskFilters.assignedTo) {
+                filtered = filtered.filter(st => st.personName === taskFilters.assignedTo);
+            }
+
+            return filtered;
+        }
+
+        // Kanban drag and drop handlers
+        let draggedSubtaskId = null;
+        let draggedFromStatus = null;
+
+        function handleKanbanDragStart(event) {
+            const card = event.target.closest('.kanban-card');
+            draggedSubtaskId = card.dataset.subtaskId;
+            draggedFromStatus = event.target.closest('.kanban-column').dataset.status;
+            event.dataTransfer.effectAllowed = 'move';
+            card.style.opacity = '0.5';
+        }
+
+        function handleKanbanDragEnd(event) {
+            const card = event.target.closest('.kanban-card');
+            if (card) {
+                card.style.opacity = '1';
+            }
+        }
+
+        function setupKanbanDragAndDrop() {
+            const dropZones = document.querySelectorAll('.kanban-drop-zone');
+
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    zone.style.backgroundColor = '#e6f2ff';
+                    zone.style.borderRadius = '8px';
+                });
+
+                zone.addEventListener('dragleave', (e) => {
+                    zone.style.backgroundColor = 'transparent';
+                });
+
+                zone.addEventListener('drop', async (e) => {
+                    e.preventDefault();
+                    zone.style.backgroundColor = 'transparent';
+
+                    if (!draggedSubtaskId) return;
+
+                    const newStatus = zone.dataset.status;
+                    await updateSubtaskStatusFromKanban(draggedSubtaskId, newStatus);
+                });
+            });
+        }
+
+        async function updateSubtaskStatusFromKanban(subtaskId, newStatus) {
+            // Find the subtask
+            const subtask = subtasks.find(st => st.id === subtaskId);
+            if (!subtask) return;
+
+            // Update the subtask status
+            subtask.status = newStatus;
+
+            // Update in Firestore if db is available
+            if (db) {
+                try {
+                    await db.collection('subtasks').doc(subtaskId).update({ status: newStatus });
+                } catch (error) {
+                    console.error('Error updating subtask status:', error);
+                    // Revert the status
+                    subtask.status = draggedFromStatus;
+                }
+            }
+
+            // Re-render the kanban board
+            renderKanbanBoard();
         }
 
         // ========================================
@@ -11253,6 +11614,57 @@
                 closeMemberModal();
             }
         });
+
+        // Delete team member
+        async function deleteMember(memberId, memberName) {
+            // Confirm deletion
+            const confirmDelete = confirm(`Are you sure you want to delete "${memberName}"? This action cannot be undone.`);
+            if (!confirmDelete) return;
+
+            try {
+                showSpinner(`Deleting ${memberName}...`);
+
+                if (!db) {
+                    hideSpinner();
+                    alert('❌ Database not available');
+                    return;
+                }
+
+                // Delete from Firestore
+                await db.collection('team_members').doc(memberId).delete();
+
+                // Remove from tasks (unassign from tasks where this member is assigned)
+                const tasksSnapshot = await db.collection('tasks')
+                    .where('assignedTo', '==', memberId)
+                    .get();
+
+                const batch = db.batch();
+                let taskCount = 0;
+
+                tasksSnapshot.forEach(doc => {
+                    batch.update(doc.ref, {
+                        assignedTo: '',
+                        assignedToNames: firebase.firestore.FieldValue.arrayRemove(memberName)
+                    });
+                    taskCount++;
+                });
+
+                if (taskCount > 0) {
+                    await batch.commit();
+                }
+
+                // Reload team members
+                await loadTeamMembersWithStats();
+                renderTeamGrid();
+
+                hideSpinner();
+                alert(`✅ Team member "${memberName}" deleted successfully!`);
+            } catch (error) {
+                hideSpinner();
+                console.error("❌ Error deleting member:", error);
+                alert('❌ Error deleting team member: ' + error.message);
+            }
+        }
 
         // ========================================
         // PROJECT CRUD FUNCTIONS
@@ -13538,6 +13950,11 @@
 
             // Update active filters display
             updateActiveFiltersDisplay();
+
+            // Re-render kanban board if it's currently visible
+            if (taskViewMode === 'kanban') {
+                renderKanbanBoard();
+            }
         }
 
         // Render filtered tasks
