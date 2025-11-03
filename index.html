@@ -2523,6 +2523,27 @@
                 flex-grow: 1;
             }
         }
+
+        /* Settings menu styles */
+        .settings-menu {
+            pointer-events: auto !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        .settings-menu-item {
+            transition: background-color 0.2s ease;
+            position: relative;
+            z-index: 100001;
+        }
+
+        .settings-menu-item:hover {
+            background-color: #f5f6f8 !important;
+        }
+
+        .settings-menu-item:active {
+            background-color: #e6e9ef !important;
+        }
     </style>
 </head>
 <body>
@@ -2549,7 +2570,7 @@
                 </button>
                 <div style="position: relative;">
                     <button class="icon-btn" id="settingsBtn" onclick="toggleSettingsMenu()">⚙️</button>
-                    <div id="settingsMenu" class="settings-menu" style="display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid #e6e9ef; border-radius: 8px; min-width: 200px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000;">
+                    <div id="settingsMenu" class="settings-menu" style="display: none; position: fixed; top: 70px; right: 24px; background: white; border: 1px solid #e6e9ef; border-radius: 8px; min-width: 200px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100000;">
                         <div class="settings-menu-item" onclick="switchPage('adminRules'); closeSettingsMenu()" style="padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #e6e9ef; color: #323338; font-size: 14px;">
                             📋 Admin Rules
                         </div>
@@ -5049,7 +5070,7 @@
          * @param {Array} subtasksArray - Array of subtasks to filter
          * @returns {Array} Filtered subtasks
          */
-        function filterSubtasksByUserAssignment(subtasksArray) {
+        async function filterSubtasksByUserAssignment(subtasksArray) {
             // In guest mode, show all subtasks without filtering
             if (guestMode) {
                 // //console.log('🎫 Guest mode: Showing all subtasks without assignment filtering');
@@ -5058,6 +5079,13 @@
 
             const currentUser = getCurrentUser();
             if (!currentUser) return [];
+
+            // Check if user is admin - admins see all subtasks
+            const adminStatus = await isAdmin();
+            if (adminStatus) {
+                // //console.log('👑 Admin user: Showing all subtasks without filtering');
+                return subtasksArray;
+            }
 
             return subtasksArray.filter(subtask => {
                 const isSubtaskAssignedToUser = subtask.assignedTo === currentUser.id ||
@@ -5433,38 +5461,33 @@
                 return;
             }
 
-            const canDeletePerm = await canDelete('tasks');
-
-            subtasks.forEach((subtask) => {
-                const isSubtaskOwner = isOwner(subtask);
-
+            // Process each subtask asynchronously to check permissions
+            for (const subtask of subtasks) {
                 // Find parent task for this subtask
                 const parentTask = tasks.find(t => t.id === subtask.parentTaskId);
                 if (!parentTask) {
                     console.warn(`⚠️ Parent task not found for subtask: ${subtask.name}`);
-                    return;
+                    continue;
                 }
 
-                // Edit button for subtask - if user can see subtask, they can edit it
-                // Subtask visibility already checked by renderSubtasks (user assignment filtering)
+                // Edit button for subtask - check if user can edit it
                 const editBtn = document.querySelector(`.action-btn.edit-btn[onclick*="editSubtask('${subtask.id}')"]`);
                 if (editBtn) {
-                    // Subtask is visible = user can edit it (no separate EDIT permission needed)
-                    editBtn.style.display = ''; // Always show edit button
-                    editBtn.disabled = false;
-                    editBtn.title = 'Edit subtask';
+                    const canEditThis = await canEditSubtask(subtask, parentTask);
+                    editBtn.style.display = canEditThis ? '' : 'none';
+                    editBtn.disabled = !canEditThis;
+                    editBtn.title = canEditThis ? 'Edit subtask' : 'You do not have permission to edit this subtask';
                 }
 
-                // Delete button for subtask - show if user has delete permission
-                // User can see subtask means they already have visibility permission
+                // Delete button for subtask - check if user can delete it (stricter rules)
                 const deleteBtn = document.querySelector(`.action-btn.delete-btn[onclick*="deleteSubtask('${subtask.id}')"]`);
                 if (deleteBtn) {
-                    const canDeleteThis = canDeletePerm;
+                    const canDeleteThis = await canDeleteSubtask(subtask, parentTask);
                     deleteBtn.style.display = canDeleteThis ? '' : 'none';
                     deleteBtn.disabled = !canDeleteThis;
-                    deleteBtn.title = canDeleteThis ? 'Delete subtask' : 'You do not have permission to delete subtasks';
+                    deleteBtn.title = canDeleteThis ? 'Delete subtask' : 'You can only delete subtasks assigned to you';
                 }
-            });
+            }
 
             //console.log(`✅ Subtask edit/delete button visibility updated`);
         }
@@ -5561,6 +5584,51 @@
             //console.log(`      Subtask assignedTo: ${subtask.assignedTo}`);
             //console.log(`      Subtask personName: ${subtask.personName}`);
             // //console.log(`      Looking for: "${currentUser.email || currentUser.name}"\n`);
+            return false;
+        }
+
+        /**
+         * Check if user can delete a specific subtask
+         * Rules:
+         * - Admin users can delete any subtask
+         * - Users assigned to the subtask itself can delete it
+         * - Users assigned to parent task CANNOT delete subtasks (they can only edit)
+         */
+        async function canDeleteSubtask(subtask, parentTask) {
+            if (!subtask || !parentTask) {
+                return false;
+            }
+
+            const currentUser = getCurrentUser();
+            if (!currentUser) {
+                return false;
+            }
+
+            // Must have delete permission on tasks page
+            const hasDeletePermission = await canDelete('tasks');
+            if (!hasDeletePermission) {
+                return false;
+            }
+
+            // Check if user is admin - admins can delete any subtask
+            const isAdminUser = await isAdmin();
+            if (isAdminUser) {
+                //console.log(`   ✅ ALLOWED: Admin user can delete subtask "${subtask.name}"`);
+                return true;
+            }
+
+            // Check if user is assigned to the subtask itself (NOT just the parent task)
+            const isUserAssignedToSubtask = subtask.assignedTo === currentUser.id ||
+                                           subtask.assignedTo === currentUser.email ||
+                                           subtask.personName === currentUser.name ||
+                                           subtask.personName === currentUser.email;
+
+            if (isUserAssignedToSubtask) {
+                //console.log(`   ✅ ALLOWED: User assigned to subtask "${subtask.name}" can delete it`);
+                return true;
+            }
+
+            //console.log(`   ❌ DENIED: User can only delete subtasks assigned to them`);
             return false;
         }
 
@@ -6759,8 +6827,27 @@
         // Toggle settings menu
         function toggleSettingsMenu() {
             const menu = document.getElementById('settingsMenu');
-            if (menu) {
-                menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+            const button = document.getElementById('settingsBtn');
+
+            if (menu && button) {
+                if (menu.style.display === 'none') {
+                    // Calculate button position
+                    const buttonRect = button.getBoundingClientRect();
+
+                    // Position menu below button, aligned to the right edge of button
+                    menu.style.top = (buttonRect.bottom + 5) + 'px';
+                    menu.style.right = (window.innerWidth - buttonRect.right) + 'px';
+                    menu.style.display = 'block';
+
+                    console.log('📍 Settings menu positioned at:', {
+                        top: menu.style.top,
+                        right: menu.style.right,
+                        buttonBottom: buttonRect.bottom,
+                        buttonRight: buttonRect.right
+                    });
+                } else {
+                    menu.style.display = 'none';
+                }
             }
         }
 
@@ -6778,6 +6865,19 @@
             const settingsMenu = document.getElementById('settingsMenu');
             if (settingsBtn && settingsMenu && !settingsBtn.contains(event.target) && !settingsMenu.contains(event.target)) {
                 closeSettingsMenu();
+            }
+        });
+
+        // Reposition settings menu on window resize
+        window.addEventListener('resize', function() {
+            const menu = document.getElementById('settingsMenu');
+            const button = document.getElementById('settingsBtn');
+
+            // Only reposition if menu is visible
+            if (menu && button && menu.style.display === 'block') {
+                const buttonRect = button.getBoundingClientRect();
+                menu.style.top = (buttonRect.bottom + 5) + 'px';
+                menu.style.right = (window.innerWidth - buttonRect.right) + 'px';
             }
         });
 
@@ -8440,11 +8540,11 @@
             return `${firstName} ${lastNameInitial}.`;
         }
 
-        function renderTasks() {
+        async function renderTasks() {
             const tableBody = document.getElementById('tableBody');
 
             // Filter tasks by user assignment (based on task page permission)
-            const filteredTasks = filterTasksByUserAssignment(tasks, subtasks);
+            const filteredTasks = await filterTasksByUserAssignment(tasks, subtasks);
 
             tableBody.innerHTML = filteredTasks.map((task, index) => {
                 // Get the original index in the full tasks array for event handlers
@@ -8560,7 +8660,7 @@
             }).join('');
 
             // Render subtasks after tasks
-            renderSubtasks();
+            await renderSubtasks();
 
             // Setup drag and drop for tasks (as drop targets)
             setupTaskDropTargets();
@@ -9523,12 +9623,12 @@
             }
         }
 
-        function renderKanbanBoard() {
+        async function renderKanbanBoard() {
             const kanbanContainer = document.getElementById('kanbanBoardContainer');
             if (!kanbanContainer) return;
 
             // Get filtered subtasks using the same logic as the table
-            let subtasksToDisplay = filterSubtasksForKanban();
+            let subtasksToDisplay = await filterSubtasksForKanban();
 
             // Define status columns
             const statuses = ['blank', 'overdue', 'working', 'done', 'stuck'];
@@ -9629,10 +9729,13 @@
         }
 
         // Filter subtasks for kanban board using the same logic as table filters
-        function filterSubtasksForKanban() {
+        async function filterSubtasksForKanban() {
             // First, get the filtered tasks from the table view logic
             const filteredTasks = getFilteredTasksForDisplay();
             const currentUser = getCurrentUser();
+
+            // Check if user is admin
+            const isAdminUser = await isAdmin();
 
             // Then get only subtasks from those filtered tasks with visibility rules
             let filteredSubtasks = [];
@@ -9648,12 +9751,17 @@
                 // Filter subtasks by assigned member if a filter is active
                 if (taskFilters.assignedTo) {
                     taskSubtasks = taskSubtasks.filter(st => st.assignedTo === taskFilters.assignedTo);
-                } else if (isUserAssignedToTask) {
-                    // If user is assigned to the parent task, show ALL subtasks
+                } else if (isAdminUser || isUserAssignedToTask) {
+                    // If user is admin OR assigned to the parent task, show ALL subtasks
                     // Don't filter - show all subtasks
                 } else {
-                    // User not assigned to parent task - only show their assigned subtasks
-                    taskSubtasks = filterSubtasksByUserAssignment(taskSubtasks);
+                    // User not assigned to parent task and not admin - only show their assigned subtasks
+                    taskSubtasks = taskSubtasks.filter(subtask => {
+                        return subtask.assignedTo === currentUser.id ||
+                               subtask.assignedTo === currentUser.email ||
+                               subtask.personName === currentUser.name ||
+                               subtask.personName === currentUser.email;
+                    });
                 }
 
                 filteredSubtasks = filteredSubtasks.concat(taskSubtasks);
@@ -9740,7 +9848,30 @@
 
             // Filter by status if active
             if (taskFilters.status && taskFilters.status.length > 0) {
-                filtered = filtered.filter(st => taskFilters.status.includes(st.status));
+                filtered = filtered.filter(st => {
+                    // Check if "overdue" is in the filter
+                    if (taskFilters.status.includes('overdue')) {
+                        // Calculate if subtask is dynamically overdue (past due date but not done)
+                        const isSubtaskOverdue = st.date &&
+                                                new Date(st.date) < new Date(new Date().setHours(0, 0, 0, 0)) &&
+                                                st.status !== 'done';
+
+                        // Check if there are other status filters besides 'overdue'
+                        const hasOtherStatuses = taskFilters.status.some(s => s !== 'overdue');
+
+                        if (hasOtherStatuses) {
+                            // Show subtasks that are either overdue OR match other status filters
+                            const otherStatuses = taskFilters.status.filter(s => s !== 'overdue');
+                            return isSubtaskOverdue || otherStatuses.includes(st.status);
+                        } else {
+                            // Only "overdue" filter is active - show only overdue subtasks
+                            return isSubtaskOverdue;
+                        }
+                    }
+
+                    // Regular status filter (no overdue in filter)
+                    return taskFilters.status.includes(st.status);
+                });
             }
 
             // Filter by priority if active
@@ -9750,7 +9881,7 @@
 
             // Filter by assigned member if active
             if (taskFilters.assignedTo) {
-                filtered = filtered.filter(st => st.personName === taskFilters.assignedTo);
+                filtered = filtered.filter(st => st.assignedTo === taskFilters.assignedTo);
             }
 
             return filtered;
@@ -9888,9 +10019,12 @@
         }
 
         // Render subtasks under their parent tasks
-        function renderSubtasks() {
+        async function renderSubtasks() {
             const tableBody = document.getElementById('tableBody');
             const currentUser = getCurrentUser();
+
+            // Check if user is admin
+            const isAdminUser = await isAdmin();
 
             tasks.forEach((task, taskIndex) => {
                 // Find subtasks for this task
@@ -9904,13 +10038,19 @@
                 // Filter subtasks by assigned member if a filter is active
                 if (taskFilters.assignedTo) {
                     taskSubtasks = taskSubtasks.filter(st => st.assignedTo === taskFilters.assignedTo);
-                } else if (isUserAssignedToTask) {
-                    // If user is assigned to the parent task, show ALL subtasks
-                    //console.log(`✅ User assigned to task "${task.name}" - showing all ${taskSubtasks.length} subtasks`);
+                } else if (isAdminUser || isUserAssignedToTask) {
+                    // If user is admin OR assigned to the parent task, show ALL subtasks
+                    //console.log(`✅ ${isAdminUser ? 'Admin' : 'User assigned'} to task "${task.name}" - showing all ${taskSubtasks.length} subtasks`);
                     // Don't filter - show all subtasks
                 } else {
-                    // User not assigned to parent task - only show their assigned subtasks
-                    taskSubtasks = filterSubtasksByUserAssignment(taskSubtasks);
+                    // User not assigned to parent task and not admin - only show their assigned subtasks
+                    // Note: filterSubtasksByUserAssignment is async, but we'll handle this synchronously here for performance
+                    taskSubtasks = taskSubtasks.filter(subtask => {
+                        return subtask.assignedTo === currentUser.id ||
+                               subtask.assignedTo === currentUser.email ||
+                               subtask.personName === currentUser.name ||
+                               subtask.personName === currentUser.email;
+                    });
                 }
 
                 if (taskSubtasks.length > 0) {
@@ -10696,11 +10836,11 @@
                 return;
             }
 
-            // Check if user can see this subtask (using same logic as edit)
-            const canDeleteThisSubtask = await canEditSubtask(subtask, parentTask);
+            // Check if user can delete this subtask (must be assigned to subtask or admin)
+            const canDeleteThisSubtask = await canDeleteSubtask(subtask, parentTask);
             if (!canDeleteThisSubtask) {
-                //console.log(`🔒 User cannot delete subtask "${subtask.name}" - not visible to them`);
-                alert('You can only delete subtasks you can see');
+                //console.log(`🔒 User cannot delete subtask "${subtask.name}" - must be assigned to the subtask or admin`);
+                alert('You can only delete subtasks that are assigned to you');
                 return;
             }
 
@@ -10746,10 +10886,16 @@
                 return;
             }
 
-            const hasEditPermission = await canEdit('tasks');
-            const isSubtaskOwner = isOwner(subtask);
+            // Find parent task
+            const parentTask = tasks.find(t => t.id === subtask.parentTaskId);
+            if (!parentTask) {
+                console.error('Parent task not found');
+                return;
+            }
 
-            if (!hasEditPermission || !isSubtaskOwner) {
+            // Check if user can edit this subtask (includes parent task assignment check)
+            const canEditThis = await canEditSubtask(subtask, parentTask);
+            if (!canEditThis) {
                 //console.log('🔒 User does not have permission to change subtask status');
                 alert('You do not have permission to change the subtask status');
                 return;
@@ -11729,6 +11875,10 @@
             // Filter projects to show only those user has access to
             const visibleProjects = await filterProjectsByUserAccess(projects);
             renderProjectsGridView(visibleProjects);
+
+            // Update filteredProjectsForGantt to keep Timeline 2 in sync
+            window.filteredProjectsForGantt = visibleProjects;
+            // //console.log('✅ Updated filteredProjectsForGantt with', visibleProjects.length, 'visible projects');
         }
 
         /**
@@ -12421,6 +12571,10 @@
                 // //console.log(`✅ Loaded ${projects.length} projects from Firebase`);
                 populateProjectManagerFilterDropdown();
                 renderProjects();
+
+                // Initialize filteredProjectsForGantt for Timeline 2 iframe
+                window.filteredProjectsForGantt = projects;
+                // //console.log('✅ Initialized filteredProjectsForGantt with', projects.length, 'projects');
             } catch (error) {
                 console.error('❌ Error loading projects from Firebase:', error);
                 // If orderBy fails (no index), try without ordering
@@ -12436,6 +12590,10 @@
                     // //console.log(`✅ Loaded ${projects.length} projects from Firebase (fallback)`);
                     populateProjectManagerFilterDropdown();
                     renderProjects();
+
+                    // Initialize filteredProjectsForGantt for Timeline 2 iframe
+                    window.filteredProjectsForGantt = projects;
+                    // //console.log('✅ Initialized filteredProjectsForGantt with', projects.length, 'projects (fallback)');
                 } catch (fallbackError) {
                     console.error('❌ Fallback also failed:', fallbackError);
                 }
@@ -13055,6 +13213,10 @@
             // Always render grid view (Project Card button removed)
             currentProjectView = 'grid';
             renderProjectsGridView(filteredProjects);
+
+            // Update filteredProjectsForGantt to keep Timeline 2 in sync with filters
+            window.filteredProjectsForGantt = filteredProjects;
+            // //console.log('✅ Updated filteredProjectsForGantt with', filteredProjects.length, 'filtered projects');
         }
 
         async function renderProjectsGridView(filteredProjects) {
