@@ -12470,6 +12470,90 @@
             }
         }
 
+        // Calculate project progress from tasks
+        function calculateProjectProgress(projectId, currentProgress) {
+            // Get all tasks for this project
+            const projectTasks = tasks.filter(task => task.projectId === projectId);
+
+            if (projectTasks.length === 0) {
+                // No tasks, keep old progress
+                return currentProgress;
+            }
+
+            let totalScore = 0;
+
+            projectTasks.forEach(task => {
+                if (task.status === 'done') {
+                    totalScore += 1; // Full score for done tasks
+                } else if (task.status === 'working') {
+                    totalScore += 0.5; // Half score for working tasks
+                } else if (task.status === 'stuck') {
+                    totalScore += 0.5; // Half score for stuck tasks
+                }
+                // Other statuses (blank, overdue) contribute 0
+            });
+
+            // Calculate percentage
+            const progress = Math.round((totalScore / projectTasks.length) * 100);
+
+            return progress;
+        }
+
+        // Refresh project progress with confirmation
+        async function refreshProjectProgress(projectId, projectIndex) {
+            const project = projects[projectIndex];
+
+            // Check permission
+            const hasEditPermission = await canEdit('projectslist');
+            const isProjectOwner = isOwner(project);
+
+            if (!hasEditPermission || !isProjectOwner) {
+                alert('You do not have permission to update the project progress');
+                return;
+            }
+
+            try {
+                // Get current progress
+                const oldProgress = project.progress || 0;
+
+                // Calculate new progress (pass old progress for projects with no tasks)
+                const newProgress = calculateProjectProgress(projectId, oldProgress);
+
+                // Show confirmation dialog
+                const confirmMessage = `Auto update progress from ${oldProgress}% to ${newProgress}%?`;
+                const userConfirmed = confirm(confirmMessage);
+
+                if (!userConfirmed) {
+                    // User clicked "No" or "Cancel" - do nothing
+                    return;
+                }
+
+                // User clicked "Yes" - update progress
+                showSpinner('Updating project progress...');
+
+                // Update in Firebase
+                await db.collection('projects').doc(projectId).update({
+                    progress: newProgress,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                console.log(`✅ Project progress updated from ${oldProgress}% to ${newProgress}%`);
+
+                // Update local array
+                projects[projectIndex].progress = newProgress;
+
+                // Re-render projects to show updated progress
+                renderProjects();
+
+                hideSpinner();
+
+            } catch (error) {
+                console.error('❌ Error updating project progress:', error);
+                hideSpinner();
+                alert('Error updating progress: ' + error.message);
+            }
+        }
+
         // Close popups when clicking outside
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.project-status-popup-wrapper')) {
@@ -13388,6 +13472,9 @@
                         <button class="project-action-btn" data-action="tasks" onclick="viewProjectTasks('${project.id}', '${project.name}')">
                             📋 Tasks
                         </button>
+                        ${canEditThis ? `<button class="project-action-btn" data-action="refresh-progress" onclick="refreshProjectProgress('${project.id}', ${index})" title="Auto-calculate progress from tasks">
+                            🔄 Refresh Progress
+                        </button>` : ''}
                         ${canEditThis ? `<button class="project-action-btn" data-action="edit" onclick="editProject(${index})">
                             ✏️ Edit
                         </button>` : ''}
