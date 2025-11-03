@@ -5,22 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Permissions-Policy" content="unload=(self)">
     <title>Dynamic Gantt Chart</title>
-    <!-- Suppress third-party Permissions-Policy warnings -->
-    <script>
-        // Override console.warn to suppress third-party extension warnings
-        (function() {
-            const originalWarn = console.warn;
-            console.warn = function(...args) {
-                // Suppress Grammarly and other extension permission violations
-                if (args[0]?.includes?.('[Violation]') && args[0]?.includes?.('Permissions policy')) {
-                    return; // Silently suppress
-                }
-                originalWarn.apply(console, args);
-            };
-        })();
-    </script>
-    <!-- Load Tailwind CSS (Production) -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3/tailwind.min.css" rel="stylesheet">
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Load Day.js for easy date handling -->
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/isBetween.min.js"></script>
