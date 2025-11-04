@@ -4056,6 +4056,34 @@
                         <label class="form-label">Tags (comma separated)</label>
                         <input type="text" class="form-input" id="projectTags" placeholder="e.g., frontend, urgent">
                     </div>
+
+                    <!-- Project Issues Section -->
+                    <div class="form-group">
+                        <label class="form-label">Project Issues</label>
+                        <div id="projectIssuesList" style="margin-bottom: 12px;">
+                            <!-- Issues will be added here -->
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <input type="text" class="form-input" id="newIssueTitle" placeholder="Issue title" style="flex: 2;">
+                            <select class="form-select" id="newIssueSeverity" style="flex: 1;">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                            <select class="form-select" id="newIssueStatus" style="flex: 1;">
+                                <option value="open">Open</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                        </div>
+                        <textarea class="form-input" id="newIssueDescription" placeholder="Issue description (optional)" rows="2" style="margin-bottom: 8px;"></textarea>
+                        <button type="button" class="btn btn-secondary" onclick="addProjectIssue()" style="width: 100%;">
+                            <span>+</span>
+                            <span>Add Issue</span>
+                        </button>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeProjectModal()">Cancel</button>
@@ -4104,6 +4132,23 @@
                     <button type="submit" class="btn btn-primary" id="changePasswordBtn">Change Password</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Project Issues Modal -->
+    <div class="modal" id="projectIssuesModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="projectIssuesModalTitle">Project Issues</h2>
+            </div>
+            <div class="modal-body">
+                <div id="projectIssuesModalContent">
+                    <!-- Issues will be displayed here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeProjectIssuesModal()">Close</button>
+            </div>
         </div>
     </div>
 
@@ -12986,6 +13031,10 @@
             document.getElementById('projectSubmitBtn').textContent = 'Create Project';
             document.getElementById('projectForm').reset();
 
+            // Clear issues for new project
+            projectIssues = [];
+            renderProjectIssues();
+
             // Set default date to today
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('projectStartDate').value = today;
@@ -13006,6 +13055,398 @@
             document.getElementById('projectModal').classList.remove('active');
             document.getElementById('projectForm').reset();
             editingProjectIndex = -1;
+            // Clear project issues
+            projectIssues = [];
+            renderProjectIssues();
+        }
+
+        // Project Issues Management
+        let projectIssues = [];
+
+        function addProjectIssue() {
+            const title = document.getElementById('newIssueTitle').value.trim();
+            const description = document.getElementById('newIssueDescription').value.trim();
+            const severity = document.getElementById('newIssueSeverity').value;
+            const status = document.getElementById('newIssueStatus').value;
+
+            if (!title) {
+                alert('Please enter an issue title');
+                return;
+            }
+
+            const issue = {
+                id: Date.now().toString(),
+                title: title,
+                description: description,
+                severity: severity,
+                status: status,
+                createdAt: new Date().toISOString()
+            };
+
+            projectIssues.push(issue);
+
+            // Clear input fields
+            document.getElementById('newIssueTitle').value = '';
+            document.getElementById('newIssueDescription').value = '';
+            document.getElementById('newIssueSeverity').value = 'low';
+            document.getElementById('newIssueStatus').value = 'open';
+
+            renderProjectIssues();
+        }
+
+        function removeProjectIssue(issueId) {
+            projectIssues = projectIssues.filter(issue => issue.id !== issueId);
+            renderProjectIssues();
+        }
+
+        function renderProjectIssues() {
+            const issuesList = document.getElementById('projectIssuesList');
+
+            if (projectIssues.length === 0) {
+                issuesList.innerHTML = '<div style="text-align: center; padding: 20px; color: #676879; font-size: 13px;">No issues added yet</div>';
+                return;
+            }
+
+            const severityColors = {
+                'low': '#00c875',
+                'medium': '#fdab3d',
+                'high': '#e44258',
+                'critical': '#5c00d3'
+            };
+
+            const statusColors = {
+                'open': '#0073ea',
+                'in-progress': '#fdab3d',
+                'resolved': '#00c875',
+                'closed': '#808080'
+            };
+
+            issuesList.innerHTML = projectIssues.map(issue => `
+                <div id="modal-issue-${issue.id}" style="background: #f6f7fb; padding: 12px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid ${severityColors[issue.severity]};">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: #323338; margin-bottom: 4px;">${issue.title}</div>
+                            ${issue.description ? `<div style="font-size: 13px; color: #676879; margin-bottom: 6px;">${issue.description}</div>` : ''}
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                <span style="padding: 3px 8px; border-radius: 12px; background: ${severityColors[issue.severity]}; color: white; font-size: 11px; font-weight: 600; text-transform: uppercase;">
+                                    ${issue.severity}
+                                </span>
+                                <span style="padding: 3px 8px; border-radius: 12px; background: ${statusColors[issue.status]}; color: white; font-size: 11px; font-weight: 600; text-transform: capitalize;">
+                                    ${issue.status.replace('-', ' ')}
+                                </span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-left: 12px;">
+                            <button type="button" onclick="editModalIssue('${issue.id}')"
+                                style="background: #0073ea; color: white; border: none; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-weight: 600;"
+                                onmouseover="this.style.background='#0060b9'"
+                                onmouseout="this.style.background='#0073ea'">
+                                Edit
+                            </button>
+                            <button type="button" onclick="removeProjectIssue('${issue.id}')"
+                                style="background: #e44258; color: white; border: none; border-radius: 4px; padding: 6px 10px; cursor: pointer; font-size: 12px; font-weight: 600;"
+                                onmouseover="this.style.background='#c62d42'"
+                                onmouseout="this.style.background='#e44258'">
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Edit issue in project modal (inline editing)
+        function editModalIssue(issueId) {
+            const issue = projectIssues.find(i => i.id === issueId);
+            if (!issue) return;
+
+            const issueCard = document.getElementById(`modal-issue-${issueId}`);
+            if (!issueCard) return;
+
+            const severityColors = {
+                'low': '#00c875',
+                'medium': '#fdab3d',
+                'high': '#e44258',
+                'critical': '#5c00d3'
+            };
+
+            // Replace the issue card with an inline edit form
+            issueCard.innerHTML = `
+                <div style="background: white; padding: 16px; border-radius: 8px;">
+                    <h4 style="margin: 0 0 12px 0; color: #323338; font-size: 14px; font-weight: 700;">Edit Issue</h4>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 4px; color: #323338; font-size: 13px; font-weight: 600;">Title</label>
+                        <input type="text" id="edit-modal-issue-title-${issueId}" value="${issue.title}"
+                            style="width: 100%; padding: 8px 12px; border: 1px solid #d0d4e4; border-radius: 4px; font-size: 14px;">
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; margin-bottom: 4px; color: #323338; font-size: 13px; font-weight: 600;">Description</label>
+                        <textarea id="edit-modal-issue-description-${issueId}" rows="3"
+                            style="width: 100%; padding: 8px 12px; border: 1px solid #d0d4e4; border-radius: 4px; font-size: 14px; resize: vertical;">${issue.description || ''}</textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 4px; color: #323338; font-size: 13px; font-weight: 600;">Severity</label>
+                            <select id="edit-modal-issue-severity-${issueId}"
+                                style="width: 100%; padding: 8px 12px; border: 1px solid #d0d4e4; border-radius: 4px; font-size: 14px;">
+                                <option value="low" ${issue.severity === 'low' ? 'selected' : ''}>Low</option>
+                                <option value="medium" ${issue.severity === 'medium' ? 'selected' : ''}>Medium</option>
+                                <option value="high" ${issue.severity === 'high' ? 'selected' : ''}>High</option>
+                                <option value="critical" ${issue.severity === 'critical' ? 'selected' : ''}>Critical</option>
+                            </select>
+                        </div>
+
+                        <div style="flex: 1;">
+                            <label style="display: block; margin-bottom: 4px; color: #323338; font-size: 13px; font-weight: 600;">Status</label>
+                            <select id="edit-modal-issue-status-${issueId}"
+                                style="width: 100%; padding: 8px 12px; border: 1px solid #d0d4e4; border-radius: 4px; font-size: 14px;">
+                                <option value="open" ${issue.status === 'open' ? 'selected' : ''}>Open</option>
+                                <option value="in-progress" ${issue.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="resolved" ${issue.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                                <option value="closed" ${issue.status === 'closed' ? 'selected' : ''}>Closed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                        <button type="button" onclick="cancelEditModalIssue('${issueId}')"
+                            style="background: #808080; color: white; border: none; border-radius: 4px; padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 600;"
+                            onmouseover="this.style.background='#666666'"
+                            onmouseout="this.style.background='#808080'">
+                            Cancel
+                        </button>
+                        <button type="button" onclick="saveEditedModalIssue('${issueId}')"
+                            style="background: #00c875; color: white; border: none; border-radius: 4px; padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 600;"
+                            onmouseover="this.style.background='#00a461'"
+                            onmouseout="this.style.background='#00c875'">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Update border color based on current severity
+            issueCard.style.borderLeft = `4px solid ${severityColors[issue.severity]}`;
+        }
+
+        // Cancel editing issue in project modal
+        function cancelEditModalIssue(issueId) {
+            // Simply re-render all issues to restore original state
+            renderProjectIssues();
+        }
+
+        // Save edited issue in project modal
+        function saveEditedModalIssue(issueId) {
+            const title = document.getElementById(`edit-modal-issue-title-${issueId}`).value.trim();
+            const description = document.getElementById(`edit-modal-issue-description-${issueId}`).value.trim();
+            const severity = document.getElementById(`edit-modal-issue-severity-${issueId}`).value;
+            const status = document.getElementById(`edit-modal-issue-status-${issueId}`).value;
+
+            if (!title) {
+                alert('Please enter an issue title');
+                return;
+            }
+
+            // Find the issue in the projectIssues array and update it
+            const issueIndex = projectIssues.findIndex(i => i.id === issueId);
+            if (issueIndex === -1) return;
+
+            projectIssues[issueIndex] = {
+                ...projectIssues[issueIndex],
+                title: title,
+                description: description,
+                severity: severity,
+                status: status,
+                updatedAt: new Date().toISOString()
+            };
+
+            // Re-render the issues list to show updated issue
+            renderProjectIssues();
+        }
+
+        // Show Project Issues Modal
+        function showProjectIssues(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) return;
+
+            const openIssues = project.issues ? project.issues.filter(issue => issue.status === 'open') : [];
+
+            document.getElementById('projectIssuesModalTitle').textContent = `${project.name} - Open Issues (${openIssues.length})`;
+
+            const modalContent = document.getElementById('projectIssuesModalContent');
+
+            if (openIssues.length === 0) {
+                modalContent.innerHTML = '<div style="text-align: center; padding: 40px; color: #676879;">No open issues for this project</div>';
+            } else {
+                const severityColors = {
+                    'low': '#00c875',
+                    'medium': '#fdab3d',
+                    'high': '#e44258',
+                    'critical': '#5c00d3'
+                };
+
+                modalContent.innerHTML = openIssues.map(issue => `
+                    <div id="issue-${issue.id}" style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 12px; border-left: 5px solid ${severityColors[issue.severity]}; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 700; font-size: 16px; color: #323338; margin-bottom: 6px;">${issue.title}</div>
+                                ${issue.description ? `<div style="font-size: 14px; color: #676879; margin-bottom: 10px; line-height: 1.5;">${issue.description}</div>` : ''}
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                                    <span style="padding: 4px 10px; border-radius: 14px; background: ${severityColors[issue.severity]}; color: white; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        ${issue.severity}
+                                    </span>
+                                    <span style="font-size: 12px; color: #999;">
+                                        Created: ${new Date(issue.createdAt).toLocaleDateString()}
+                                    </span>
+                                </div>
+                            </div>
+                            <button onclick="editProjectIssue('${projectId}', '${issue.id}')"
+                                style="background: #fdab3d; color: white; border: none; border-radius: 6px; padding: 8px 12px; cursor: pointer; font-size: 12px; font-weight: 600; margin-left: 12px; transition: all 0.2s;"
+                                onmouseover="this.style.background='#e89b2d'"
+                                onmouseout="this.style.background='#fdab3d'"
+                                title="Edit issue">
+                                ✏️ Edit
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('projectIssuesModal').classList.add('active');
+        }
+
+        function closeProjectIssuesModal() {
+            document.getElementById('projectIssuesModal').classList.remove('active');
+        }
+
+        // Edit Project Issue
+        async function editProjectIssue(projectId, issueId) {
+            const project = projects.find(p => p.id === projectId);
+            if (!project || !project.issues) return;
+
+            const issue = project.issues.find(i => i.id === issueId);
+            if (!issue) return;
+
+            // Create inline edit form
+            const issueCard = document.getElementById(`issue-${issueId}`);
+            if (!issueCard) return;
+
+            issueCard.innerHTML = `
+                <div style="background: #f6f7fb; padding: 16px; border-radius: 8px;">
+                    <h4 style="margin: 0 0 12px 0; color: #323338;">Edit Issue</h4>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Title</label>
+                        <input type="text" id="edit-issue-title-${issueId}" value="${issue.title}"
+                            style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Description</label>
+                        <textarea id="edit-issue-description-${issueId}" rows="3"
+                            style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px; resize: vertical;">${issue.description || ''}</textarea>
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Severity</label>
+                            <select id="edit-issue-severity-${issueId}"
+                                style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                                <option value="low" ${issue.severity === 'low' ? 'selected' : ''}>Low</option>
+                                <option value="medium" ${issue.severity === 'medium' ? 'selected' : ''}>Medium</option>
+                                <option value="high" ${issue.severity === 'high' ? 'selected' : ''}>High</option>
+                                <option value="critical" ${issue.severity === 'critical' ? 'selected' : ''}>Critical</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Status</label>
+                            <select id="edit-issue-status-${issueId}"
+                                style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                                <option value="open" ${issue.status === 'open' ? 'selected' : ''}>Open</option>
+                                <option value="in-progress" ${issue.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                                <option value="resolved" ${issue.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                                <option value="closed" ${issue.status === 'closed' ? 'selected' : ''}>Closed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                        <button onclick="cancelEditIssue('${projectId}', '${issueId}')"
+                            style="background: #808080; color: white; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 600;"
+                            onmouseover="this.style.background='#666'"
+                            onmouseout="this.style.background='#808080'">
+                            Cancel
+                        </button>
+                        <button onclick="saveEditedIssue('${projectId}', '${issueId}')"
+                            style="background: #00c875; color: white; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; font-size: 13px; font-weight: 600;"
+                            onmouseover="this.style.background='#00a461'"
+                            onmouseout="this.style.background='#00c875'">
+                            Save Changes
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function cancelEditIssue(projectId, issueId) {
+            // Close modal and reopen to show original state
+            closeProjectIssuesModal();
+            setTimeout(() => showProjectIssues(projectId), 100);
+        }
+
+        async function saveEditedIssue(projectId, issueId) {
+            const project = projects.find(p => p.id === projectId);
+            if (!project || !project.issues) return;
+
+            const issueIndex = project.issues.findIndex(i => i.id === issueId);
+            if (issueIndex === -1) return;
+
+            // Get updated values
+            const title = document.getElementById(`edit-issue-title-${issueId}`).value.trim();
+            const description = document.getElementById(`edit-issue-description-${issueId}`).value.trim();
+            const severity = document.getElementById(`edit-issue-severity-${issueId}`).value;
+            const status = document.getElementById(`edit-issue-status-${issueId}`).value;
+
+            if (!title) {
+                alert('Issue title is required');
+                return;
+            }
+
+            // Update issue
+            project.issues[issueIndex] = {
+                ...project.issues[issueIndex],
+                title: title,
+                description: description,
+                severity: severity,
+                status: status,
+                updatedAt: new Date().toISOString()
+            };
+
+            try {
+                // Update in Firebase
+                if (project.id && db) {
+                    await updateProjectInFirebase(project.id, { issues: project.issues });
+                    alert('✅ Issue updated successfully!');
+
+                    // Reload projects and refresh view
+                    await loadProjectsFromFirebase();
+                    closeProjectIssuesModal();
+
+                    // Refresh the current view (grid or table)
+                    const tableView = document.getElementById('projectsTableView');
+                    if (tableView.style.display !== 'none') {
+                        await renderProjectsTable();
+                    } else {
+                        const visibleProjects = await filterProjectsByUserAccess(projects);
+                        renderProjectsGridView(visibleProjects);
+                    }
+                } else {
+                    alert('✅ Issue updated successfully (locally)!');
+                    closeProjectIssuesModal();
+                }
+            } catch (error) {
+                console.error('❌ Error updating issue:', error);
+                alert('❌ Error updating issue: ' + error.message);
+            }
         }
 
         async function editProject(index) {
@@ -13037,6 +13478,10 @@
             document.getElementById('projectProgress').value = project.progress;
             document.getElementById('projectBudget').value = project.budget;
             document.getElementById('projectTags').value = project.tags ? project.tags.join(', ') : '';
+
+            // Load existing issues
+            projectIssues = project.issues ? [...project.issues] : [];
+            renderProjectIssues();
 
             // Populate team members dropdown and select the correct members
             populateProjectTeamMembersDropdown().then(() => {
@@ -13240,11 +13685,27 @@
                 // Alternating row colors with better contrast
                 const rowBg = index % 2 === 0 ? '#ffffff' : '#fafbfc';
 
+                // Count open issues
+                const openIssuesCount = project.issues ? project.issues.filter(issue => issue.status === 'open').length : 0;
+
                 tableHTML += `
                     <tr style="background: ${rowBg}; border-bottom: 1px solid #e6e9ef; transition: all 0.2s ease;"
                         onmouseover="this.style.background='#f0f3ff'; this.style.boxShadow='0 2px 8px rgba(102, 126, 234, 0.1)'"
                         onmouseout="this.style.background='${rowBg}'; this.style.boxShadow='none'">
-                        <td style="padding: 18px 20px; font-weight: 600; color: #323338; font-size: 14px;">${projectName}</td>
+                        <td style="padding: 18px 20px; font-weight: 600; color: #323338; font-size: 14px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span>${projectName}</span>
+                                ${openIssuesCount > 0 ? `
+                                    <span onclick="event.stopPropagation(); showProjectIssues('${project.id}')"
+                                        style="background: #e44258; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: inline-block;"
+                                        onmouseover="this.style.background='#c62d42'; this.style.transform='scale(1.05)'"
+                                        onmouseout="this.style.background='#e44258'; this.style.transform='scale(1)'"
+                                        title="Click to view open issues">
+                                        ${openIssuesCount}
+                                    </span>
+                                ` : ''}
+                            </div>
+                        </td>
                         <td style="padding: 18px 20px; color: #676879; font-size: 13px;">${projectType}</td>
                         <td style="padding: 18px 20px;">
                             <span style="padding: 6px 14px; border-radius: 20px; background: ${statusColor}; color: white; font-size: 12px; font-weight: 600; text-transform: capitalize; display: inline-block;">
@@ -13639,6 +14100,15 @@
 
                                 </div>
                                 <div class="project-card-title">${project.name}</div>
+                                ${project.issues && project.issues.filter(issue => issue.status === 'open').length > 0 ? `
+                                    <span onclick="event.stopPropagation(); showProjectIssues('${project.id}')"
+                                        style="background: #e44258; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;"
+                                        onmouseover="this.style.background='#c62d42'; this.style.transform='scale(1.05)'"
+                                        onmouseout="this.style.background='#e44258'; this.style.transform='scale(1)'"
+                                        title="Click to view open issues">
+                                        ${project.issues.filter(issue => issue.status === 'open').length}
+                                    </span>
+                                ` : ''}
                             </div>
                             <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
                                 <div class="project-status-popup-wrapper">
@@ -14851,7 +15321,8 @@
                 teamMembers: teamMemberNames,   // Store names for backwards compatibility and display
                 projectManagerIds: projectManagerIds,  // Store manager IDs
                 projectManagers: projectManagerNames,  // Store manager names
-                tags: tagsArray
+                tags: tagsArray,
+                issues: projectIssues  // Add project issues
             };
 
             try {
@@ -14901,6 +15372,13 @@
         document.getElementById('projectModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeProjectModal();
+            }
+        });
+
+        // Close project issues modal when clicking outside
+        document.getElementById('projectIssuesModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProjectIssuesModal();
             }
         });
 
