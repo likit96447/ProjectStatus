@@ -587,21 +587,15 @@
 
         .chart-container {
             background: white;
-            border-radius: 14px;
-            padding: 20px;
+            border-radius: 16px;
+            padding: 28px;
             box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-            margin-bottom: 0;
+            margin-bottom: 24px;
             border: 1px solid #e6e9ef;
-            transition: all 0.3s ease;
-        }
-
-        .chart-container:hover {
-            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-            transform: translateY(-2px);
         }
 
         .chart-title {
-            font-size: 16px;
+            font-size: 20px;
             font-weight: 700;
             margin-bottom: 24px;
             color: #323338;
@@ -2672,24 +2666,15 @@
 
             <main class="content">
                 <!-- Dashboard Page -->
-                <div id="dashboardPage" class="page-view active" style="background: linear-gradient(to bottom, #f8f9fb 0%, #ffffff 100%); padding: 24px; border-radius: 16px;">
-                    <div class="board-header" style="background: white; padding: 24px 32px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 32px; border-left: 5px solid #0073ea;">
-                        <h1 class="board-title" style="font-size: 28px; margin: 0; background: linear-gradient(135deg, #0073ea 0%, #00c875 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Dashboard Overview</h1>
-                        <p class="board-subtitle" style="margin: 8px 0 0 0; font-size: 14px;">Track your team's progress and performance</p>
+                <div id="dashboardPage" class="page-view active">
+                    <div class="board-header">
+                        <h1 class="board-title">Dashboard Overview</h1>
+                        <p class="board-subtitle">Track your team's progress and performance</p>
                     </div>
 
 
-                    <!-- Section Header: Project Overview -->
-                    <div style="margin: 40px 0 20px 0; padding: 20px; background: linear-gradient(135deg, rgba(0, 115, 234, 0.08) 0%, rgba(0, 115, 234, 0.02) 100%); border-radius: 12px; border-left: 4px solid #0073ea;">
-                        <h2 style="font-size: 22px; font-weight: 700; color: #323338; margin: 0; display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 24px;">📊</span>
-                            <span>Project Overview</span>
-                        </h2>
-                        <p style="font-size: 13px; color: #676879; margin: 8px 0 0 0; padding-left: 34px;">Distribution and current state of all projects</p>
-                    </div>
-
-                    <!-- Row 1: Project Overview -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; margin-bottom: 32px;">
+                    <!-- Charts Row Container -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px;">
                         <!-- Project Type Chart -->
                         <div class="chart-container">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -2698,26 +2683,10 @@
                                     Filtered: <span id="typeChartFilterValue"></span>
                                 </span>
                             </div>
-                            <div id="projectTypeChartContainer" style="position: relative; height: 220px; padding: 10px;">
-                                <canvas id="projectTypeChartCanvas" style="max-height: 220px; width: 100%; aspect-ratio: 1/1;"></canvas>
+                            <div id="projectTypeChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectTypeChartCanvas" style="max-height: 300px;"></canvas>
                                 <div id="projectTypeChart" style="text-align: center; padding: 20px; color: #999; display: none;">
                                     Loading project type data...
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Project Status Distribution -->
-                        <div class="chart-container">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <h3 class="chart-title" style="margin: 0;">Projects by Status</h3>
-                                <span id="statusChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
-                                    Filtered: <span id="statusChartFilterValue"></span>
-                                </span>
-                            </div>
-                            <div id="projectStatusChartContainer" style="position: relative; height: 220px; padding: 10px;">
-                                <canvas id="projectStatusChartCanvas" style="max-height: 220px; width: 100%; aspect-ratio: 1/1;"></canvas>
-                                <div id="projectStatusChart" style="text-align: center; padding: 20px; color: #999; display: none;">
-                                    Loading project status data...
                                 </div>
                             </div>
                         </div>
@@ -2730,57 +2699,57 @@
                                     Filtered: <span id="healthChartFilterValue"></span>
                                 </span>
                             </div>
-                            <div id="projectHealthChartContainer" style="position: relative; height: 220px; padding: 10px;">
-                                <canvas id="projectHealthChartCanvas" style="max-height: 220px; width: 100%; aspect-ratio: 1/1;"></canvas>
+                            <div id="projectHealthChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectHealthChartCanvas" style="max-height: 300px;"></canvas>
                                 <div id="projectHealthChart" style="text-align: center; padding: 20px; color: #999; display: none;">
                                     Loading project health data...
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Project Priority Distribution -->
+                        <!-- Project Manager Chart -->
                         <div class="chart-container">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <h3 class="chart-title" style="margin: 0;">Projects by Priority</h3>
-                                <span id="priorityChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
-                                    Filtered: <span id="priorityChartFilterValue"></span>
+                                <h3 class="chart-title" style="margin: 0;">Projects by Manager</h3>
+                                <span id="managerChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
+                                    Filtered: <span id="managerChartFilterValue"></span>
                                 </span>
                             </div>
-                            <div id="projectPriorityChartContainer" style="position: relative; height: 220px; padding: 10px;">
-                                <canvas id="projectPriorityChartCanvas" style="max-height: 220px; width: 100%; aspect-ratio: 1/1;"></canvas>
-                                <div id="projectPriorityChart" style="text-align: center; padding: 20px; color: #999; display: none;">
-                                    Loading project priority data...
+                            <div id="projectManagerChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectManagerChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectManagerChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading project manager data...
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Chart Filter Clear Button (shown when filters are active) -->
-                    <button id="clearChartFiltersBtn" onclick="clearChartFilters()" style="display: none; padding: 10px 20px; background: linear-gradient(135deg, #e44258 0%, #c62d42 100%); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 28px; box-shadow: 0 3px 8px rgba(228, 66, 88, 0.3); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 12px rgba(228, 66, 88, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 8px rgba(228, 66, 88, 0.3)';">
-                        ✕ Clear Chart Filters
+                    <button id="clearChartFiltersBtn" onclick="clearChartFilters()" style="display: none; padding: 8px 16px; background: #e44258; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 24px;">
+                        Clear Chart Filters
                     </button>
 
                     <!-- Key Metrics Cards Row -->
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 32px;">
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 16px; box-shadow: 0 8px 24px rgba(102, 126, 234, 0.25); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 32px rgba(102, 126, 234, 0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 24px rgba(102, 126, 234, 0.25)';">
-                            <div style="font-size: 13px; opacity: 0.95; margin-bottom: 10px; font-weight: 600; letter-spacing: 0.5px;">📊 TOTAL PROJECTS</div>
-                            <div style="font-size: 36px; font-weight: bold; margin: 8px 0;" id="metricsTotal">0</div>
-                            <div style="font-size: 12px; opacity: 0.9; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.25);">Active: <span id="metricsActive" style="font-weight: 600;">0</span></div>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;">
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">Total Projects</div>
+                            <div style="font-size: 32px; font-weight: bold;" id="metricsTotal">0</div>
+                            <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;">Active: <span id="metricsActive">0</span></div>
                         </div>
-                        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 24px; border-radius: 16px; box-shadow: 0 8px 24px rgba(240, 147, 251, 0.25); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 32px rgba(240, 147, 251, 0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 24px rgba(240, 147, 251, 0.25)';">
-                            <div style="font-size: 13px; opacity: 0.95; margin-bottom: 10px; font-weight: 600; letter-spacing: 0.5px;">✅ ON-TIME</div>
-                            <div style="font-size: 36px; font-weight: bold; margin: 8px 0;" id="metricsOnTime">0</div>
-                            <div style="font-size: 12px; opacity: 0.9; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.25);" id="metricsOnTimePercent">0%</div>
+                        <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">On-Time</div>
+                            <div style="font-size: 32px; font-weight: bold;" id="metricsOnTime">0</div>
+                            <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;" id="metricsOnTimePercent">0%</div>
                         </div>
-                        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 24px; border-radius: 16px; box-shadow: 0 8px 24px rgba(79, 172, 254, 0.25); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 32px rgba(79, 172, 254, 0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 24px rgba(79, 172, 254, 0.25)';">
-                            <div style="font-size: 13px; opacity: 0.95; margin-bottom: 10px; font-weight: 600; letter-spacing: 0.5px;">⏱️ AVG DURATION</div>
-                            <div style="font-size: 36px; font-weight: bold; margin: 8px 0;" id="metricsAvgDuration">0</div>
-                            <div style="font-size: 12px; opacity: 0.9; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.25);">days</div>
+                        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">Avg Duration</div>
+                            <div style="font-size: 32px; font-weight: bold;" id="metricsAvgDuration">0</div>
+                            <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;">days</div>
                         </div>
-                        <div onclick="showAtRiskDetails()" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 24px; border-radius: 16px; box-shadow: 0 8px 24px rgba(250, 112, 154, 0.25); cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 32px rgba(250, 112, 154, 0.35)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 24px rgba(250, 112, 154, 0.25)';">
-                            <div style="font-size: 13px; opacity: 0.95; margin-bottom: 10px; font-weight: 600; letter-spacing: 0.5px;">⚠️ AT RISK</div>
-                            <div style="font-size: 36px; font-weight: bold; margin: 8px 0;" id="metricsAtRisk">0</div>
-                            <div style="font-size: 12px; opacity: 0.9; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.25);" id="metricsAtRiskPercent">0%</div>
+                        <div onclick="showAtRiskDetails()" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';">
+                            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 8px;">At Risk (Click for details)</div>
+                            <div style="font-size: 32px; font-weight: bold;" id="metricsAtRisk">0</div>
+                            <div style="font-size: 11px; opacity: 0.8; margin-top: 8px;" id="metricsAtRiskPercent">0%</div>
                             <div style="font-size: 10px; opacity: 0.85; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.3);">
                                 <div style="margin-bottom: 3px;">
                                     <span id="metricsAtRiskOverdue">⏰ Overdue: 0</span>
@@ -2798,42 +2767,36 @@
                         </div>
                     </div>
 
-                    <!-- Section Header: Team & Resources -->
-                    <div style="margin: 40px 0 20px 0; padding: 20px; background: linear-gradient(135deg, rgba(0, 200, 117, 0.08) 0%, rgba(0, 200, 117, 0.02) 100%); border-radius: 12px; border-left: 4px solid #00c875;">
-                        <h2 style="font-size: 22px; font-weight: 700; color: #323338; margin: 0; display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 24px;">👥</span>
-                            <span>Team & Resources</span>
-                        </h2>
-                        <p style="font-size: 13px; color: #676879; margin: 8px 0 0 0; padding-left: 34px;">Team workload, resource allocation, and development phases</p>
-                    </div>
-
-                    <!-- Row 2: Team & Resources -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; margin-bottom: 32px;">
-                        <!-- Project Manager Workload -->
+                    <!-- Additional Charts Row 1 -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <!-- Project Status Distribution -->
                         <div class="chart-container">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <h3 class="chart-title" style="margin: 0;">Projects by Manager</h3>
-                                <span id="managerChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
-                                    Filtered: <span id="managerChartFilterValue"></span>
+                                <h3 class="chart-title" style="margin: 0;">Projects by Status</h3>
+                                <span id="statusChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
+                                    Filtered: <span id="statusChartFilterValue"></span>
                                 </span>
                             </div>
-                            <div id="projectManagerChartContainer" style="position: relative; height: 220px; padding: 10px;">
-                                <canvas id="projectManagerChartCanvas" style="max-height: 220px; width: 100%; aspect-ratio: 1/1;"></canvas>
-                                <div id="projectManagerChart" style="text-align: center; padding: 20px; color: #999; display: none;">
-                                    Loading project manager data...
+                            <div id="projectStatusChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectStatusChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectStatusChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading project status data...
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Team Workload by Manager -->
+                        <!-- Project Priority Distribution -->
                         <div class="chart-container">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <h3 class="chart-title" style="margin: 0;">Team Workload</h3>
+                                <h3 class="chart-title" style="margin: 0;">Projects by Priority</h3>
+                                <span id="priorityChartFilterLabel" style="font-size: 12px; color: #0073ea; font-weight: 600; display: none;">
+                                    Filtered: <span id="priorityChartFilterValue"></span>
+                                </span>
                             </div>
-                            <div id="projectWorkloadChartContainer" style="position: relative; height: 220px; padding: 10px;">
-                                <canvas id="projectWorkloadChartCanvas" style="max-height: 220px; width: 100%; aspect-ratio: 1/1;"></canvas>
-                                <div id="projectWorkloadChart" style="text-align: center; padding: 20px; color: #999; display: none;">
-                                    Loading workload data...
+                            <div id="projectPriorityChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectPriorityChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectPriorityChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading project priority data...
                                 </div>
                             </div>
                         </div>
@@ -2846,76 +2809,80 @@
                                     Filtered: <span id="sdlcChartFilterValue"></span>
                                 </span>
                             </div>
-                            <div id="projectSDLCChartContainer" style="position: relative; height: 220px; padding: 10px;">
-                                <canvas id="projectSDLCChartCanvas" style="max-height: 220px; width: 100%; aspect-ratio: 1/1;"></canvas>
+                            <div id="projectSDLCChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectSDLCChartCanvas" style="max-height: 300px;"></canvas>
                                 <div id="projectSDLCChart" style="text-align: center; padding: 20px; color: #999; display: none;">
                                     Loading SDLC phase data...
                                 </div>
                             </div>
                         </div>
+                    </div>
 
+                    <!-- Additional Charts Row 2 -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-bottom: 24px;">
                         <!-- Project Progress Distribution -->
                         <div class="chart-container">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                                 <h3 class="chart-title" style="margin: 0;">Progress Distribution</h3>
                             </div>
-                            <div id="projectProgressDistChartContainer" style="position: relative; height: 220px; padding: 10px;">
-                                <canvas id="projectProgressDistChartCanvas" style="max-height: 220px; width: 100%; aspect-ratio: 1/1;"></canvas>
+                            <div id="projectProgressDistChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectProgressDistChartCanvas" style="max-height: 300px;"></canvas>
                                 <div id="projectProgressDistChart" style="text-align: center; padding: 20px; color: #999; display: none;">
                                     Loading progress distribution data...
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Section Header: Timeline & Forecasting -->
-                    <div style="margin: 40px 0 20px 0; padding: 20px; background: linear-gradient(135deg, rgba(253, 171, 61, 0.08) 0%, rgba(253, 171, 61, 0.02) 100%); border-radius: 12px; border-left: 4px solid #fdab3d;">
-                        <h2 style="font-size: 22px; font-weight: 700; color: #323338; margin: 0; display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 24px;">📅</span>
-                            <span>Timeline & Forecasting</span>
-                        </h2>
-                        <p style="font-size: 13px; color: #676879; margin: 8px 0 0 0; padding-left: 34px;">Project timelines, completion predictions, and bottleneck alerts</p>
-                    </div>
-
-                    <!-- Row 3: Timeline & Forecasting (50/50 split layout) -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 32px;">
-                        <!-- Left side: Timeline & Forecast stacked -->
-                        <div style="display: grid; grid-template-rows: 1fr 1fr; gap: 20px;">
-                            <!-- Timeline Analytics -->
-                            <div class="chart-container">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                    <h3 class="chart-title" style="margin: 0;">Timeline Analytics</h3>
-                                </div>
-                                <div id="projectTimelineChartContainer" style="position: relative; height: 180px; padding: 10px;">
-                                    <canvas id="projectTimelineChartCanvas" style="max-height: 180px; width: 100%;"></canvas>
-                                    <div id="projectTimelineChart" style="text-align: center; padding: 20px; color: #999; display: none;">
-                                        Loading timeline data...
-                                    </div>
-                                </div>
+                        <!-- Timeline Analytics -->
+                        <div class="chart-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 class="chart-title" style="margin: 0;">Timeline Analytics</h3>
                             </div>
-
-                            <!-- Project Completion Forecast -->
-                            <div class="chart-container">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                    <h3 class="chart-title" style="margin: 0;">Completion Forecast</h3>
-                                </div>
-                                <div id="projectForecastChartContainer" style="position: relative; height: 180px; padding: 10px;">
-                                    <canvas id="projectForecastChartCanvas" style="max-height: 180px; width: 100%;"></canvas>
-                                    <div id="projectForecastChart" style="text-align: center; padding: 20px; color: #999; display: none;">
-                                        Loading forecast data...
-                                    </div>
+                            <div id="projectTimelineChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectTimelineChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectTimelineChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading timeline data...
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Right side: Bottleneck Alerts (full height) -->
-                        <div class="chart-container" style="height: 100%;">
+                        <!-- Project Completion Forecast -->
+                        <div class="chart-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 class="chart-title" style="margin: 0;">Completion Forecast</h3>
+                            </div>
+                            <div id="projectForecastChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectForecastChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectForecastChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading forecast data...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottleneck Alerts Panel -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <!-- Bottleneck Alerts -->
+                        <div class="chart-container">
                             <h3 class="chart-title">⚠️ Bottleneck Alerts</h3>
-                            <ul id="bottleneckAlertsList" style="list-style: none; padding: 0; max-height: 420px; overflow-y: auto;">
+                            <ul id="bottleneckAlertsList" style="list-style: none; padding: 0;">
                                 <li style="text-align: center; padding: 20px; color: #999;">
                                     Loading alerts...
                                 </li>
                             </ul>
+                        </div>
+
+                        <!-- Team Workload by Manager -->
+                        <div class="chart-container">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 class="chart-title" style="margin: 0;">Team Workload</h3>
+                            </div>
+                            <div id="projectWorkloadChartContainer" style="position: relative; height: 300px; padding: 10px;">
+                                <canvas id="projectWorkloadChartCanvas" style="max-height: 300px;"></canvas>
+                                <div id="projectWorkloadChart" style="text-align: center; padding: 20px; color: #999; display: none;">
+                                    Loading workload data...
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -2938,33 +2905,24 @@
                         </div>
                     </div>-->
 
-                    <!-- Additional Dashboard Sections -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 32px;">
-                        <div class="chart-container" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fb 100%);">
-                            <h3 class="chart-title" style="display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 20px;">📈</span>
-                                <span>Project Progress</span>
-                            </h3>
-                            <div id="projectProgressList">
-                                <!-- Projects will be rendered here dynamically -->
-                                <div style="text-align: center; padding: 20px; color: #999;">
-                                    Loading projects...
-                                </div>
+                    <div class="chart-container">
+                        <h3 class="chart-title">Project Progress</h3>
+                        <div id="projectProgressList">
+                            <!-- Projects will be rendered here dynamically -->
+                            <div style="text-align: center; padding: 20px; color: #999;">
+                                Loading projects...
                             </div>
                         </div>
+                    </div>
 
-                        <div class="chart-container" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fb 100%);">
-                            <h3 class="chart-title" style="display: flex; align-items: center; gap: 8px;">
-                                <span style="font-size: 20px;">🔔</span>
-                                <span>Recent Activity</span>
-                            </h3>
-                            <ul class="activity-list" id="recentActivityList">
-                                <!-- Recent activity will be rendered here dynamically -->
-                                <li style="text-align: center; padding: 20px; color: #999;">
-                                    Loading recent activity...
-                                </li>
-                            </ul>
-                        </div>
+                    <div class="chart-container">
+                        <h3 class="chart-title">Recent Activity</h3>
+                        <ul class="activity-list" id="recentActivityList">
+                            <!-- Recent activity will be rendered here dynamically -->
+                            <li style="text-align: center; padding: 20px; color: #999;">
+                                Loading recent activity...
+                            </li>
+                        </ul>
                     </div>
                 </div>
 
