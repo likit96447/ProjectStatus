@@ -7069,6 +7069,28 @@
                 });
             }
 
+            // Apply manager filter from chart
+            if (chartManagerFilter) {
+                filteredProjects = filteredProjects.filter(p =>
+                    p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+                );
+            }
+
+            // Apply status filter from chart
+            if (chartStatusFilter) {
+                filteredProjects = filteredProjects.filter(p => p.status === chartStatusFilter);
+            }
+
+            // Apply priority filter from chart
+            if (chartPriorityFilter) {
+                filteredProjects = filteredProjects.filter(p => p.priority === chartPriorityFilter);
+            }
+
+            // Apply SDLC filter from chart
+            if (chartSDLCFilter) {
+                filteredProjects = filteredProjects.filter(p => p.sdlc === chartSDLCFilter);
+            }
+
             // Sort by progress (incomplete first, then by priority)
             const sortedProjects = filteredProjects
                 .filter(p => p.name && p.progress !== undefined)
@@ -13132,6 +13154,9 @@
             renderProjectForecastChart();
             renderProjectWorkloadChart();
             renderBottleneckAlerts();
+
+            // Re-render project progress list with filtered data
+            renderProjectProgress();
 
             // Update filter labels
             const typeFilterLabel = document.getElementById('typeChartFilterLabel');
