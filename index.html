@@ -2990,6 +2990,10 @@
                                 <span>📤</span>
                                 <span>Export</span>
                             </button>
+                            <button class="btn btn-secondary" id="projectViewToggleBtn" onclick="toggleProjectTableView()">
+                                <span>🗂️</span>
+                                <span id="projectViewToggleBtnText">Project Cards</span>
+                            </button>
                         </div>
                     </div>
 
@@ -3096,26 +3100,32 @@
                         </div>
                     </div>
 
-                    <div id="projectsGrid" class="projects-grid">
+                    <div id="projectsGrid" class="projects-grid" style="display: none;">
                         <!-- Projects will be rendered here dynamically -->
                     </div>
 
                     <!-- Projects Table View -->
-                    <div id="projectsTableView" style="display: none;">
-                        <div class="table-container">
-                            <div class="table-header">
-                                <div class="table-cell" style="flex: 2;">Project Name</div>
-                                <div class="table-cell">Status</div>
-                                <div class="table-cell">Type</div>
-                                <div class="table-cell">SDLC Phase</div>
-                                <div class="table-cell">Health</div>
-                                <div class="table-cell">Progress</div>
-                                <div class="table-cell">Start Date</div>
-                                <div class="table-cell">End Date</div>
-                                <div class="table-cell">Actions</div>
-                            </div>
-                            <div id="projectsTableBody" class="table-body">
-                                <!-- Projects table rows will be rendered here -->
+                    <div id="projectsTableView" style="display: block; background: #f6f7fb; padding: 0; border-radius: 0; box-shadow: none; margin-top: 0;">
+                        <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;">
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse; min-width: 1000px;">
+                                    <thead>
+                                        <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Project Name</th>
+                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Type</th>
+                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Status</th>
+                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Health</th>
+                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Start Date</th>
+                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Due Date</th>
+                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Manager</th>
+                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Progress</th>
+                                            <th style="padding: 18px 20px; text-align: center; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="projectsTableBody">
+                                        <!-- Projects table rows will be rendered here -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -11951,11 +11961,16 @@
             // Reset filtered projects when rendering all projects
             currentFilteredProjects = null;
 
-            // Always render grid view (Project Card button removed)
-            currentProjectView = 'grid';
+            // Default to table view (Project Details)
+            currentProjectView = 'table';
 
             // Filter projects to show only those user has access to
             const visibleProjects = await filterProjectsByUserAccess(projects);
+
+            // Render table view by default
+            await renderProjectsTable();
+
+            // Also render grid view in background for quick switching (but keep it hidden)
             renderProjectsGridView(visibleProjects);
 
             // Update filteredProjectsForGantt to keep Timeline 2 in sync
@@ -13117,6 +13132,185 @@
             }
         }
 
+        // Toggle Project Table View
+        async function toggleProjectTableView() {
+            const gridView = document.getElementById('projectsGrid');
+            const tableView = document.getElementById('projectsTableView');
+            const toggleBtn = document.getElementById('projectViewToggleBtnText');
+
+            console.log('📋 Toggle called - Current table display:', tableView.style.display);
+            console.log('📋 Total projects available:', projects.length);
+
+            if (tableView.style.display === 'none' || tableView.style.display === '') {
+                // Show table view, hide grid view
+                console.log('📋 Showing table view');
+                gridView.style.display = 'none';
+                tableView.style.display = 'block';
+                toggleBtn.textContent = 'Project Cards';
+                await renderProjectsTable();
+            } else {
+                // Show grid view, hide table view
+                console.log('🗂️ Showing grid view');
+                gridView.style.display = 'grid';
+                tableView.style.display = 'none';
+                toggleBtn.textContent = 'Project Details';
+            }
+        }
+
+        // Render Projects Table
+        async function renderProjectsTable() {
+            const tableBody = document.getElementById('projectsTableBody');
+            if (!tableBody) return;
+
+            // Use currentFilteredProjects if available, otherwise filter projects by user access (same as grid view)
+            let projectsToRender;
+            if (currentFilteredProjects && Array.isArray(currentFilteredProjects) && currentFilteredProjects.length > 0) {
+                projectsToRender = currentFilteredProjects;
+            } else {
+                // Filter projects to show only those user has access to (same as renderProjects())
+                projectsToRender = await filterProjectsByUserAccess(projects);
+            }
+
+            console.log('📋 Rendering projects table with', projectsToRender.length, 'projects');
+
+            if (!projectsToRender || projectsToRender.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: #999;">No projects to display</td></tr>';
+                return;
+            }
+
+            // Get permissions (same as project grid cards)
+            const canEditPerm = await canEdit('projectslist');
+            const canDeletePerm = await canDelete('projectslist');
+
+            let tableHTML = '';
+            projectsToRender.forEach((project) => {
+                // Use the original index from projects array (same as grid view)
+                const index = projects.indexOf(project);
+
+                const projectName = project.name || 'Unnamed Project';
+                const projectType = project.projectType || 'N/A';
+                const status = project.status || 'planned';
+                const health = project.projectHealth || 'none';
+                const startDate = project.startDate ? new Date(project.startDate).toLocaleDateString() : 'N/A';
+                const dueDate = project.dueDate ? new Date(project.dueDate).toLocaleDateString() : 'N/A';
+                const progress = project.progress || 0;
+
+                // Check ownership and permissions (same as project grid cards)
+                const isProjectOwner = isOwner(project);
+                const canEditThis = canEditPerm && isProjectOwner;
+                const canDeleteThis = canDeletePerm && isProjectOwner;
+
+                // Get project managers
+                let managersText = 'N/A';
+                if (project.projectManagers && project.projectManagers.length > 0) {
+                    // Check if teamMembers exists globally or in window
+                    const teamMembersData = (typeof teamMembers !== 'undefined') ? teamMembers : (window.teamMembers || []);
+
+                    const managerNames = project.projectManagers.map(managerId => {
+                        if (teamMembersData.length > 0) {
+                            const manager = teamMembersData.find(tm => tm.id === managerId);
+                            return manager ? manager.name : managerId;
+                        }
+                        return managerId; // Just show the ID if no team members data
+                    });
+                    managersText = managerNames.join(', ');
+                } else if (project.projectManager) {
+                    // Fallback to single projectManager field if it exists
+                    managersText = project.projectManager;
+                }
+
+                // Status badge
+                const statusColors = {
+                    'planned': '#808080',
+                    'in-progress': '#0073ea',
+                    'completed': '#00c875',
+                    'on-hold': '#ffb800'
+                };
+                const statusColor = statusColors[status] || '#808080';
+
+                // Health indicator
+                const healthColors = {
+                    'green': '#65d814',
+                    'amber': '#ffb800',
+                    'red': '#ff5555',
+                    'none': '#c4c4c4'
+                };
+                const healthColor = healthColors[health.toLowerCase()] || '#c4c4c4';
+
+                // Alternating row colors with better contrast
+                const rowBg = index % 2 === 0 ? '#ffffff' : '#fafbfc';
+
+                tableHTML += `
+                    <tr style="background: ${rowBg}; border-bottom: 1px solid #e6e9ef; transition: all 0.2s ease;"
+                        onmouseover="this.style.background='#f0f3ff'; this.style.boxShadow='0 2px 8px rgba(102, 126, 234, 0.1)'"
+                        onmouseout="this.style.background='${rowBg}'; this.style.boxShadow='none'">
+                        <td style="padding: 18px 20px; font-weight: 600; color: #323338; font-size: 14px;">${projectName}</td>
+                        <td style="padding: 18px 20px; color: #676879; font-size: 13px;">${projectType}</td>
+                        <td style="padding: 18px 20px;">
+                            <span style="padding: 6px 14px; border-radius: 20px; background: ${statusColor}; color: white; font-size: 12px; font-weight: 600; text-transform: capitalize; display: inline-block;">
+                                ${status.replace('-', ' ')}
+                            </span>
+                        </td>
+                        <td style="padding: 18px 20px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="width: 18px; height: 18px; border-radius: 50%; background: ${healthColor}; box-shadow: 0 2px 6px rgba(0,0,0,0.15); border: 2px solid white;"></span>
+                                <span style="color: #676879; font-size: 13px; text-transform: capitalize; font-weight: 500;">${health}</span>
+                            </div>
+                        </td>
+                        <td style="padding: 18px 20px; color: #676879; font-size: 13px;">${startDate}</td>
+                        <td style="padding: 18px 20px; color: #676879; font-size: 13px;">${dueDate}</td>
+                        <td style="padding: 18px 20px; color: #676879; font-size: 13px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${managersText}">${managersText}</td>
+                        <td style="padding: 18px 20px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="flex: 1; background: #e6e9ef; height: 10px; border-radius: 10px; overflow: hidden; min-width: 100px;">
+                                    <div style="width: ${progress}%; height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); transition: width 0.3s; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);"></div>
+                                </div>
+                                <span style="font-weight: 700; color: #323338; font-size: 13px; min-width: 45px; text-align: right;">${progress}%</span>
+                            </div>
+                        </td>
+                        <td style="padding: 18px 20px;">
+                            <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
+                                <button onclick="viewProjectTasks('${project.id}')"
+                                    style="padding: 8px; background: #0073ea; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,115,234,0.2);"
+                                    onmouseover="this.style.background='#005bb5'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,115,234,0.3)'"
+                                    onmouseout="this.style.background='#0073ea'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,115,234,0.2)'"
+                                    title="View Tasks">
+                                    📋
+                                </button>
+                                <button onclick="refreshProjectProgress('${project.id}', ${index})"
+                                    style="padding: 8px; background: #00c875; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,200,117,0.2);"
+                                    onmouseover="this.style.background='#00a461'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,200,117,0.3)'"
+                                    onmouseout="this.style.background='#00c875'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,200,117,0.2)'"
+                                    title="Refresh Progress">
+                                    🔄
+                                </button>
+                                ${canEditThis ? `
+                                <button onclick="editProject(${index})"
+                                    style="padding: 8px; background: #fdab3d; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(253,171,61,0.2);"
+                                    onmouseover="this.style.background='#e89b2d'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(253,171,61,0.3)'"
+                                    onmouseout="this.style.background='#fdab3d'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(253,171,61,0.2)'"
+                                    title="Edit Project">
+                                    ✏️
+                                </button>
+                                ` : ''}
+                                ${canDeleteThis ? `
+                                <button onclick="deleteProject(${index})"
+                                    style="padding: 8px; background: #e44258; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(228,66,88,0.2);"
+                                    onmouseover="this.style.background='#c62d42'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(228,66,88,0.3)'"
+                                    onmouseout="this.style.background='#e44258'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(228,66,88,0.2)'"
+                                    title="Delete Project">
+                                    🗑️
+                                </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = tableHTML;
+        }
+
         // Full-Screen Gantt Functions
         async function openFullScreenGantt() {
             const modal = document.getElementById('fullScreenGanttModal');
@@ -13375,13 +13569,23 @@
             renderFilteredProjects(filteredProjects);
         }
 
-        function renderFilteredProjects(filteredProjects) {
+        async function renderFilteredProjects(filteredProjects) {
             // Store the filtered projects so they persist when switching views
             currentFilteredProjects = filteredProjects;
 
-            // Always render grid view (Project Card button removed)
-            currentProjectView = 'grid';
-            renderProjectsGridView(filteredProjects);
+            // Check current view and render accordingly
+            const tableView = document.getElementById('projectsTableView');
+            const gridView = document.getElementById('projectsGrid');
+
+            if (tableView.style.display === 'none') {
+                // Grid view is active, render grid
+                currentProjectView = 'grid';
+                renderProjectsGridView(filteredProjects);
+            } else {
+                // Table view is active (default), render table
+                currentProjectView = 'table';
+                await renderProjectsTable();
+            }
 
             // Update filteredProjectsForGantt to keep Timeline 2 in sync with filters
             window.filteredProjectsForGantt = filteredProjects;
