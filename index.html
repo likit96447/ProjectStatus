@@ -3111,14 +3111,30 @@
                                 <table style="width: 100%; border-collapse: collapse; min-width: 1000px;">
                                     <thead>
                                         <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Project Name</th>
-                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Type</th>
-                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Status</th>
-                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Health</th>
-                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Start Date</th>
-                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Due Date</th>
-                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Manager</th>
-                                            <th style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Progress</th>
+                                            <th onclick="sortProjectsTable('name')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                                                <span style="display: flex; align-items: center; gap: 8px;">Project Name <span id="sort-name" style="font-size: 10px; opacity: 0.6;">▼</span></span>
+                                            </th>
+                                            <th onclick="sortProjectsTable('type')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                                                <span style="display: flex; align-items: center; gap: 8px;">Type <span id="sort-type" style="font-size: 10px; opacity: 0.6;">▼</span></span>
+                                            </th>
+                                            <th onclick="sortProjectsTable('status')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                                                <span style="display: flex; align-items: center; gap: 8px;">Status <span id="sort-status" style="font-size: 10px; opacity: 0.6;">▼</span></span>
+                                            </th>
+                                            <th onclick="sortProjectsTable('health')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                                                <span style="display: flex; align-items: center; gap: 8px;">Health <span id="sort-health" style="font-size: 10px; opacity: 0.6;">▼</span></span>
+                                            </th>
+                                            <th onclick="sortProjectsTable('startDate')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                                                <span style="display: flex; align-items: center; gap: 8px;">Start Date <span id="sort-startDate" style="font-size: 10px; opacity: 0.6;">▼</span></span>
+                                            </th>
+                                            <th onclick="sortProjectsTable('dueDate')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                                                <span style="display: flex; align-items: center; gap: 8px;">End Date <span id="sort-dueDate" style="font-size: 10px; opacity: 0.6;">▼</span></span>
+                                            </th>
+                                            <th onclick="sortProjectsTable('manager')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                                                <span style="display: flex; align-items: center; gap: 8px;">Manager <span id="sort-manager" style="font-size: 10px; opacity: 0.6;">▼</span></span>
+                                            </th>
+                                            <th onclick="sortProjectsTable('progress')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                                                <span style="display: flex; align-items: center; gap: 8px;">Progress <span id="sort-progress" style="font-size: 10px; opacity: 0.6;">▼</span></span>
+                                            </th>
                                             <th style="padding: 18px 20px; text-align: center; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none;">Actions</th>
                                         </tr>
                                     </thead>
@@ -13602,6 +13618,39 @@
             }
         }
 
+        // Project table sort state
+        let projectTableSortColumn = null;
+        let projectTableSortDirection = 'asc'; // 'asc' or 'desc'
+
+        // Sort projects table by column
+        async function sortProjectsTable(column) {
+            // Toggle direction if clicking the same column
+            if (projectTableSortColumn === column) {
+                projectTableSortDirection = projectTableSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                projectTableSortColumn = column;
+                projectTableSortDirection = 'asc';
+            }
+
+            // Update sort indicators
+            const sortIndicators = ['name', 'type', 'status', 'health', 'startDate', 'dueDate', 'manager', 'progress'];
+            sortIndicators.forEach(col => {
+                const indicator = document.getElementById(`sort-${col}`);
+                if (indicator) {
+                    if (col === column) {
+                        indicator.textContent = projectTableSortDirection === 'asc' ? '▲' : '▼';
+                        indicator.style.opacity = '1';
+                    } else {
+                        indicator.textContent = '▼';
+                        indicator.style.opacity = '0.6';
+                    }
+                }
+            });
+
+            // Re-render the table with sorted data
+            await renderProjectsTable();
+        }
+
         // Render Projects Table
         async function renderProjectsTable() {
             const tableBody = document.getElementById('projectsTableBody');
@@ -13623,6 +13672,84 @@
                 return;
             }
 
+            // Sort projects if a sort column is selected
+            if (projectTableSortColumn) {
+                projectsToRender = [...projectsToRender].sort((a, b) => {
+                    let aValue, bValue;
+
+                    switch (projectTableSortColumn) {
+                        case 'name':
+                            aValue = (a.name || '').toLowerCase();
+                            bValue = (b.name || '').toLowerCase();
+                            break;
+                        case 'type':
+                            aValue = (a.projectType || '').toLowerCase();
+                            bValue = (b.projectType || '').toLowerCase();
+                            break;
+                        case 'status':
+                            aValue = (a.status || '').toLowerCase();
+                            bValue = (b.status || '').toLowerCase();
+                            break;
+                        case 'health':
+                            // Health sorting: green < amber < red < none
+                            const healthOrder = { 'green': 1, 'amber': 2, 'red': 3, 'none': 4 };
+                            aValue = healthOrder[(a.projectHealth || 'none').toLowerCase()] || 4;
+                            bValue = healthOrder[(b.projectHealth || 'none').toLowerCase()] || 4;
+                            break;
+                        case 'startDate':
+                            aValue = a.startDate ? new Date(a.startDate).getTime() : 0;
+                            bValue = b.startDate ? new Date(b.startDate).getTime() : 0;
+                            break;
+                        case 'dueDate':
+                            // Support both endDate and dueDate field names
+                            const aEndDate = a.endDate || a.dueDate;
+                            const bEndDate = b.endDate || b.dueDate;
+                            aValue = aEndDate ? new Date(aEndDate).getTime() : 0;
+                            bValue = bEndDate ? new Date(bEndDate).getTime() : 0;
+                            break;
+                        case 'manager':
+                            // Get manager names for sorting
+                            const teamMembersData = (typeof teamMembers !== 'undefined') ? teamMembers : (window.teamMembers || []);
+                            let aManager = 'N/A';
+                            let bManager = 'N/A';
+
+                            if (a.projectManagers && a.projectManagers.length > 0 && teamMembersData.length > 0) {
+                                const manager = teamMembersData.find(tm => tm.id === a.projectManagers[0]);
+                                aManager = manager ? manager.name : a.projectManagers[0];
+                            } else if (a.projectManager) {
+                                aManager = a.projectManager;
+                            }
+
+                            if (b.projectManagers && b.projectManagers.length > 0 && teamMembersData.length > 0) {
+                                const manager = teamMembersData.find(tm => tm.id === b.projectManagers[0]);
+                                bManager = manager ? manager.name : b.projectManagers[0];
+                            } else if (b.projectManager) {
+                                bManager = b.projectManager;
+                            }
+
+                            aValue = aManager.toLowerCase();
+                            bValue = bManager.toLowerCase();
+                            break;
+                        case 'progress':
+                            aValue = a.progress || 0;
+                            bValue = b.progress || 0;
+                            break;
+                        default:
+                            return 0;
+                    }
+
+                    // Compare values
+                    let comparison = 0;
+                    if (aValue < bValue) comparison = -1;
+                    else if (aValue > bValue) comparison = 1;
+
+                    // Apply sort direction
+                    return projectTableSortDirection === 'asc' ? comparison : -comparison;
+                });
+
+                console.log(`📋 Sorted by ${projectTableSortColumn} (${projectTableSortDirection})`);
+            }
+
             // Get permissions (same as project grid cards)
             const canEditPerm = await canEdit('projectslist');
             const canDeletePerm = await canDelete('projectslist');
@@ -13637,7 +13764,9 @@
                 const status = project.status || 'planned';
                 const health = project.projectHealth || 'none';
                 const startDate = project.startDate ? new Date(project.startDate).toLocaleDateString() : 'N/A';
-                const dueDate = project.dueDate ? new Date(project.dueDate).toLocaleDateString() : 'N/A';
+                // Support both endDate and dueDate field names
+                const endDateValue = project.endDate || project.dueDate;
+                const dueDate = endDateValue ? new Date(endDateValue).toLocaleDateString() : 'N/A';
                 const progress = project.progress || 0;
 
                 // Check ownership and permissions (same as project grid cards)
