@@ -8360,15 +8360,25 @@
             if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
             const monthData = {};
+            const monthDates = {}; // Store actual dates for sorting
             filteredProjects.forEach(p => {
                 if (p.startDate) {
                     const date = parseDate(p.startDate);
                     const month = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
                     monthData[month] = (monthData[month] || 0) + 1;
+                    // Store the date for this month label (for sorting)
+                    if (!monthDates[month]) {
+                        monthDates[month] = new Date(date.getFullYear(), date.getMonth(), 1);
+                    }
                 }
             });
 
-            const labels = Object.keys(monthData).slice(-6);
+            // Sort labels chronologically (ascending order)
+            const sortedLabels = Object.keys(monthData).sort((a, b) => {
+                return monthDates[a] - monthDates[b];
+            });
+
+            const labels = sortedLabels.slice(-6); // Take last 6 months
             const data = labels.map(l => monthData[l] || 0);
 
             if (projectTimelineChartInstance) projectTimelineChartInstance.destroy();
