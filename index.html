@@ -6991,6 +6991,36 @@
             }
         });
 
+        // Find the first page the user has access to
+        async function findAccessiblePage() {
+            const pagePermissionMap = {
+                'dashboard': { permission: 'dashboard', operation: 'show' },
+                'projectslist': { permission: 'projectslist', operation: 'show' },
+                'tasks': { permission: 'tasks', operation: 'show' },
+                'team': { permission: 'team', operation: 'show' },
+                'reports': { permission: 'reports', operation: 'show' },
+                'adminRules': { permission: 'admin', operation: 'admin' },
+                'pagePermissions': { permission: 'admin', operation: 'admin' },
+                'roleManagement': { permission: 'admin', operation: 'admin' }
+            };
+
+            // Check pages in priority order
+            const pageOrder = ['dashboard', 'projectslist', 'tasks', 'team', 'reports', 'adminRules', 'pagePermissions', 'roleManagement'];
+
+            for (const pageName of pageOrder) {
+                const pageConfig = pagePermissionMap[pageName];
+                if (pageConfig) {
+                    const canAccess = await hasPermission(pageConfig.permission, pageConfig.operation);
+                    if (canAccess) {
+                        return pageName;
+                    }
+                }
+            }
+
+            // Fallback to dashboard if nothing else is accessible
+            return 'dashboard';
+        }
+
         async function switchPage(pageName, skipFilterClear = false) {
             // Close settings menu when navigating
             closeSettingsMenu();
@@ -6999,7 +7029,7 @@
             const allowedGuestPages = ['dashboard', 'projectslist'];
             if (guestMode && !allowedGuestPages.includes(pageName)) {
                 // //console.log('⛔ Guest mode: Cannot access ' + pageName + ' page');
-                alert('Guest access is limited to Dashboard and Projects only');
+                console.log('⛔ Guest mode: Cannot access ' + pageName + ' page, redirecting to projectslist');
                 switchPage('projectslist');
                 return;
             }
@@ -7022,8 +7052,11 @@
                 const operation = ['adminRules', 'pagePermissions', 'roleManagement'].includes(pageName) ? 'admin' : 'show';
                 const canAccess = await hasPermission(permissionPage, operation);
                 if (!canAccess) {
-                    // //console.log(`🔒 User does not have permission to access: ${pageName}`);
-                    alert(`You do not have permission to access the ${pageName} page`);
+                    console.log(`🔒 User does not have permission to access: ${pageName}, finding accessible page...`);
+                    // Find an accessible page and redirect to it
+                    const accessiblePage = await findAccessiblePage();
+                    console.log(`✅ Redirecting to accessible page: ${accessiblePage}`);
+                    switchPage(accessiblePage);
                     return;
                 }
             }
