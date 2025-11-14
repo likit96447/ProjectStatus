@@ -3305,7 +3305,7 @@
                         <h1 class="board-title">Team Members</h1>
                         <p class="board-subtitle">Collaborate with your amazing team</p>
                         <div class="board-actions">
-                            <button class="btn btn-primary" onclick="openMemberModal()">
+                            <button class="btn btn-primary" id="addMemberBtn" onclick="openMemberModal()">
                                 <span>+</span>
                                 <span>Add Member</span>
                             </button>
@@ -3317,101 +3317,7 @@
                     </div>
 
                     <div class="team-grid">
-                        <div class="team-card">
-                            <div class="team-avatar-large" style="background: linear-gradient(135deg, #667eea, #764ba2);">SL</div>
-                            <div class="team-name">Sarah Lee</div>
-                            <div class="team-role">Project Manager</div>
-                            <div class="team-stats">
-                                <div class="team-stat">
-                                    <div class="team-stat-value">12</div>
-                                    <div class="team-stat-label">Tasks</div>
-                                </div>
-                                <div class="team-stat">
-                                    <div class="team-stat-value">8</div>
-                                    <div class="team-stat-label">Done</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="team-card">
-                            <div class="team-avatar-large" style="background: linear-gradient(135deg, #f093fb, #f5576c);">MC</div>
-                            <div class="team-name">Mike Chen</div>
-                            <div class="team-role">Lead Developer</div>
-                            <div class="team-stats">
-                                <div class="team-stat">
-                                    <div class="team-stat-value">15</div>
-                                    <div class="team-stat-label">Tasks</div>
-                                </div>
-                                <div class="team-stat">
-                                    <div class="team-stat-value">10</div>
-                                    <div class="team-stat-label">Done</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="team-card">
-                            <div class="team-avatar-large" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">ER</div>
-                            <div class="team-name">Emily Rose</div>
-                            <div class="team-role">Marketing Lead</div>
-                            <div class="team-stats">
-                                <div class="team-stat">
-                                    <div class="team-stat-value">9</div>
-                                    <div class="team-stat-label">Tasks</div>
-                                </div>
-                                <div class="team-stat">
-                                    <div class="team-stat-value">7</div>
-                                    <div class="team-stat-label">Done</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="team-card">
-                            <div class="team-avatar-large" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">AK</div>
-                            <div class="team-name">Alex Kim</div>
-                            <div class="team-role">Database Admin</div>
-                            <div class="team-stats">
-                                <div class="team-stat">
-                                    <div class="team-stat-value">11</div>
-                                    <div class="team-stat-label">Tasks</div>
-                                </div>
-                                <div class="team-stat">
-                                    <div class="team-stat-value">6</div>
-                                    <div class="team-stat-label">Done</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="team-card">
-                            <div class="team-avatar-large" style="background: linear-gradient(135deg, #fa709a, #fee140);">JP</div>
-                            <div class="team-name">Jordan Park</div>
-                            <div class="team-role">UI/UX Designer</div>
-                            <div class="team-stats">
-                                <div class="team-stat">
-                                    <div class="team-stat-value">10</div>
-                                    <div class="team-stat-label">Tasks</div>
-                                </div>
-                                <div class="team-stat">
-                                    <div class="team-stat-value">8</div>
-                                    <div class="team-stat-label">Done</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="team-card">
-                            <div class="team-avatar-large" style="background: linear-gradient(135deg, #ffecd2, #fcb69f);">TW</div>
-                            <div class="team-name">Taylor Wong</div>
-                            <div class="team-role">Backend Developer</div>
-                            <div class="team-stats">
-                                <div class="team-stat">
-                                    <div class="team-stat-value">13</div>
-                                    <div class="team-stat-label">Tasks</div>
-                                </div>
-                                <div class="team-stat">
-                                    <div class="team-stat-value">9</div>
-                                    <div class="team-stat-label">Done</div>
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Team member cards will be loaded dynamically by JavaScript -->
                     </div>
                 </div>
 
@@ -3837,7 +3743,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="button" class="btn btn-secondary" onclick="(async function() { if(editingIndex !== -1) { closeModal(); await reRenderCurrentView(); } else { closeModal(); } })()">Cancel</button>
                     <button type="submit" class="btn btn-primary">Create Task</button>
                 </div>
             </form>
@@ -3900,7 +3806,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeSubtaskModal()">Cancel</button>
+                    <button type="button" class="btn btn-secondary" onclick="(async function() { if(editingSubtaskIndex !== -1) { closeSubtaskModal(); await reRenderCurrentView(); } else { closeSubtaskModal(); } })()">Cancel</button>
                     <button type="submit" class="btn btn-primary">Create Subtask</button>
                 </div>
             </form>
@@ -5057,6 +4963,15 @@
         }
 
         /**
+         * Check if user has admin permission (admin level access)
+         * @param {string} page - Page name
+         * @returns {Promise<boolean>} True if user has admin permission
+         */
+        async function canAdmin(page) {
+            return await hasPermission(page, 'admin');
+        }
+
+        /**
          * Check if data belongs to current user
          * Note: Admin access is checked separately via hasPermission()
          * @param {object} data - Data object with email or assignedTo field
@@ -6101,7 +6016,7 @@
         // ========================================
 
         // Render team members in the UI
-        function renderTeamMembers(members) {
+        async function renderTeamMembers(members) {
             const teamGrid = document.querySelector('.team-grid');
             if (!teamGrid) return;
 
@@ -6116,47 +6031,67 @@
                 'linear-gradient(135deg, #d299c2, #fef9d7)'
             ];
 
+            // Get current user and permissions
+            const currentUser = getCurrentUser();
+            const isTeamAdmin = await canAdmin('team');
+            const canEditMember = await canEdit('team');
+            const canDeleteMember = await canDelete('team');
+
             // Filter out inactive members
             const activeMembers = members.filter(member => {
                 const status = member.status || 'Active';
                 return status.toLowerCase() !== 'inactive';
             });
 
-            teamGrid.innerHTML = activeMembers.map((member, index) => `
-                <div class="team-card" data-member-id="${member.id}">
+            teamGrid.innerHTML = activeMembers.map((member, index) => {
+                // Build edit button - show ONLY if user has explicit edit permission
+                // Admin permission does NOT bypass edit permission requirement
+                const editButton = canEditMember ? `
                     <button class="team-edit-btn" data-action="edit-member" data-member-index="${index}" title="Edit member">
                         ✏️
                     </button>
+                ` : '';
+
+                // Build delete button - show ONLY if user has explicit delete permission
+                // Admin permission does NOT bypass delete permission requirement
+                const deleteButton = canDeleteMember ? `
                     <button class="team-delete-btn" data-action="delete-member" data-member-id="${member.id}" data-member-name="${member.name}" title="Delete member">
                         🗑️
                     </button>
-                    <div class="team-avatar-large" style="background: ${gradients[index % gradients.length]};">
-                        ${member.name.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <div class="team-name">${member.name}</div>
-                    <div class="team-role">${member.role}</div>
-                    <div class="team-status ${member.status === 'Active' ? 'active' : 'inactive'}">
-                        ${member.status || 'Active'}
-                    </div>
-                    <div class="team-stats">
-                        <div class="team-stat clickable-stat" data-action="filter-remaining" data-member-id="${member.id}" data-member-name="${member.name}">
-                            <div class="team-stat-value">${member.remainingCount || 0}</div>
-                            <div class="team-stat-label">Remain</div>
+                ` : '';
+
+                return `
+                    <div class="team-card" data-member-id="${member.id}">
+                        ${editButton}
+                        ${deleteButton}
+                        <div class="team-avatar-large" style="background: ${gradients[index % gradients.length]};">
+                            ${member.name.split(' ').map(n => n[0]).join('')}
                         </div>
-                        <div class="team-stat">
-                            <div class="team-stat-value">${member.doneCount || 0}</div>
-                            <div class="team-stat-label">Done</div>
+                        <div class="team-name">${member.name}</div>
+                        <div class="team-role">${member.role}</div>
+                        <div class="team-status ${member.status === 'Active' ? 'active' : 'inactive'}">
+                            ${member.status || 'Active'}
                         </div>
-                        <div class="team-stat">
-                            <div class="team-stat-value">${member.inProgressProjects ? member.inProgressProjects.length : 0}</div>
-                            <div class="team-stat-label">Project</div>
+                        <div class="team-stats">
+                            <div class="team-stat clickable-stat" data-action="filter-remaining" data-member-id="${member.id}" data-member-name="${member.name}">
+                                <div class="team-stat-value">${member.remainingCount || 0}</div>
+                                <div class="team-stat-label">Remain</div>
+                            </div>
+                            <div class="team-stat">
+                                <div class="team-stat-value">${member.doneCount || 0}</div>
+                                <div class="team-stat-label">Done</div>
+                            </div>
+                            <div class="team-stat">
+                                <div class="team-stat-value">${member.inProgressProjects ? member.inProgressProjects.length : 0}</div>
+                                <div class="team-stat-label">Project</div>
+                            </div>
                         </div>
+                        <button class="change-password-btn" onclick="openChangePasswordModal('${member.id}', '${member.name}')" title="Change Password">
+                            🔐 Change Password
+                        </button>
                     </div>
-                    <button class="change-password-btn" onclick="openChangePasswordModal('${member.id}', '${member.name}')" title="Change Password">
-                        🔐 Change Password
-                    </button>
-                </div>
-            `).join('');
+                `;
+            }).join('');
 
             // Add event listeners to edit buttons
             document.querySelectorAll('[data-action="edit-member"]').forEach(btn => {
@@ -6202,11 +6137,45 @@
                 const tasksSnapshot = await db.collection('tasks').get();
                 const projectsSnapshot = await db.collection('projects').get();
 
+                const currentUser = getCurrentUser();
+                // Check permissions on team page
+                // Admin permission: see all members, edit, delete
+                // Add permission: add members
+                const isTeamAdmin = await canAdmin('team');
+                const canAddMember = await canAdd('team');
+                const hasTeamManagementAccess = isTeamAdmin || canAddMember;
+
                 const teamMembers = [];
+
+                console.log('🔍 Current User:', currentUser);
+                console.log('📋 Is Team Admin:', isTeamAdmin);
+                console.log('📋 Can Add Member:', canAddMember);
+                console.log('📊 Total members in DB:', membersSnapshot.size);
 
                 for (const memberDoc of membersSnapshot.docs) {
                     const memberData = memberDoc.data();
                     const memberId = memberDoc.id;
+
+                    console.log('👤 Checking member:', memberData.name, 'Email:', memberData.email, 'DocID:', memberId);
+
+                    // Permission check: Each user sees only their own card
+                    // EXCEPT: Team admins (with admin permission) see all members
+                    // Compare multiple identifiers to handle different data formats
+                    const isCurrentUserCard =
+                        memberId === currentUser?.id ||
+                        memberId === currentUser?.uid ||
+                        (memberData.email && currentUser?.email && memberData.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+                        (memberData.name && currentUser?.name && memberData.name.toLowerCase() === currentUser.name.toLowerCase());
+
+                    console.log('✅ Is current user card:', isCurrentUserCard);
+
+                    // Show card if:
+                    // 1. User is a team admin (sees all members), OR
+                    // 2. Card matches current user
+                    if (!isTeamAdmin && !isCurrentUserCard) {
+                        console.log('❌ Skipping member (not current user and not admin)');
+                        continue; // Skip members that are not the current user
+                    }
 
                     // Count tasks for this member by ID
                     let totalTasks = 0;
@@ -6253,7 +6222,17 @@
                 }
 
                 currentTeamMembers = teamMembers;
-                renderTeamMembers(teamMembers);
+                await renderTeamMembers(teamMembers);
+
+                // Update "Add Member" button visibility based on add permission
+                // ONLY users with explicit add permission can add members
+                // Admin permission does NOT bypass add permission requirement
+                const addMemberBtn = document.getElementById('addMemberBtn');
+                if (addMemberBtn) {
+                    const canAddMember = await canAdd('team');
+                    addMemberBtn.style.display = canAddMember ? 'flex' : 'none';
+                }
+
                 //console.log(`✅ Loaded ${teamMembers.length} team members with real task counts and projects`);
 
             } catch (error) {
@@ -8440,7 +8419,7 @@
             });
         }
 
-        // Render Team Workload Chart
+        // Render Team Workload Chart (based on subtasks)
         function renderProjectWorkloadChart() {
             const canvas = document.getElementById('projectWorkloadChartCanvas');
             if (!canvas) return;
@@ -8458,26 +8437,63 @@
             if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
             if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
 
-            const managerWorkload = {};
-            filteredProjects.forEach(p => {
-                if (p.projectManagers && p.projectManagers.length > 0) {
-                    p.projectManagers.forEach(m => {
-                        managerWorkload[m] = (managerWorkload[m] || 0) + 1;
-                    });
-                }
-            });
+            // Count subtasks by assignee instead of projects by manager
+            const assigneeWorkload = {};
 
-            const sortedManagers = Object.entries(managerWorkload).sort((a, b) => b[1] - a[1]);
-            const labels = sortedManagers.map(m => m[0]);
-            const data = sortedManagers.map(m => m[1]);
+            // Get all subtasks from the global subtasks array
+            if (typeof subtasks !== 'undefined' && Array.isArray(subtasks) && subtasks.length > 0) {
+                // Filter subtasks that belong to filtered projects
+                const filteredProjectIds = filteredProjects.map(p => p.id);
+                const relevantSubtasks = subtasks.filter(st =>
+                    filteredProjectIds.includes(st.projectId)
+                );
+
+                // Count subtasks per assignee (using assignedTo field and personName for display)
+                relevantSubtasks.forEach(st => {
+                    // Use personName if available, otherwise assignedTo
+                    const assigneeName = st.personName || st.assignedTo;
+
+                    if (assigneeName && assigneeName !== 'Unknown') {
+                        assigneeWorkload[assigneeName] = (assigneeWorkload[assigneeName] || 0) + 1;
+                    }
+                });
+            }
+
+            const sortedAssignees = Object.entries(assigneeWorkload).sort((a, b) => b[1] - a[1]);
+            const labels = sortedAssignees.map(a => a[0]);
+            const data = sortedAssignees.map(a => a[1]);
             const colors = ['#0073ea', '#00c875', '#fdab3d', '#ff5555', '#667eea', '#00bcd4'];
 
+            // Destroy existing chart
             if (projectWorkloadChartInstance) projectWorkloadChartInstance.destroy();
+
+            // If no data, show message
+            if (labels.length === 0) {
+                const container = document.getElementById('projectWorkloadChartContainer');
+                if (container) {
+                    const messageDiv = container.querySelector('div');
+                    if (messageDiv) {
+                        messageDiv.style.display = 'block';
+                        messageDiv.textContent = 'No subtask assignments found';
+                    }
+                }
+                return;
+            }
+
+            // Hide message if it exists
+            const container = document.getElementById('projectWorkloadChartContainer');
+            if (container) {
+                const messageDiv = container.querySelector('div');
+                if (messageDiv) {
+                    messageDiv.style.display = 'none';
+                }
+            }
+
             projectWorkloadChartInstance = new Chart(canvas.getContext('2d'), {
                 type: 'bar',
                 data: {
                     labels: labels,
-                    datasets: [{ label: 'Projects', data: data, backgroundColor: colors.slice(0, labels.length), borderRadius: 6 }]
+                    datasets: [{ label: 'Subtasks', data: data, backgroundColor: colors.slice(0, labels.length), borderRadius: 6 }]
                 },
                 options: {
                     indexAxis: 'y',
@@ -9764,6 +9780,28 @@
         // ========================================
         // KANBAN VIEW TOGGLE
         // ========================================
+        // Re-render tasks/kanban while maintaining current filters and view mode
+        async function reRenderCurrentView() {
+            if (taskViewMode === 'table') {
+                // Check if any filters are active
+                const hasActiveFilters = taskFilters.status.length > 0 ||
+                                        taskFilters.priority !== '' ||
+                                        taskFilters.assignedTo !== '' ||
+                                        taskFilters.projects.length > 0;
+
+                if (hasActiveFilters) {
+                    // Apply filters with rendering
+                    applyTaskFilters();
+                } else {
+                    // No filters - just render normally
+                    await renderTasks();
+                }
+            } else {
+                // For Kanban view, always use the filter function which handles filters
+                await renderKanbanBoard();
+            }
+        }
+
         async function toggleTaskViewMode() {
             const btn = document.getElementById('kanbanToggleBtn');
             const tableContainer = document.querySelector('.table-container');
@@ -10917,7 +10955,9 @@
 
                 closeSubtaskModal();
                 await loadSubtasksFromFirebase();
-                renderTasks();
+
+                // Re-render with filters preserved
+                await reRenderCurrentView();
             } catch (error) {
                 console.error('❌ Error saving subtask:', error);
                 alert('Error saving subtask: ' + error.message);
@@ -11018,7 +11058,9 @@
                 //console.log('✅ Subtask deleted:', subtaskId);
 
                 await loadSubtasksFromFirebase();
-                renderTasks();
+
+                // Re-render with filters preserved
+                await reRenderCurrentView();
             } catch (error) {
                 console.error('❌ Error deleting subtask:', error);
                 alert('Error deleting subtask: ' + error.message);
@@ -11095,9 +11137,16 @@
         }
 
         // Close subtask modal when clicking outside
-        document.getElementById('subtaskModal').addEventListener('click', function(e) {
+        document.getElementById('subtaskModal').addEventListener('click', async function(e) {
             if (e.target === this) {
-                closeSubtaskModal();
+                // Only close without re-rendering if no changes were made (editingSubtaskIndex still -1)
+                if (editingSubtaskIndex === -1) {
+                    closeSubtaskModal();
+                } else {
+                    // If was editing, re-render with filters after closing
+                    closeSubtaskModal();
+                    await reRenderCurrentView();
+                }
             }
         });
 
@@ -11274,6 +11323,9 @@
                 // Reload tasks and subtasks from Firebase to prevent duplicates
                 await loadTasksFromFirebase();
                 await loadSubtasksFromFirebase();
+
+                // Re-render with filters preserved
+                await reRenderCurrentView();
 
                 // Re-enable real-time listener after a short delay
                 setTimeout(() => {
@@ -11708,16 +11760,19 @@
                 }
 
                 closeModal();
-                
+
                 // Reload tasks from Firebase to prevent duplicates
                 await loadTasksFromFirebase();
-                
+
+                // Re-render with filters preserved
+                await reRenderCurrentView();
+
                 // Re-enable real-time listener after a short delay
                 setTimeout(() => {
                     isManualOperation = false;
                     // //console.log("✅ Real-time listener re-enabled");
                 }, 1000);
-                
+
             } catch (error) {
                 console.error("❌ Error saving task:", error);
                 alert('❌ Error saving task: ' + error.message);
@@ -11725,9 +11780,16 @@
             }
         });
 
-        document.getElementById('taskModal').addEventListener('click', function(e) {
+        document.getElementById('taskModal').addEventListener('click', async function(e) {
             if (e.target === this) {
-                closeModal();
+                // Only close without re-rendering if no changes were made (editingIndex still -1)
+                if (editingIndex === -1) {
+                    closeModal();
+                } else {
+                    // If was editing, re-render with filters after closing
+                    closeModal();
+                    await reRenderCurrentView();
+                }
             }
         });
 
@@ -14849,8 +14911,14 @@
             // Update display text
             updateStatusFilterDisplay();
 
-            // Apply filters immediately
-            applyTaskFilters();
+            // Check if any modal is open - if so, don't apply filters yet
+            const taskModalOpen = document.getElementById('taskModal')?.classList.contains('active');
+            const subtaskModalOpen = document.getElementById('subtaskModal')?.classList.contains('active');
+
+            if (!taskModalOpen && !subtaskModalOpen) {
+                // Apply filters immediately only if no modals are open
+                applyTaskFilters();
+            }
         }
 
         // Update the display text based on selected statuses
@@ -15147,15 +15215,22 @@
                 filteredTasks = filterTasksByUserAssignment(filteredTasks, subtasks);
             }
 
-            // Render filtered tasks
-            renderFilteredTasks(filteredTasks);
+            // Check if any modal is open - if so, don't re-render (let user finish editing)
+            const taskModalOpen = document.getElementById('taskModal')?.classList.contains('active');
+            const subtaskModalOpen = document.getElementById('subtaskModal')?.classList.contains('active');
 
-            // Update active filters display
-            updateActiveFiltersDisplay();
+            if (!taskModalOpen && !subtaskModalOpen) {
+                // Only re-render if no modals are open
+                // Render filtered tasks
+                renderFilteredTasks(filteredTasks);
 
-            // Re-render kanban board if it's currently visible
-            if (taskViewMode === 'kanban') {
-                renderKanbanBoard();
+                // Update active filters display
+                updateActiveFiltersDisplay();
+
+                // Re-render kanban board if it's currently visible
+                if (taskViewMode === 'kanban') {
+                    renderKanbanBoard();
+                }
             }
         }
 
