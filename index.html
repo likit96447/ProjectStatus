@@ -3199,6 +3199,10 @@
                         </div>
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; overflow: visible; position: relative; align-items: start;">
                             <div style="overflow: visible;">
+                                <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Search</label>
+                                <input type="text" id="filterSearch" placeholder="Search task or subtask name..." oninput="applyTaskFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                            </div>
+                            <div style="overflow: visible;">
                                 <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Status</label>
                                 <div class="multi-select-dropdown" id="statusFilterDropdown">
                                     <div class="multi-select-display" id="statusFilterDisplay" onclick="toggleStatusDropdown()">
@@ -14869,7 +14873,8 @@
             status: [],  // Changed to array for multiple selections
             priority: '',
             assignedTo: '',
-            projects: []  // Changed to array for multiple project selections
+            projects: [],  // Changed to array for multiple project selections
+            search: ''  // New search filter for task and subtask names
         };
 
         // ========================================
@@ -15172,6 +15177,7 @@
             // Get filter values (status is already in taskFilters.status as array)
             taskFilters.priority = document.getElementById('filterPriority').value;
             taskFilters.assignedTo = document.getElementById('filterAssignedTo').value;
+            taskFilters.search = document.getElementById('filterSearch').value.toLowerCase();
 
             // Get multiple selected projects from checkboxes
             const projectCheckboxes = document.querySelectorAll('#projectFilterOptions input[type="checkbox"]');
@@ -15186,7 +15192,8 @@
             const hasActiveFilters = taskFilters.status.length > 0 ||
                                       taskFilters.priority !== '' ||
                                       taskFilters.assignedTo !== '' ||
-                                      taskFilters.projects.length > 0;
+                                      taskFilters.projects.length > 0 ||
+                                      taskFilters.search !== '';
 
             // Filter tasks
             let filteredTasks = tasks;
@@ -15240,6 +15247,23 @@
             // Filter by multiple projects (OR logic)
             if (taskFilters.projects.length > 0) {
                 filteredTasks = filteredTasks.filter(t => taskFilters.projects.includes(t.projectId));
+            }
+
+            // Filter by search text (task name or subtask name)
+            if (taskFilters.search !== '') {
+                filteredTasks = filteredTasks.filter(t => {
+                    // Check if task name matches search
+                    const taskNameMatches = t.name && t.name.toLowerCase().includes(taskFilters.search);
+                    if (taskNameMatches) return true;
+
+                    // Check if any subtask name matches search
+                    const taskSubtasks = subtasks.filter(st => st.parentTaskId === t.id);
+                    const hasMatchingSubtask = taskSubtasks.some(st =>
+                        st.name && st.name.toLowerCase().includes(taskFilters.search)
+                    );
+
+                    return hasMatchingSubtask;
+                });
             }
 
             // Apply user assignment filtering (show only tasks assigned to current user)
@@ -15455,6 +15479,9 @@
                 }).join(', ');
                 activeFilters.push({ type: 'projects', label: 'Project', value: projectNames });
             }
+            if (taskFilters.search) {
+                activeFilters.push({ type: 'search', label: 'Search', value: taskFilters.search });
+            }
 
             if (activeFilters.length > 0) {
                 activeFiltersDisplay.style.display = 'block';
@@ -15483,6 +15510,9 @@
                 checkboxes.forEach(checkbox => checkbox.checked = false);
                 taskFilters.projects = [];
                 updateProjectFilterDisplay();
+            } else if (filterType === 'search') {
+                document.getElementById('filterSearch').value = '';
+                taskFilters.search = '';
             } else {
                 document.getElementById('filter' + filterType.charAt(0).toUpperCase() + filterType.slice(1)).value = '';
             }
@@ -15501,12 +15531,14 @@
 
             document.getElementById('filterPriority').value = '';
             document.getElementById('filterAssignedTo').value = '';
+            document.getElementById('filterSearch').value = '';
 
             taskFilters = {
                 status: [],  // Changed to empty array
                 priority: '',
                 assignedTo: '',
-                projects: []  // Changed to empty array
+                projects: [],  // Changed to empty array
+                search: ''  // Clear search filter
             };
 
             // Update status filter display
