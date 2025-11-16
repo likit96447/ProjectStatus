@@ -10389,7 +10389,7 @@
                                 </div>
                             </div>
                             <div class="table-cell" data-label="Project">
-                                ${subtask.project ? `<span class="project-badge" title="${subtask.project}">${subtask.project}</span>` : '<span style="color: #c5c7d0;">—</span>'}
+                                ${subtask.project ? `<span class="project-badge" title="${subtask.project}">${getDisplayProjectName(subtask.project)}</span>` : '<span style="color: #c5c7d0;">—</span>'}
                             </div>
                             <div class="table-cell" data-label="Start Date">
                                 <span class="date-cell editable-field subtask-editable-date" data-subtask-id="${subtask.id}" data-field="startDate" title="Click to edit">${formatDateForDisplay(subtask.startDate)}</span>
