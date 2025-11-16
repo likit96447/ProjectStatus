@@ -4136,7 +4136,7 @@
             const activePages = document.querySelectorAll('[id$="Page"].active');
             activePages.forEach(page => {
                 const pageName = page.id.replace('Page', '');
-                if (pageName === 'dashboard') renderDashboard();
+                if (pageName === 'dashboard') updateDashboardStats();
                 else if (pageName === 'projectslist') renderProjects();
                 else if (pageName === 'tasks') renderTasks();
             });
@@ -14371,7 +14371,7 @@
                                 <div class="project-health-circle ${project.projectHealth || 'none'}" title="Health: ${project.projectHealth || 'None'}">
 
                                 </div>
-                                <div class="project-card-title">${project.name}</div>
+                                <div class="project-card-title">${getDisplayProjectName(project.name)}</div>
                                 ${project.issues && project.issues.filter(issue => issue.status === 'open').length > 0 ? `
                                     <span onclick="event.stopPropagation(); showProjectIssues('${project.id}')"
                                         style="background: #e44258; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;"
