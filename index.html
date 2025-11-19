@@ -3124,9 +3124,6 @@
                                             <th onclick="sortProjectsTable('code')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
                                                 <span style="display: flex; align-items: center; gap: 8px;">Project Code <span id="sort-code" style="font-size: 10px; opacity: 0.6;">▼</span></span>
                                             </th>
-                                            <th onclick="sortProjectsTable('epic')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
-                                                <span style="display: flex; align-items: center; gap: 8px;">Epic <span id="sort-epic" style="font-size: 10px; opacity: 0.6;">▼</span></span>
-                                            </th>
                                             <th onclick="sortProjectsTable('type')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
                                                 <span style="display: flex; align-items: center; gap: 8px;">Type <span id="sort-type" style="font-size: 10px; opacity: 0.6;">▼</span></span>
                                             </th>
@@ -3906,8 +3903,16 @@
                         <input type="text" class="form-input" id="projectCode" placeholder="e.g., PRJ-001">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Epic</label>
-                        <input type="text" class="form-input" id="projectEpic" placeholder="e.g., Backend API Redesign">
+                        <label class="form-label">Epics</label>
+                        <div id="epicsList" style="margin-bottom: 12px;">
+                            <!-- Epics will be rendered here -->
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-bottom: 12px;">
+                            <input type="text" class="form-input" id="epicName" placeholder="Epic name" style="margin-bottom: 0;">
+                            <input type="url" class="form-input" id="epicUrl" placeholder="https://example.com" style="margin-bottom: 0;">
+                            <button type="button" class="btn btn-primary" onclick="addEpicToList()" style="padding: 8px 16px; height: 40px;">Add Epic</button>
+                        </div>
+                        <small style="color: #676879; font-size: 12px;">Add epics with their associated URLs. Click the URL to open the link.</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
@@ -4095,6 +4100,23 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="closeProjectIssuesModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Epics Modal -->
+    <div class="modal" id="projectEpicsModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="projectEpicsModalTitle">Project Epics</h2>
+            </div>
+            <div class="modal-body">
+                <div id="projectEpicsModalContent">
+                    <!-- Epics will be displayed here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeProjectEpicsModal()">Close</button>
             </div>
         </div>
     </div>
@@ -13204,9 +13226,11 @@
             document.getElementById('projectSubmitBtn').textContent = 'Create Project';
             document.getElementById('projectForm').reset();
 
-            // Clear issues for new project
+            // Clear issues and epics for new project
             projectIssues = [];
             renderProjectIssues();
+            projectEpics = [];
+            renderEpicsList();
 
             // Set default date to today
             const today = new Date().toISOString().split('T')[0];
@@ -13228,13 +13252,117 @@
             document.getElementById('projectModal').classList.remove('active');
             document.getElementById('projectForm').reset();
             editingProjectIndex = -1;
-            // Clear project issues
+            // Clear project issues and epics
             projectIssues = [];
             renderProjectIssues();
+            projectEpics = [];
+            renderEpicsList();
         }
 
         // Project Issues Management
         let projectIssues = [];
+
+        // Project Epics Management
+        let projectEpics = [];
+
+        function addEpicToList() {
+            const epicName = document.getElementById('epicName').value.trim();
+            const epicUrl = document.getElementById('epicUrl').value.trim();
+
+            if (!epicName) {
+                alert('⚠️ Please enter an epic name');
+                return;
+            }
+
+            if (!epicUrl) {
+                alert('⚠️ Please enter a URL for the epic');
+                return;
+            }
+
+            // Validate URL format
+            try {
+                new URL(epicUrl);
+            } catch (e) {
+                alert('⚠️ Please enter a valid URL (e.g., https://example.com)');
+                return;
+            }
+
+            // Add to epics list
+            projectEpics.push({
+                id: Date.now().toString(),
+                name: epicName,
+                url: epicUrl
+            });
+
+            // Clear inputs
+            document.getElementById('epicName').value = '';
+            document.getElementById('epicUrl').value = '';
+
+            // Render epics list
+            renderEpicsList();
+        }
+
+        function removeEpicFromList(epicId) {
+            projectEpics = projectEpics.filter(e => e.id !== epicId);
+            renderEpicsList();
+        }
+
+        function renderEpicsList() {
+            const epicsList = document.getElementById('epicsList');
+            if (projectEpics.length === 0) {
+                epicsList.innerHTML = '';
+                return;
+            }
+
+            epicsList.innerHTML = projectEpics.map(epic => `
+                <div style="background: #f5f5f5; padding: 12px; border-radius: 6px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #323338; font-size: 13px; margin-bottom: 4px;">${epic.name}</div>
+                        <a href="${epic.url}" target="_blank" style="color: #0073ea; text-decoration: none; font-size: 12px; word-break: break-all;">${epic.url}</a>
+                    </div>
+                    <button type="button" onclick="removeEpicFromList('${epic.id}')" style="background: #e44258; color: white; border: none; border-radius: 4px; padding: 6px 12px; cursor: pointer; margin-left: 12px; font-size: 12px; white-space: nowrap;">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function showProjectEpicsModal(projectId, projectCode) {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) {
+                alert('Project not found');
+                return;
+            }
+
+            const epics = project.epics || [];
+            const modalTitle = document.getElementById('projectEpicsModalTitle');
+            const modalContent = document.getElementById('projectEpicsModalContent');
+
+            modalTitle.textContent = `${projectCode} - Epics (${epics.length})`;
+
+            if (epics.length === 0) {
+                modalContent.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #676879;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                        <div style="font-size: 16px; font-weight: 600;">No epics found</div>
+                        <div style="font-size: 14px; margin-top: 8px;">This project doesn't have any epics yet</div>
+                    </div>
+                `;
+            } else {
+                modalContent.innerHTML = epics.map(epic => `
+                    <div style="background: #f5f5f5; padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+                        <div style="font-weight: 600; color: #323338; font-size: 14px; margin-bottom: 8px;">📌 ${epic.name}</div>
+                        <a href="${epic.url}" target="_blank" style="color: #0073ea; text-decoration: none; font-size: 13px; word-break: break-all; display: inline-block; padding: 8px; background: white; border-radius: 4px; border: 1px solid #e6e9ef; transition: all 0.2s;" onmouseover="this.style.background='#f0f3ff'; this.style.borderColor='#0073ea'" onmouseout="this.style.background='white'; this.style.borderColor='#e6e9ef'">
+                            🔗 Open Link: ${epic.url}
+                        </a>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('projectEpicsModal').classList.add('active');
+        }
+
+        function closeProjectEpicsModal() {
+            document.getElementById('projectEpicsModal').classList.remove('active');
+        }
 
         function addProjectIssue() {
             const title = document.getElementById('newIssueTitle').value.trim();
@@ -13639,8 +13767,11 @@
             // Populate form with project data
             document.getElementById('projectName').value = project.name;
             document.getElementById('projectCode').value = project.code || '';
-            document.getElementById('projectEpic').value = project.epic || '';
             document.getElementById('projectDescription').value = project.description;
+
+            // Load existing epics
+            projectEpics = project.epics ? [...project.epics] : [];
+            renderEpicsList();
             document.getElementById('projectType').value = project.projectType || 'Project';
             document.getElementById('projectHealth').value = project.projectHealth || 'none';
             document.getElementById('projectStatus').value = project.status;
@@ -13792,7 +13923,7 @@
             }
 
             // Update sort indicators
-            const sortIndicators = ['name', 'code', 'epic', 'type', 'status', 'health', 'startDate', 'dueDate', 'manager', 'progress'];
+            const sortIndicators = ['name', 'code', 'type', 'status', 'health', 'startDate', 'dueDate', 'manager', 'progress'];
             sortIndicators.forEach(col => {
                 const indicator = document.getElementById(`sort-${col}`);
                 if (indicator) {
@@ -13827,7 +13958,7 @@
             console.log('📋 Rendering projects table with', projectsToRender.length, 'projects');
 
             if (!projectsToRender || projectsToRender.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 40px; color: #999;">No projects to display</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px; color: #999;">No projects to display</td></tr>';
                 return;
             }
 
@@ -13844,10 +13975,6 @@
                         case 'code':
                             aValue = (a.code || '').toLowerCase();
                             bValue = (b.code || '').toLowerCase();
-                            break;
-                        case 'epic':
-                            aValue = (a.epic || '').toLowerCase();
-                            bValue = (b.epic || '').toLowerCase();
                             break;
                         case 'type':
                             aValue = (a.projectType || '').toLowerCase();
@@ -14002,8 +14129,7 @@
                                 ` : ''}
                             </div>
                         </td>
-                        <td style="padding: 18px 20px; color: #676879; font-size: 13px;">${project.code || '-'}</td>
-                        <td style="padding: 18px 20px; color: #676879; font-size: 13px;">${project.epic || '-'}</td>
+                        <td style="padding: 18px 20px; color: #0073ea; font-size: 13px; cursor: pointer; text-decoration: underline;" onclick="showProjectEpicsModal('${project.id}', '${project.code || 'N/A'}')" title="Click to view epics">${project.code || '-'}</td>
                         <td style="padding: 18px 20px; color: #676879; font-size: 13px;">${projectType}</td>
                         <td style="padding: 18px 20px;">
                             <span style="padding: 6px 14px; border-radius: 20px; background: ${statusColor}; color: white; font-size: 12px; font-weight: 600; text-transform: capitalize; display: inline-block;">
@@ -15663,7 +15789,8 @@
                 projectManagerIds: projectManagerIds,  // Store manager IDs
                 projectManagers: projectManagerNames,  // Store manager names
                 tags: tagsArray,
-                issues: projectIssues  // Add project issues
+                issues: projectIssues,  // Add project issues
+                epics: projectEpics  // Add project epics with URLs
             };
 
             try {
