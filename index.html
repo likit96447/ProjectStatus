@@ -3121,6 +3121,12 @@
                                             <th onclick="sortProjectsTable('name')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
                                                 <span style="display: flex; align-items: center; gap: 8px;">Project Name <span id="sort-name" style="font-size: 10px; opacity: 0.6;">▼</span></span>
                                             </th>
+                                            <th onclick="sortProjectsTable('code')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                                                <span style="display: flex; align-items: center; gap: 8px;">Project Code <span id="sort-code" style="font-size: 10px; opacity: 0.6;">▼</span></span>
+                                            </th>
+                                            <th onclick="sortProjectsTable('epic')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
+                                                <span style="display: flex; align-items: center; gap: 8px;">Epic <span id="sort-epic" style="font-size: 10px; opacity: 0.6;">▼</span></span>
+                                            </th>
                                             <th onclick="sortProjectsTable('type')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
                                                 <span style="display: flex; align-items: center; gap: 8px;">Type <span id="sort-type" style="font-size: 10px; opacity: 0.6;">▼</span></span>
                                             </th>
@@ -3894,6 +3900,14 @@
                     <div class="form-group">
                         <label class="form-label">Project Name</label>
                         <input type="text" class="form-input" id="projectName" placeholder="Enter project name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Project Code</label>
+                        <input type="text" class="form-input" id="projectCode" placeholder="e.g., PRJ-001">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Epic</label>
+                        <input type="text" class="form-input" id="projectEpic" placeholder="e.g., Backend API Redesign">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Description</label>
@@ -13624,6 +13638,8 @@
 
             // Populate form with project data
             document.getElementById('projectName').value = project.name;
+            document.getElementById('projectCode').value = project.code || '';
+            document.getElementById('projectEpic').value = project.epic || '';
             document.getElementById('projectDescription').value = project.description;
             document.getElementById('projectType').value = project.projectType || 'Project';
             document.getElementById('projectHealth').value = project.projectHealth || 'none';
@@ -13776,7 +13792,7 @@
             }
 
             // Update sort indicators
-            const sortIndicators = ['name', 'type', 'status', 'health', 'startDate', 'dueDate', 'manager', 'progress'];
+            const sortIndicators = ['name', 'code', 'epic', 'type', 'status', 'health', 'startDate', 'dueDate', 'manager', 'progress'];
             sortIndicators.forEach(col => {
                 const indicator = document.getElementById(`sort-${col}`);
                 if (indicator) {
@@ -13811,7 +13827,7 @@
             console.log('📋 Rendering projects table with', projectsToRender.length, 'projects');
 
             if (!projectsToRender || projectsToRender.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; padding: 40px; color: #999;">No projects to display</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="11" style="text-align: center; padding: 40px; color: #999;">No projects to display</td></tr>';
                 return;
             }
 
@@ -13824,6 +13840,14 @@
                         case 'name':
                             aValue = (a.name || '').toLowerCase();
                             bValue = (b.name || '').toLowerCase();
+                            break;
+                        case 'code':
+                            aValue = (a.code || '').toLowerCase();
+                            bValue = (b.code || '').toLowerCase();
+                            break;
+                        case 'epic':
+                            aValue = (a.epic || '').toLowerCase();
+                            bValue = (b.epic || '').toLowerCase();
                             break;
                         case 'type':
                             aValue = (a.projectType || '').toLowerCase();
@@ -13978,6 +14002,8 @@
                                 ` : ''}
                             </div>
                         </td>
+                        <td style="padding: 18px 20px; color: #676879; font-size: 13px;">${project.code || '-'}</td>
+                        <td style="padding: 18px 20px; color: #676879; font-size: 13px;">${project.epic || '-'}</td>
                         <td style="padding: 18px 20px; color: #676879; font-size: 13px;">${projectType}</td>
                         <td style="padding: 18px 20px;">
                             <span style="padding: 6px 14px; border-radius: 20px; background: ${statusColor}; color: white; font-size: 12px; font-weight: 600; text-transform: capitalize; display: inline-block;">
@@ -15620,6 +15646,8 @@
 
             const projectData = {
                 name: document.getElementById('projectName').value,
+                code: document.getElementById('projectCode').value,
+                epic: document.getElementById('projectEpic').value,
                 description: document.getElementById('projectDescription').value,
                 projectType: document.getElementById('projectType').value,
                 projectHealth: document.getElementById('projectHealth').value,
