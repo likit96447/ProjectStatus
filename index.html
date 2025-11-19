@@ -14136,11 +14136,8 @@
                                 ${status.replace('-', ' ')}
                             </span>
                         </td>
-                        <td style="padding: 18px 20px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="width: 18px; height: 18px; border-radius: 50%; background: ${healthColor}; box-shadow: 0 2px 6px rgba(0,0,0,0.15); border: 2px solid white;"></span>
-                                <span style="color: #676879; font-size: 13px; text-transform: capitalize; font-weight: 500;">${health}</span>
-                            </div>
+                        <td style="padding: 18px 20px; text-align: center;">
+                            <span style="width: 18px; height: 18px; border-radius: 50%; background: ${healthColor}; box-shadow: 0 2px 6px rgba(0,0,0,0.15); border: 2px solid white; display: inline-block;" title="${health}"></span>
                         </td>
                         <td style="padding: 18px 20px; color: #676879; font-size: 13px;">${startDate}</td>
                         <td style="padding: 18px 20px; color: #676879; font-size: 13px;">${dueDate}</td>
