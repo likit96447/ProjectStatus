@@ -14146,11 +14146,9 @@
                         <td style="padding: 18px 20px; color: #676879; font-size: 13px;">${dueDate}</td>
                         <td style="padding: 18px 20px; color: #676879; font-size: 13px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${managersText}">${managersText}</td>
                         <td style="padding: 18px 20px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="flex: 1; background: #e6e9ef; height: 10px; border-radius: 10px; overflow: hidden; min-width: 100px;">
-                                    <div style="width: ${progress}%; height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); transition: width 0.3s; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);"></div>
-                                </div>
-                                <span style="font-weight: 700; color: #323338; font-size: 13px; min-width: 45px; text-align: right;">${progress}%</span>
+                            <div style="position: relative; background: #e6e9ef; height: 24px; border-radius: 4px; overflow: hidden; min-width: 60px; display: flex; align-items: center; justify-content: center;">
+                                <div style="position: absolute; left: 0; top: 0; width: ${progress}%; height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); transition: width 0.3s; box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);"></div>
+                                <span style="position: relative; font-weight: 700; color: ${progress >= 50 ? 'white' : '#323338'}; font-size: 12px; text-shadow: ${progress >= 50 ? '0 1px 2px rgba(0,0,0,0.2)' : 'none'};">${progress}%</span>
                             </div>
                         </td>
                         <td style="padding: 18px 20px;">
