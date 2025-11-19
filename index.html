@@ -3122,7 +3122,7 @@
                                                 <span style="display: flex; align-items: center; gap: 8px;">Project Name <span id="sort-name" style="font-size: 10px; opacity: 0.6;">▼</span></span>
                                             </th>
                                             <th onclick="sortProjectsTable('code')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
-                                                <span style="display: flex; align-items: center; gap: 8px;">Project Code <span id="sort-code" style="font-size: 10px; opacity: 0.6;">▼</span></span>
+                                                <span style="display: flex; align-items: center; gap: 8px;">Code <span id="sort-code" style="font-size: 10px; opacity: 0.6;">▼</span></span>
                                             </th>
                                             <th onclick="sortProjectsTable('type')" style="padding: 18px 20px; text-align: left; font-weight: 700; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; border: none; cursor: pointer; user-select: none; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
                                                 <span style="display: flex; align-items: center; gap: 8px;">Type <span id="sort-type" style="font-size: 10px; opacity: 0.6;">▼</span></span>
@@ -3899,7 +3899,7 @@
                         <input type="text" class="form-input" id="projectName" placeholder="Enter project name" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Project Code</label>
+                        <label class="form-label">Code</label>
                         <input type="text" class="form-input" id="projectCode" placeholder="e.g., PRJ-001">
                     </div>
                     <div class="form-group">
@@ -14151,33 +14151,33 @@
                         <td style="padding: 18px 20px;">
                             <div style="display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;">
                                 <button onclick="viewProjectTasks('${project.id}')"
-                                    style="padding: 8px; background: #0073ea; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,115,234,0.2);"
-                                    onmouseover="this.style.background='#005bb5'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,115,234,0.3)'"
-                                    onmouseout="this.style.background='#0073ea'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,115,234,0.2)'"
+                                    style="padding: 4px; background: #0073ea; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,115,234,0.2);"
+                                    onmouseover="this.style.background='#005bb5'; this.style.transform='scale(1.1)'; this.style.boxShadow='0 2px 4px rgba(0,115,234,0.3)'"
+                                    onmouseout="this.style.background='#0073ea'; this.style.transform='scale(1)'; this.style.boxShadow='0 1px 2px rgba(0,115,234,0.2)'"
                                     title="View Tasks">
                                     📋
                                 </button>
                                 <button onclick="refreshProjectProgress('${project.id}', ${index})"
-                                    style="padding: 8px; background: #00c875; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,200,117,0.2);"
-                                    onmouseover="this.style.background='#00a461'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,200,117,0.3)'"
-                                    onmouseout="this.style.background='#00c875'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,200,117,0.2)'"
+                                    style="padding: 4px; background: #00c875; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,200,117,0.2);"
+                                    onmouseover="this.style.background='#00a461'; this.style.transform='scale(1.1)'; this.style.boxShadow='0 2px 4px rgba(0,200,117,0.3)'"
+                                    onmouseout="this.style.background='#00c875'; this.style.transform='scale(1)'; this.style.boxShadow='0 1px 2px rgba(0,200,117,0.2)'"
                                     title="Refresh Progress">
                                     🔄
                                 </button>
                                 ${canEditThis ? `
                                 <button onclick="editProject(${index})"
-                                    style="padding: 8px; background: #fdab3d; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(253,171,61,0.2);"
-                                    onmouseover="this.style.background='#e89b2d'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(253,171,61,0.3)'"
-                                    onmouseout="this.style.background='#fdab3d'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(253,171,61,0.2)'"
+                                    style="padding: 4px; background: #fdab3d; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(253,171,61,0.2);"
+                                    onmouseover="this.style.background='#e89b2d'; this.style.transform='scale(1.1)'; this.style.boxShadow='0 2px 4px rgba(253,171,61,0.3)'"
+                                    onmouseout="this.style.background='#fdab3d'; this.style.transform='scale(1)'; this.style.boxShadow='0 1px 2px rgba(253,171,61,0.2)'"
                                     title="Edit Project">
                                     ✏️
                                 </button>
                                 ` : ''}
                                 ${canDeleteThis ? `
                                 <button onclick="deleteProject(${index})"
-                                    style="padding: 8px; background: #e44258; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(228,66,88,0.2);"
-                                    onmouseover="this.style.background='#c62d42'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(228,66,88,0.3)'"
-                                    onmouseout="this.style.background='#e44258'; this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(228,66,88,0.2)'"
+                                    style="padding: 4px; background: #e44258; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; transition: all 0.2s; box-shadow: 0 1px 2px rgba(228,66,88,0.2);"
+                                    onmouseover="this.style.background='#c62d42'; this.style.transform='scale(1.1)'; this.style.boxShadow='0 2px 4px rgba(228,66,88,0.3)'"
+                                    onmouseout="this.style.background='#e44258'; this.style.transform='scale(1)'; this.style.boxShadow='0 1px 2px rgba(228,66,88,0.2)'"
                                     title="Delete Project">
                                     🗑️
                                 </button>
