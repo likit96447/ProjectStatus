@@ -8428,16 +8428,20 @@
         }
 
         // Render Timeline Analytics Chart
-        function renderProjectTimelineChart() {
+        async function renderProjectTimelineChart() {
             const canvas = document.getElementById('projectTimelineChartCanvas');
             if (!canvas) return;
+
+            // First, filter by user access
+            let accessibleProjects = await filterProjectsByUserAccess(projects);
 
             // Use currentFilteredProjects if available (from table filters), otherwise use chart filters
             let filteredProjects;
             if (currentFilteredProjects && Array.isArray(currentFilteredProjects) && currentFilteredProjects.length > 0) {
-                filteredProjects = [...currentFilteredProjects];
+                // Filter currentFilteredProjects to only include accessible ones
+                filteredProjects = currentFilteredProjects.filter(p => accessibleProjects.some(ap => ap.id === p.id));
             } else {
-                filteredProjects = [...projects];
+                filteredProjects = [...accessibleProjects];
                 if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
                 if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
                     const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
@@ -8490,16 +8494,20 @@
         }
 
         // Render Completion Forecast Chart
-        function renderProjectForecastChart() {
+        async function renderProjectForecastChart() {
             const canvas = document.getElementById('projectForecastChartCanvas');
             if (!canvas) return;
+
+            // First, filter by user access
+            let accessibleProjects = await filterProjectsByUserAccess(projects);
 
             // Use currentFilteredProjects if available (from table filters), otherwise use chart filters
             let filteredProjects;
             if (currentFilteredProjects && Array.isArray(currentFilteredProjects) && currentFilteredProjects.length > 0) {
-                filteredProjects = [...currentFilteredProjects];
+                // Filter currentFilteredProjects to only include accessible ones
+                filteredProjects = currentFilteredProjects.filter(p => accessibleProjects.some(ap => ap.id === p.id));
             } else {
-                filteredProjects = [...projects];
+                filteredProjects = [...accessibleProjects];
                 if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
                 if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
                     const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
@@ -8539,16 +8547,20 @@
         }
 
         // Render Team Workload Chart (based on subtasks)
-        function renderProjectWorkloadChart() {
+        async function renderProjectWorkloadChart() {
             const canvas = document.getElementById('projectWorkloadChartCanvas');
             if (!canvas) return;
+
+            // First, filter by user access
+            let accessibleProjects = await filterProjectsByUserAccess(projects);
 
             // Use currentFilteredProjects if available (from table filters), otherwise use chart filters
             let filteredProjects;
             if (currentFilteredProjects && Array.isArray(currentFilteredProjects) && currentFilteredProjects.length > 0) {
-                filteredProjects = [...currentFilteredProjects];
+                // Filter currentFilteredProjects to only include accessible ones
+                filteredProjects = currentFilteredProjects.filter(p => accessibleProjects.some(ap => ap.id === p.id));
             } else {
-                filteredProjects = [...projects];
+                filteredProjects = [...accessibleProjects];
                 if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
                 if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
                     const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
