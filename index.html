@@ -7175,6 +7175,10 @@
             } else if (pageName === 'team' && db) {
                 loadTeamMembersWithStats();
             } else if (pageName === 'dashboard') {
+                // Populate user-accessible projects for dashboard charts before rendering
+                if (!userAccessibleProjects || userAccessibleProjects.length === 0) {
+                    userAccessibleProjects = await filterProjectsByUserAccess(projects);
+                }
                 updateDashboardStats();
             } else if (pageName === 'projectslist') {
                 if (db) {
@@ -7192,8 +7196,9 @@
         function updateDashboardStats() {
             // //console.log('📊 Updating dashboard with real-time data...');
 
+            // Start with user-accessible projects (use userAccessibleProjects if available, otherwise fall back to all projects)
             // Get filtered projects based on chart selections
-            let filteredProjects = [...projects];
+            let filteredProjects = (userAccessibleProjects && userAccessibleProjects.length > 0) ? [...userAccessibleProjects] : [...projects];
 
             // Apply project type filter from chart
             if (chartTypeFilter) {
@@ -7270,8 +7275,8 @@
                 return;
             }
 
-            // Apply chart filters to projects
-            let filteredProjects = [...projects];
+            // Apply chart filters to projects (start with user-accessible projects)
+            let filteredProjects = (userAccessibleProjects && userAccessibleProjects.length > 0) ? [...userAccessibleProjects] : [...projects];
 
             // Apply project type filter from chart
             if (chartTypeFilter) {
@@ -7374,8 +7379,8 @@
                 return;
             }
 
-            // Get projects filtered by current health and manager filters (if any)
-            let projectsToAnalyze = projects;
+            // Get projects filtered by current health and manager filters (if any) - start with user-accessible projects
+            let projectsToAnalyze = (userAccessibleProjects && userAccessibleProjects.length > 0) ? [...userAccessibleProjects] : [...projects];
             if (chartHealthFilter) {
                 projectsToAnalyze = projectsToAnalyze.filter(p => {
                     const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
@@ -7505,8 +7510,8 @@
                 return;
             }
 
-            // Get projects filtered by current type and manager filters (if any)
-            let projectsToAnalyze = projects;
+            // Get projects filtered by current type and manager filters (if any) - start with user-accessible projects
+            let projectsToAnalyze = (userAccessibleProjects && userAccessibleProjects.length > 0) ? [...userAccessibleProjects] : [...projects];
             if (chartTypeFilter) {
                 projectsToAnalyze = projectsToAnalyze.filter(p => p.projectType === chartTypeFilter);
             }
@@ -7639,8 +7644,8 @@
                 return;
             }
 
-            // Get projects filtered by current type and health filters (if any)
-            let projectsToAnalyze = projects;
+            // Get projects filtered by current type and health filters (if any) - start with user-accessible projects
+            let projectsToAnalyze = (userAccessibleProjects && userAccessibleProjects.length > 0) ? [...userAccessibleProjects] : [...projects];
             if (chartTypeFilter) {
                 projectsToAnalyze = projectsToAnalyze.filter(p => p.projectType === chartTypeFilter);
             }
@@ -8006,8 +8011,8 @@
 
         // Render Key Metrics
         function renderKeyMetrics() {
-            // Get filtered projects
-            let filteredProjects = [...projects];
+            // Get filtered projects (start with user-accessible projects)
+            let filteredProjects = (userAccessibleProjects && userAccessibleProjects.length > 0) ? [...userAccessibleProjects] : [...projects];
             if (chartTypeFilter) {
                 filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
             }
@@ -8177,7 +8182,7 @@
             const canvas = document.getElementById('projectStatusChartCanvas');
             if (!canvas) return;
 
-            let filteredProjects = [...projects];
+            let filteredProjects = (userAccessibleProjects && userAccessibleProjects.length > 0) ? [...userAccessibleProjects] : [...projects];
             if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
             if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
                 const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
@@ -8243,7 +8248,7 @@
             const canvas = document.getElementById('projectPriorityChartCanvas');
             if (!canvas) return;
 
-            let filteredProjects = [...projects];
+            let filteredProjects = (userAccessibleProjects && userAccessibleProjects.length > 0) ? [...userAccessibleProjects] : [...projects];
             if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
             if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
                 const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
@@ -8312,7 +8317,7 @@
             const canvas = document.getElementById('projectSDLCChartCanvas');
             if (!canvas) return;
 
-            let filteredProjects = [...projects];
+            let filteredProjects = (userAccessibleProjects && userAccessibleProjects.length > 0) ? [...userAccessibleProjects] : [...projects];
             if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
             if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
                 const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
@@ -8385,7 +8390,7 @@
             const canvas = document.getElementById('projectProgressDistChartCanvas');
             if (!canvas) return;
 
-            let filteredProjects = [...projects];
+            let filteredProjects = (userAccessibleProjects && userAccessibleProjects.length > 0) ? [...userAccessibleProjects] : [...projects];
             if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
             if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
                 const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
@@ -8641,7 +8646,7 @@
             const alertsList = document.getElementById('bottleneckAlertsList');
             if (!alertsList) return;
 
-            let filteredProjects = [...projects];
+            let filteredProjects = (userAccessibleProjects && userAccessibleProjects.length > 0) ? [...userAccessibleProjects] : [...projects];
             if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
             if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
                 const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
@@ -8738,8 +8743,8 @@
             const activityList = document.getElementById('recentActivityList');
             if (!activityList) return;
 
-            // Get filtered projects based on chart selections
-            let filteredProjects = [...projects];
+            // Get filtered projects based on chart selections (start with user-accessible projects)
+            let filteredProjects = (userAccessibleProjects && userAccessibleProjects.length > 0) ? [...userAccessibleProjects] : [...projects];
 
             // Apply project type filter from chart
             if (chartTypeFilter) {
@@ -14264,7 +14269,7 @@
 
         // Apply filters from chart selections (click-to-filter)
         function applyChartFilters() {
-            let filteredProjects = [...projects];
+            let filteredProjects = (userAccessibleProjects && userAccessibleProjects.length > 0) ? [...userAccessibleProjects] : [...projects];
 
             // Apply project type filter from chart
             if (chartTypeFilter) {
