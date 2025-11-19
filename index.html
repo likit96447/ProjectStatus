@@ -8432,18 +8432,24 @@
             const canvas = document.getElementById('projectTimelineChartCanvas');
             if (!canvas) return;
 
-            let filteredProjects = [...projects];
-            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
-            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
-                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
-                return projectHealth === chartHealthFilter;
-            });
-            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
-                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
-            );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
+            // Use currentFilteredProjects if available (from table filters), otherwise use chart filters
+            let filteredProjects;
+            if (currentFilteredProjects && Array.isArray(currentFilteredProjects) && currentFilteredProjects.length > 0) {
+                filteredProjects = [...currentFilteredProjects];
+            } else {
+                filteredProjects = [...projects];
+                if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+                if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
+                    const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                    return projectHealth === chartHealthFilter;
+                });
+                if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
+                    p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+                );
+                if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
+                if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
+                if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
+            }
 
             const monthData = {};
             const monthDates = {}; // Store actual dates for sorting
@@ -8488,18 +8494,24 @@
             const canvas = document.getElementById('projectForecastChartCanvas');
             if (!canvas) return;
 
-            let filteredProjects = [...projects];
-            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
-            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
-                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
-                return projectHealth === chartHealthFilter;
-            });
-            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
-                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
-            );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
+            // Use currentFilteredProjects if available (from table filters), otherwise use chart filters
+            let filteredProjects;
+            if (currentFilteredProjects && Array.isArray(currentFilteredProjects) && currentFilteredProjects.length > 0) {
+                filteredProjects = [...currentFilteredProjects];
+            } else {
+                filteredProjects = [...projects];
+                if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+                if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
+                    const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                    return projectHealth === chartHealthFilter;
+                });
+                if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
+                    p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+                );
+                if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
+                if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
+                if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
+            }
 
             const inProgress = filteredProjects.filter(p => normalizeStatus(p.status) === 'In Progress' && p.progress < 100);
             const avgRemainingDays = inProgress.reduce((sum, p) => sum + ((100 - (p.progress || 0)) / 100 * 30), 0) / Math.max(inProgress.length, 1);
@@ -8531,18 +8543,24 @@
             const canvas = document.getElementById('projectWorkloadChartCanvas');
             if (!canvas) return;
 
-            let filteredProjects = [...projects];
-            if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
-            if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
-                const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
-                return projectHealth === chartHealthFilter;
-            });
-            if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
-                p.projectManagers && p.projectManagers.includes(chartManagerFilter)
-            );
-            if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
-            if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
-            if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
+            // Use currentFilteredProjects if available (from table filters), otherwise use chart filters
+            let filteredProjects;
+            if (currentFilteredProjects && Array.isArray(currentFilteredProjects) && currentFilteredProjects.length > 0) {
+                filteredProjects = [...currentFilteredProjects];
+            } else {
+                filteredProjects = [...projects];
+                if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
+                if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
+                    const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
+                    return projectHealth === chartHealthFilter;
+                });
+                if (chartManagerFilter) filteredProjects = filteredProjects.filter(p =>
+                    p.projectManagers && p.projectManagers.includes(chartManagerFilter)
+                );
+                if (chartStatusFilter) filteredProjects = filteredProjects.filter(p => normalizeStatus(p.status) === chartStatusFilter);
+                if (chartPriorityFilter) filteredProjects = filteredProjects.filter(p => normalizePriority(p.priority) === chartPriorityFilter);
+                if (chartSDLCFilter) filteredProjects = filteredProjects.filter(p => getSDLCPhase(p) === chartSDLCFilter);
+            }
 
             // Count subtasks by assignee instead of projects by manager
             const assigneeWorkload = {};
