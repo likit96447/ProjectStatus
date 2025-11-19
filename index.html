@@ -8428,20 +8428,18 @@
         }
 
         // Render Timeline Analytics Chart
-        async function renderProjectTimelineChart() {
+        function renderProjectTimelineChart() {
             const canvas = document.getElementById('projectTimelineChartCanvas');
             if (!canvas) return;
 
-            // First, filter by user access
-            let accessibleProjects = await filterProjectsByUserAccess(projects);
-
-            // Use currentFilteredProjects if available (from table filters), otherwise use chart filters
+            // Use currentFilteredProjects if available (from table filters), otherwise use user-accessible projects with chart filters
             let filteredProjects;
             if (currentFilteredProjects && Array.isArray(currentFilteredProjects) && currentFilteredProjects.length > 0) {
-                // Filter currentFilteredProjects to only include accessible ones
-                filteredProjects = currentFilteredProjects.filter(p => accessibleProjects.some(ap => ap.id === p.id));
+                // Use table filtered projects directly (they're already filtered by user access in renderProjectsTable)
+                filteredProjects = [...currentFilteredProjects];
             } else {
-                filteredProjects = [...accessibleProjects];
+                // Start with user-accessible projects (not all projects) and apply chart filters
+                filteredProjects = userAccessibleProjects && userAccessibleProjects.length > 0 ? [...userAccessibleProjects] : [...projects];
                 if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
                 if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
                     const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
@@ -8494,20 +8492,18 @@
         }
 
         // Render Completion Forecast Chart
-        async function renderProjectForecastChart() {
+        function renderProjectForecastChart() {
             const canvas = document.getElementById('projectForecastChartCanvas');
             if (!canvas) return;
 
-            // First, filter by user access
-            let accessibleProjects = await filterProjectsByUserAccess(projects);
-
-            // Use currentFilteredProjects if available (from table filters), otherwise use chart filters
+            // Use currentFilteredProjects if available (from table filters), otherwise use user-accessible projects with chart filters
             let filteredProjects;
             if (currentFilteredProjects && Array.isArray(currentFilteredProjects) && currentFilteredProjects.length > 0) {
-                // Filter currentFilteredProjects to only include accessible ones
-                filteredProjects = currentFilteredProjects.filter(p => accessibleProjects.some(ap => ap.id === p.id));
+                // Use table filtered projects directly (they're already filtered by user access)
+                filteredProjects = [...currentFilteredProjects];
             } else {
-                filteredProjects = [...accessibleProjects];
+                // Start with user-accessible projects (not all projects) and apply chart filters
+                filteredProjects = userAccessibleProjects && userAccessibleProjects.length > 0 ? [...userAccessibleProjects] : [...projects];
                 if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
                 if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
                     const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
@@ -8547,20 +8543,18 @@
         }
 
         // Render Team Workload Chart (based on subtasks)
-        async function renderProjectWorkloadChart() {
+        function renderProjectWorkloadChart() {
             const canvas = document.getElementById('projectWorkloadChartCanvas');
             if (!canvas) return;
 
-            // First, filter by user access
-            let accessibleProjects = await filterProjectsByUserAccess(projects);
-
-            // Use currentFilteredProjects if available (from table filters), otherwise use chart filters
+            // Use currentFilteredProjects if available (from table filters), otherwise use user-accessible projects with chart filters
             let filteredProjects;
             if (currentFilteredProjects && Array.isArray(currentFilteredProjects) && currentFilteredProjects.length > 0) {
-                // Filter currentFilteredProjects to only include accessible ones
-                filteredProjects = currentFilteredProjects.filter(p => accessibleProjects.some(ap => ap.id === p.id));
+                // Use table filtered projects directly (they're already filtered by user access)
+                filteredProjects = [...currentFilteredProjects];
             } else {
-                filteredProjects = [...accessibleProjects];
+                // Start with user-accessible projects (not all projects) and apply chart filters
+                filteredProjects = userAccessibleProjects && userAccessibleProjects.length > 0 ? [...userAccessibleProjects] : [...projects];
                 if (chartTypeFilter) filteredProjects = filteredProjects.filter(p => p.projectType === chartTypeFilter);
                 if (chartHealthFilter) filteredProjects = filteredProjects.filter(p => {
                     const projectHealth = p.projectHealth ? p.projectHealth.charAt(0).toUpperCase() + p.projectHealth.slice(1).toLowerCase() : 'None';
@@ -12237,6 +12231,9 @@
             // Filter projects to show only those user has access to
             const visibleProjects = await filterProjectsByUserAccess(projects);
 
+            // Store accessible projects globally for charts to use
+            userAccessibleProjects = [...visibleProjects];
+
             // Render table view by default
             await renderProjectsTable();
 
@@ -12451,6 +12448,7 @@
         // Store current project view
         let currentProjectView = 'grid';
         let currentFilteredProjects = null; // Store filtered projects when filters are applied
+        let userAccessibleProjects = []; // Store all projects the user has access to (for charts when no filters)
         let chartTypeFilter = null; // Selected project type from chart
         let chartHealthFilter = null; // Selected health status from chart
         let chartManagerFilter = null; // Selected project manager from chart
