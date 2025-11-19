@@ -12253,24 +12253,27 @@
         /**
          * Filter projects to show only those the current user should see
          * User sees project if:
-         * - Has show: true permission for projectslist page AND
          * - Is project manager OR is team member of that project
+         * Note: This function ALWAYS filters by user membership, regardless of guest mode
          * @param {Array} projectsArray - Array of projects to filter
          * @returns {Promise<Array>} Filtered projects
          */
         async function filterProjectsByUserAccess(projectsArray) {
-            // In guest mode, show all projects without filtering
-            if (guestMode) {
-                // //console.log('🎫 Guest mode: Showing all projects without assignment filtering');
+            const currentUser = getCurrentUser();
+
+            // In guest mode with no current user, show all projects
+            if (guestMode && !currentUser) {
+                // //console.log('🎫 Guest mode (no user): Showing all projects');
                 return projectsArray;
             }
 
-            const currentUser = getCurrentUser();
-            if (!currentUser) return [];
+            // If no current user and not in guest mode, return empty
+            if (!currentUser) {
+                // //console.log('❌ No current user and not in guest mode');
+                return [];
+            }
 
-            const hasShowPermission = await canShow('projectslist');
-            if (!hasShowPermission) return [];
-
+            // ALWAYS filter by user membership (applies to both guest mode and regular mode)
             // Filter to show only projects where user is PM or team member
             return projectsArray.filter(project => {
                 // Check if user is project manager
