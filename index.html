@@ -15184,7 +15184,7 @@
                     const subtaskAssignee = subtask.personName || subtask.assignedTo || '';
                     exportData.push({
                         'Type': 'Subtask',
-                        'Name': '  └─ ' + (subtask.name || ''),
+                        'Name': subtask.name || '',
                         'Status': getStatusText(subtask.status) || '',
                         'Priority': subtask.priority ? subtask.priority.charAt(0).toUpperCase() + subtask.priority.slice(1) : '',
                         'Assigned To': subtaskAssignee,
