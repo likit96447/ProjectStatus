@@ -2993,7 +2993,7 @@
                                 <span>🔍</span>
                                 <span>Filter</span>
                             </button>
-                            <button class="btn btn-secondary" onclick="exportProjects()">
+                            <button class="btn btn-secondary" onclick="exportProjects()" style="position: relative;">
                                 <span>📤</span>
                                 <span>Export</span>
                             </button>
@@ -14832,8 +14832,246 @@
             applyProjectFilters();
         }
 
+        /**
+         * Get filtered projects for export respecting user access and active filters
+         */
+        function getFilteredProjectsForExport() {
+            // Use currentFilteredProjects if filters are applied, otherwise use accessible projects
+            if (currentFilteredProjects && Array.isArray(currentFilteredProjects) && currentFilteredProjects.length > 0) {
+                return [...currentFilteredProjects];
+            }
+
+            // If no filters applied, use user-accessible projects
+            if (userAccessibleProjects && userAccessibleProjects.length > 0) {
+                return [...userAccessibleProjects];
+            }
+
+            // Fallback to all projects if neither is available
+            return [...projects];
+        }
+
+        /**
+         * Prepare project data for export
+         */
+        function prepareProjectExportData() {
+            const filteredProjects = getFilteredProjectsForExport();
+            const exportData = [];
+
+            // Get team members data for manager lookup
+            const teamMembersData = (typeof teamMembers !== 'undefined') ? teamMembers : (window.teamMembers || []);
+
+            filteredProjects.forEach(project => {
+                // Get manager names
+                let managerNames = 'N/A';
+                if (project.projectManagers && project.projectManagers.length > 0) {
+                    const names = project.projectManagers.map(managerId => {
+                        if (teamMembersData.length > 0) {
+                            const manager = teamMembersData.find(tm => tm.id === managerId);
+                            return manager ? manager.name : managerId;
+                        }
+                        return managerId;
+                    });
+                    managerNames = names.join(', ');
+                } else if (project.projectManager) {
+                    managerNames = project.projectManager;
+                }
+
+                // Get team member names
+                let teamMemberNames = '';
+                if (project.teamMembers && project.teamMembers.length > 0) {
+                    teamMemberNames = project.teamMembers.join(', ');
+                }
+
+                // Get epic names
+                let epicNames = '';
+                if (project.epics && project.epics.length > 0) {
+                    epicNames = project.epics.map(e => e.name).join(', ');
+                }
+
+                exportData.push({
+                    'Code': project.code || '',
+                    'Name': project.name || '',
+                    'Status': project.status ? project.status.charAt(0).toUpperCase() + project.status.slice(1).replace('-', ' ') : '',
+                    'Type': project.projectType || '',
+                    'Priority': project.priority ? project.priority.charAt(0).toUpperCase() + project.priority.slice(1) : '',
+                    'Health': project.projectHealth ? project.projectHealth.charAt(0).toUpperCase() + project.projectHealth.slice(1) : 'None',
+                    'Progress': (project.progress || 0) + '%',
+                    'Manager': managerNames,
+                    'Team Members': teamMemberNames,
+                    'SDLC': project.sdlc || '',
+                    'Start Date': formatDateForDisplay(project.startDate) || '',
+                    'End Date': formatDateForDisplay(project.endDate) || '',
+                    'Budget': project.budget || '',
+                    'Epics': epicNames,
+                    'Tags': project.tags ? project.tags.join(', ') : '',
+                    'Description': project.description || ''
+                });
+            });
+
+            return exportData;
+        }
+
+        /**
+         * Export projects to CSV format
+         */
+        function exportProjectsToCSV() {
+            const exportData = prepareProjectExportData();
+
+            if (exportData.length === 0) {
+                alert('⚠️ No projects to export. Please check your access and filters.');
+                return;
+            }
+
+            // Define headers
+            const headers = ['Code', 'Name', 'Status', 'Type', 'Priority', 'Health', 'Progress', 'Manager', 'Team Members', 'SDLC', 'Start Date', 'End Date', 'Budget', 'Epics', 'Tags', 'Description'];
+
+            // Create CSV content
+            let csvContent = 'data:text/csv;charset=utf-8,';
+
+            // Add headers
+            csvContent += headers.map(header => '"' + header.replace(/"/g, '""') + '"').join(',') + '\n';
+
+            // Add data rows
+            exportData.forEach(row => {
+                const rowValues = headers.map(header => {
+                    const value = row[header] || '';
+                    return '"' + value.toString().replace(/"/g, '""') + '"';
+                });
+                csvContent += rowValues.join(',') + '\n';
+            });
+
+            // Create download link
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `projects_export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        /**
+         * Export projects to Excel format
+         */
+        function exportProjectsToExcel() {
+            const exportData = prepareProjectExportData();
+
+            if (exportData.length === 0) {
+                alert('⚠️ No projects to export. Please check your access and filters.');
+                return;
+            }
+
+            // Define headers
+            const headers = ['Code', 'Name', 'Status', 'Type', 'Priority', 'Health', 'Progress', 'Manager', 'Team Members', 'SDLC', 'Start Date', 'End Date', 'Budget', 'Epics', 'Tags', 'Description'];
+
+            // Create HTML table
+            let htmlContent = '<table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; font-family: Arial, sans-serif;">';
+
+            // Add header row
+            htmlContent += '<tr style="background-color: #4F46E5; color: white; font-weight: bold;">';
+            headers.forEach(header => {
+                htmlContent += `<th style="text-align: left; padding: 8px;">${header}</th>`;
+            });
+            htmlContent += '</tr>';
+
+            // Add data rows with alternating colors
+            exportData.forEach((row, index) => {
+                const bgColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
+                htmlContent += `<tr style="background-color: ${bgColor};">`;
+                headers.forEach(header => {
+                    const value = row[header] || '';
+                    htmlContent += `<td style="padding: 8px;">${value}</td>`;
+                });
+                htmlContent += '</tr>';
+            });
+
+            htmlContent += '</table>';
+
+            // Create blob and download
+            const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `projects_export_${new Date().toISOString().split('T')[0]}.xls`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        /**
+         * Show export menu for projects
+         */
+        function showProjectExportMenu(event) {
+            event.stopPropagation();
+
+            const existingMenu = document.getElementById('projectExportMenu');
+            if (existingMenu) {
+                existingMenu.remove();
+            }
+
+            const menu = document.createElement('div');
+            menu.id = 'projectExportMenu';
+            menu.style.cssText = `
+                position: absolute;
+                top: ${event.target.closest('.btn').offsetHeight + 5}px;
+                right: 0;
+                background: white;
+                border: 1px solid #e6e9ef;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                min-width: 150px;
+            `;
+
+            menu.innerHTML = `
+                <button onclick="exportProjectsToCSV()" style="
+                    display: block;
+                    width: 100%;
+                    padding: 12px 16px;
+                    background: none;
+                    border: none;
+                    text-align: left;
+                    cursor: pointer;
+                    font-size: 14px;
+                    color: #323338;
+                    border-bottom: 1px solid #e6e9ef;
+                    transition: background 0.2s;
+                " onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='none'">
+                    📥 Export as CSV
+                </button>
+                <button onclick="exportProjectsToExcel()" style="
+                    display: block;
+                    width: 100%;
+                    padding: 12px 16px;
+                    background: none;
+                    border: none;
+                    text-align: left;
+                    cursor: pointer;
+                    font-size: 14px;
+                    color: #323338;
+                    transition: background 0.2s;
+                " onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='none'">
+                    📊 Export as Excel
+                </button>
+            `;
+
+            event.target.closest('.board-actions').appendChild(menu);
+
+            // Close menu when clicking outside
+            const closeMenu = (e) => {
+                if (!menu.contains(e.target) && !e.target.closest('.btn-secondary:has(+ #projectExportMenu)')) {
+                    menu.remove();
+                    document.removeEventListener('click', closeMenu);
+                }
+            };
+            setTimeout(() => {
+                document.addEventListener('click', closeMenu);
+            }, 0);
+        }
+
         function exportProjects() {
-            alert('Export functionality coming soon!');
+            showProjectExportMenu(event);
         }
 
         // Global variable to store current project filter
