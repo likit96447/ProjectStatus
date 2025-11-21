@@ -11624,6 +11624,8 @@
             }
 
             try {
+                const oldStatus = subtask.status;
+
                 await db.collection('subtasks').doc(subtaskId).update({
                     status: newStatus,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -11635,6 +11637,11 @@
                 const subtask = subtasks.find(st => st.id === subtaskId);
                 if (subtask) {
                     subtask.status = newStatus;
+
+                    // Log the status change
+                    await saveActivityLog('subtask', subtaskId, subtask.name, ['status'], {
+                        'status': { oldValue: oldStatus, newValue: newStatus }
+                    });
                 }
 
                 // Check if any filters are active
@@ -12013,6 +12020,8 @@
             isManualOperation = true;
 
             try {
+                const oldStatus = task.status;
+
                 // Update in Firebase
                 await db.collection('tasks').doc(task.id).update({
                     status: newStatus
@@ -12022,6 +12031,11 @@
 
                 // Update local array
                 task.status = newStatus;
+
+                // Log the status change
+                await saveActivityLog('task', task.id, task.name, ['status'], {
+                    'status': { oldValue: oldStatus, newValue: newStatus }
+                });
 
                 // Re-render tasks (will apply filters if active)
                 const hasActiveFilters = (taskFilters && Object.values(taskFilters).some(v => v !== '' && (Array.isArray(v) ? v.length > 0 : true))) || isMyTasksActive;
