@@ -6903,7 +6903,7 @@
          * @param {string} itemName - task or subtask name
          * @param {Array<string>} changedFields - array of field names that changed
          */
-        async function saveActivityLog(itemType, itemId, itemName, changedFields) {
+        async function saveActivityLog(itemType, itemId, itemName, changedFields, changeDetails = {}) {
             if (!db || !itemType || !itemId || !itemName || !changedFields || changedFields.length === 0) {
                 console.warn('Invalid log parameters:', { itemType, itemId, itemName, changedFields });
                 return;
@@ -6936,11 +6936,23 @@
                 // Convert field names and remove duplicates
                 const changedFieldNames = [...new Set(changedFields.map(f => fieldLabels[f] || f))];
 
+                // Build detailed change information
+                const detailedChanges = {};
+                Object.keys(changeDetails).forEach(fieldKey => {
+                    const { oldValue, newValue } = changeDetails[fieldKey];
+                    const fieldLabel = fieldLabels[fieldKey] || fieldKey;
+                    detailedChanges[fieldLabel] = {
+                        oldValue: oldValue !== undefined ? String(oldValue) : 'N/A',
+                        newValue: newValue !== undefined ? String(newValue) : 'N/A'
+                    };
+                });
+
                 const logEntry = {
                     itemType: itemType, // 'task' or 'subtask'
                     itemId: itemId,
                     itemName: itemName,
                     changedFields: changedFieldNames.join(', '), // Concatenated with comma
+                    detailedChanges: detailedChanges, // Store detailed old → new values
                     userId: currentUser.id,
                     userName: currentUser.name || currentUser.email,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -6982,6 +6994,7 @@
                         itemId: logData.itemId || '',
                         itemName: logData.itemName || '',
                         changedFields: logData.changedFields || '',
+                        detailedChanges: logData.detailedChanges || {}, // Include detailed changes
                         userName: logData.userName || 'Unknown',
                         userId: logData.userId || '',
                         timestamp: logData.timestamp ? logData.timestamp.toDate() : new Date(),
@@ -7036,6 +7049,21 @@
                     log.timestamp.toLocaleString() :
                     new Date(log.timestamp).toLocaleString();
 
+                // Build detailed changes description
+                let detailedChangesHtml = '';
+                if (log.detailedChanges && Object.keys(log.detailedChanges).length > 0) {
+                    const changes = Object.entries(log.detailedChanges).map(([field, change]) => {
+                        return `<div style="margin: 4px 0; font-size: 12px;">
+                            <strong>${field}:</strong> <span style="color: #c33;">${escapeHtml(change.oldValue)}</span> → <span style="color: #3c3;">${escapeHtml(change.newValue)}</span>
+                        </div>`;
+                    }).join('');
+                    detailedChangesHtml = `
+                        <div style="margin-top: 8px; padding: 8px; background: #f9fafb; border-radius: 4px; border-left: 3px solid #667eea;">
+                            ${changes}
+                        </div>
+                    `;
+                }
+
                 return `
                     <tr style="background: ${rowColor}; border-bottom: 1px solid #e6e9ef;">
                         <td style="padding: 12px 16px; text-align: left;">${timestamp}</td>
@@ -7045,7 +7073,10 @@
                                 ${log.itemType === 'task' ? 'Task' : 'Subtask'}
                             </span>
                         </td>
-                        <td style="padding: 12px 16px; text-align: left;">${escapeHtml(log.itemName)}</td>
+                        <td style="padding: 12px 16px; text-align: left;">
+                            <div>${escapeHtml(log.itemName)}</div>
+                            ${detailedChangesHtml}
+                        </td>
                         <td style="padding: 12px 16px; text-align: left;">${escapeHtml(log.changedFields)}</td>
                     </tr>
                 `;
@@ -9589,6 +9620,7 @@
             const input = document.getElementById(`inline-edit-input-${taskIndex}`);
             const task = tasks[taskIndex];
             const changedFields = []; // Track which fields changed
+            const changeDetails = {}; // Track old → new values
 
             try {
                 isManualOperation = true;
@@ -9600,6 +9632,8 @@
                         return;
                     }
 
+                    const oldValue = task.name;
+
                     // Update in Firebase
                     if (task.id && db) {
                         await db.collection('tasks').doc(task.id).update({
@@ -9607,6 +9641,7 @@
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         changedFields.push('name');
+                        changeDetails['name'] = { oldValue, newValue };
                     }
 
                     // Update local array
@@ -9614,6 +9649,7 @@
 
                 } else if (field === 'date') {
                     const newValue = input.value;
+                    const oldValue = task.date || '';
 
                     // Update in Firebase
                     if (task.id && db) {
@@ -9622,6 +9658,7 @@
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         changedFields.push('date');
+                        changeDetails['date'] = { oldValue, newValue };
                     }
 
                     // Update local array
@@ -9629,6 +9666,7 @@
 
                 } else if (field === 'startDate') {
                     const newValue = input.value;
+                    const oldValue = task.startDate || '';
 
                     // Update in Firebase
                     if (task.id && db) {
@@ -9637,6 +9675,7 @@
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         changedFields.push('startDate');
+                        changeDetails['startDate'] = { oldValue, newValue };
                     }
 
                     // Update local array
@@ -9651,6 +9690,7 @@
 
                     const assignedToIds = selectedOptions.map(opt => opt.value);
                     const assignedToNames = selectedOptions.map(opt => opt.textContent);
+                    const oldNames = task.assignedToNames || [];
 
                     // Update in Firebase
                     if (task.id && db) {
@@ -9662,6 +9702,10 @@
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         changedFields.push('assignedTo', 'assignedToIds', 'person', 'assignedToNames');
+                        changeDetails['assignedToNames'] = {
+                            oldValue: oldNames.join(', ') || 'Unassigned',
+                            newValue: assignedToNames.join(', ')
+                        };
                     }
 
                     // Update local array
@@ -9673,7 +9717,7 @@
 
                 // Save activity log
                 if (changedFields.length > 0 && task.id) {
-                    await saveActivityLog('task', task.id, task.name, changedFields);
+                    await saveActivityLog('task', task.id, task.name, changedFields, changeDetails);
                 }
 
                 // Clear editing state
@@ -10012,6 +10056,7 @@
             if (!subtask) return;
 
             const changedFields = []; // Track which fields changed
+            const changeDetails = {}; // Track old → new values
 
             try {
                 if (field === 'name') {
@@ -10021,6 +10066,8 @@
                         return;
                     }
 
+                    const oldValue = subtask.name;
+
                     // Update in Firebase
                     if (db) {
                         await db.collection('subtasks').doc(subtaskId).update({
@@ -10028,6 +10075,7 @@
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         changedFields.push('name');
+                        changeDetails['name'] = { oldValue, newValue };
                     }
 
                     // Update local array
@@ -10035,6 +10083,7 @@
 
                 } else if (field === 'date') {
                     const newValue = input.value;
+                    const oldValue = subtask.date || '';
 
                     // Update in Firebase
                     if (db) {
@@ -10043,6 +10092,7 @@
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         changedFields.push('date');
+                        changeDetails['date'] = { oldValue, newValue };
                     }
 
                     // Update local array
@@ -10050,6 +10100,7 @@
 
                 } else if (field === 'startDate') {
                     const newValue = input.value;
+                    const oldValue = subtask.startDate || '';
 
                     // Update in Firebase
                     if (db) {
@@ -10058,6 +10109,7 @@
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         changedFields.push('startDate');
+                        changeDetails['startDate'] = { oldValue, newValue };
                     }
 
                     // Update local array
@@ -10070,6 +10122,7 @@
                         return;
                     }
 
+                    const oldMemberName = subtask.personName || subtask.person || 'Unassigned';
                     const memberName = await getMemberNameById(newMemberId);
 
                     // Update in Firebase
@@ -10081,6 +10134,7 @@
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         changedFields.push('assignedTo', 'personName', 'person');
+                        changeDetails['personName'] = { oldValue: oldMemberName, newValue: memberName };
                     }
 
                     // Update local array
@@ -10091,7 +10145,7 @@
 
                 // Save activity log
                 if (changedFields.length > 0) {
-                    await saveActivityLog('subtask', subtaskId, subtask.name, changedFields);
+                    await saveActivityLog('subtask', subtaskId, subtask.name, changedFields, changeDetails);
                 }
 
                 // Clear editing state
@@ -11367,12 +11421,37 @@
 
                     // Track which fields changed
                     const changedFields = [];
-                    if (oldSubtask.name !== subtaskData.name) changedFields.push('name');
-                    if (oldSubtask.status !== subtaskData.status) changedFields.push('status');
-                    if (oldSubtask.assignedTo !== subtaskData.assignedTo) changedFields.push('assignedTo', 'person', 'personName');
-                    if (oldSubtask.projectId !== subtaskData.projectId) changedFields.push('project', 'projectId');
-                    if (oldSubtask.date !== subtaskData.date) changedFields.push('date');
-                    if (oldSubtask.startDate !== subtaskData.startDate) changedFields.push('startDate');
+                    const changeDetails = {};
+
+                    if (oldSubtask.name !== subtaskData.name) {
+                        changedFields.push('name');
+                        changeDetails['name'] = { oldValue: oldSubtask.name, newValue: subtaskData.name };
+                    }
+                    if (oldSubtask.status !== subtaskData.status) {
+                        changedFields.push('status');
+                        changeDetails['status'] = { oldValue: oldSubtask.status, newValue: subtaskData.status };
+                    }
+                    if (oldSubtask.assignedTo !== subtaskData.assignedTo) {
+                        changedFields.push('assignedTo', 'person', 'personName');
+                        const oldMemberName = oldSubtask.personName || oldSubtask.person || 'Unassigned';
+                        const newMemberName = document.querySelector(`#subtaskPerson option[value="${subtaskData.assignedTo}"]`)?.getAttribute('data-member-name') ||
+                                            document.querySelector(`#subtaskPerson option[value="${subtaskData.assignedTo}"]`)?.textContent || subtaskData.assignedTo;
+                        changeDetails['personName'] = { oldValue: oldMemberName, newValue: newMemberName };
+                    }
+                    if (oldSubtask.projectId !== subtaskData.projectId) {
+                        changedFields.push('project', 'projectId');
+                        const oldProjectName = oldSubtask.project || 'Unassigned';
+                        const newProjectName = document.querySelector(`#subtaskProject option[value="${subtaskData.projectId}"]`)?.textContent || subtaskData.projectId || 'Unassigned';
+                        changeDetails['project'] = { oldValue: oldProjectName, newValue: newProjectName };
+                    }
+                    if (oldSubtask.date !== subtaskData.date) {
+                        changedFields.push('date');
+                        changeDetails['date'] = { oldValue: oldSubtask.date || '', newValue: subtaskData.date || '' };
+                    }
+                    if (oldSubtask.startDate !== subtaskData.startDate) {
+                        changedFields.push('startDate');
+                        changeDetails['startDate'] = { oldValue: oldSubtask.startDate || '', newValue: subtaskData.startDate || '' };
+                    }
 
                     await db.collection('subtasks').doc(subtaskId).update({
                         ...subtaskData,
@@ -11382,7 +11461,7 @@
 
                     // Log the changes
                     if (changedFields.length > 0) {
-                        await saveActivityLog('subtask', subtaskId, subtaskData.name, changedFields);
+                        await saveActivityLog('subtask', subtaskId, subtaskData.name, changedFields, changeDetails);
                     }
                 } else {
                     // Create new subtask
@@ -12186,13 +12265,39 @@
 
                     // Track which fields changed
                     const changedFields = [];
-                    if (task.name !== newTask.name) changedFields.push('name');
-                    if (task.status !== newTask.status) changedFields.push('status');
-                    if (task.priority !== newTask.priority) changedFields.push('priority');
-                    if (JSON.stringify(task.assignedToIds) !== JSON.stringify(newTask.assignedToIds)) changedFields.push('assignedTo', 'assignedToIds', 'person', 'assignedToNames');
-                    if (task.projectId !== newTask.projectId) changedFields.push('project', 'projectId');
-                    if (task.startDate !== newTask.startDate) changedFields.push('startDate');
-                    if (task.date !== newTask.date) changedFields.push('date');
+                    const changeDetails = {};
+
+                    if (task.name !== newTask.name) {
+                        changedFields.push('name');
+                        changeDetails['name'] = { oldValue: task.name, newValue: newTask.name };
+                    }
+                    if (task.status !== newTask.status) {
+                        changedFields.push('status');
+                        changeDetails['status'] = { oldValue: task.status, newValue: newTask.status };
+                    }
+                    if (task.priority !== newTask.priority) {
+                        changedFields.push('priority');
+                        changeDetails['priority'] = { oldValue: task.priority, newValue: newTask.priority };
+                    }
+                    if (JSON.stringify(task.assignedToIds) !== JSON.stringify(newTask.assignedToIds)) {
+                        changedFields.push('assignedTo', 'assignedToIds', 'person', 'assignedToNames');
+                        const oldNames = (task.assignedToNames && task.assignedToNames.length > 0) ? task.assignedToNames.join(', ') : 'Unassigned';
+                        const newNames = newTask.assignedToNames.join(', ');
+                        changeDetails['assignedToNames'] = { oldValue: oldNames, newValue: newNames };
+                    }
+                    if (task.projectId !== newTask.projectId) {
+                        changedFields.push('project', 'projectId');
+                        const oldProjectName = task.project || 'Unassigned';
+                        changeDetails['project'] = { oldValue: oldProjectName, newValue: newTask.project };
+                    }
+                    if (task.startDate !== newTask.startDate) {
+                        changedFields.push('startDate');
+                        changeDetails['startDate'] = { oldValue: task.startDate || '', newValue: newTask.startDate || '' };
+                    }
+                    if (task.date !== newTask.date) {
+                        changedFields.push('date');
+                        changeDetails['date'] = { oldValue: task.date || '', newValue: newTask.date || '' };
+                    }
 
                     // Update in Firebase if task has an ID
                     if (task.id && db) {
@@ -12201,7 +12306,7 @@
 
                         // Log the changes
                         if (changedFields.length > 0) {
-                            await saveActivityLog('task', task.id, newTask.name, changedFields);
+                            await saveActivityLog('task', task.id, newTask.name, changedFields, changeDetails);
                         }
                     }
                 } else {
