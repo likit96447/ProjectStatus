@@ -2577,6 +2577,9 @@
                 <div style="position: relative;">
                     <button class="icon-btn" id="settingsBtn" onclick="toggleSettingsMenu()">⚙️</button>
                     <div id="settingsMenu" class="settings-menu" style="display: none; position: fixed; top: 70px; right: 24px; background: white; border: 1px solid #e6e9ef; border-radius: 8px; min-width: 200px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100000;">
+                        <div class="settings-menu-item" onclick="switchPage('activityLogs'); closeSettingsMenu()" style="padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #e6e9ef; color: #323338; font-size: 14px;">
+                            📊 Activity Logs
+                        </div>
                         <div class="settings-menu-item" onclick="switchPage('adminRules'); closeSettingsMenu()" style="padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #e6e9ef; color: #323338; font-size: 14px;">
                             📋 Admin Rules
                         </div>
@@ -3630,6 +3633,65 @@
                                     </thead>
                                     <tbody id="rolesTableBody">
                                         <!-- Will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Activity Logs Page -->
+                <div id="activityLogsPage" class="page-view">
+                    <div class="board-header">
+                        <h1 class="board-title">Activity Logs</h1>
+                        <p class="board-subtitle">View all task and subtask changes</p>
+                    </div>
+
+                    <div style="padding: 20px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="max-width: 1400px; margin: 0 auto;">
+                            <!-- Filter Section -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                                <div>
+                                    <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Item Type</label>
+                                    <select id="logFilterType" onchange="applyLogFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                                        <option value="">All Types</option>
+                                        <option value="task">Task</option>
+                                        <option value="subtask">Subtask</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">User</label>
+                                    <input type="text" id="logFilterUser" placeholder="Search by user name..." oninput="applyLogFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                                </div>
+                                <div>
+                                    <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Search</label>
+                                    <input type="text" id="logFilterSearch" placeholder="Search by task/item name..." oninput="applyLogFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
+                                </div>
+                                <div style="display: flex; align-items: flex-end;">
+                                    <button onclick="clearLogFilters()" style="background: transparent; border: none; color: #e44258; cursor: pointer; font-size: 14px; font-weight: 600;">
+                                        Clear All
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Logs Table -->
+                            <div style="border: 1px solid #e6e9ef; border-radius: 8px; overflow: hidden;">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                                    <thead>
+                                        <tr style="background: #f9fafb; border-bottom: 1px solid #e6e9ef;">
+                                            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #323338; cursor: pointer;" onclick="sortLogs('timestamp')">
+                                                📅 Date & Time
+                                            </th>
+                                            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #323338;">👤 User</th>
+                                            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #323338;">📝 Item Type</th>
+                                            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #323338;">📋 Item Name</th>
+                                            <th style="padding: 12px 16px; text-align: left; font-weight: 600; color: #323338;">✏️ Changed Fields</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="activityLogsTableBody">
+                                        <tr>
+                                            <td colspan="5" style="padding: 40px; text-align: center; color: #999;">Loading logs...</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -4912,6 +4974,13 @@
                 console.error("Error getting current user:", error);
                 return null;
             }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         /**
@@ -6885,6 +6954,141 @@
             }
         }
 
+        // Activity Logs Page Functions
+        let allActivityLogs = [];
+        let filteredActivityLogs = [];
+        let logSortField = 'timestamp';
+        let logSortOrder = 'desc'; // 'asc' or 'desc'
+
+        async function loadActivityLogs() {
+            if (!db) return;
+
+            try {
+                // Show loading state
+                const tbody = document.getElementById('activityLogsTableBody');
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding: 40px; text-align: center; color: #999;">Loading logs...</td></tr>';
+                }
+
+                // Fetch logs from Firebase
+                const logsSnapshot = await db.collection('logs').orderBy('timestamp', 'desc').get();
+
+                allActivityLogs = [];
+                logsSnapshot.forEach(doc => {
+                    const logData = doc.data();
+                    allActivityLogs.push({
+                        id: doc.id,
+                        itemType: logData.itemType || '',
+                        itemId: logData.itemId || '',
+                        itemName: logData.itemName || '',
+                        changedFields: logData.changedFields || '',
+                        userName: logData.userName || 'Unknown',
+                        userId: logData.userId || '',
+                        timestamp: logData.timestamp ? logData.timestamp.toDate() : new Date(),
+                        createdAt: logData.createdAt || ''
+                    });
+                });
+
+                // Initially show all logs
+                filteredActivityLogs = [...allActivityLogs];
+                renderActivityLogs();
+
+                console.log(`✅ Loaded ${allActivityLogs.length} activity logs`);
+            } catch (error) {
+                console.error('❌ Error loading activity logs:', error);
+                const tbody = document.getElementById('activityLogsTableBody');
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="padding: 40px; text-align: center; color: #e44258;">Error loading logs</td></tr>';
+                }
+            }
+        }
+
+        function renderActivityLogs() {
+            const tbody = document.getElementById('activityLogsTableBody');
+            if (!tbody) return;
+
+            if (filteredActivityLogs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="padding: 40px; text-align: center; color: #999;">No logs found</td></tr>';
+                return;
+            }
+
+            // Sort logs based on current sort settings
+            const logsToDisplay = [...filteredActivityLogs].sort((a, b) => {
+                let aValue = a[logSortField];
+                let bValue = b[logSortField];
+
+                if (aValue instanceof Date) {
+                    aValue = aValue.getTime();
+                    bValue = bValue.getTime();
+                }
+
+                if (logSortOrder === 'asc') {
+                    return aValue > bValue ? 1 : -1;
+                } else {
+                    return aValue < bValue ? 1 : -1;
+                }
+            });
+
+            // Generate table rows
+            tbody.innerHTML = logsToDisplay.map((log, index) => {
+                const rowColor = index % 2 === 0 ? 'white' : '#f9fafb';
+                const timestamp = log.timestamp instanceof Date ?
+                    log.timestamp.toLocaleString() :
+                    new Date(log.timestamp).toLocaleString();
+
+                return `
+                    <tr style="background: ${rowColor}; border-bottom: 1px solid #e6e9ef;">
+                        <td style="padding: 12px 16px; text-align: left;">${timestamp}</td>
+                        <td style="padding: 12px 16px; text-align: left;">${escapeHtml(log.userName)}</td>
+                        <td style="padding: 12px 16px; text-align: left;">
+                            <span style="background: ${log.itemType === 'task' ? '#e7f5ff' : '#f3e9ff'}; color: ${log.itemType === 'task' ? '#1971c2' : '#6f42c1'}; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                                ${log.itemType === 'task' ? 'Task' : 'Subtask'}
+                            </span>
+                        </td>
+                        <td style="padding: 12px 16px; text-align: left;">${escapeHtml(log.itemName)}</td>
+                        <td style="padding: 12px 16px; text-align: left;">${escapeHtml(log.changedFields)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function applyLogFilters() {
+            const typeFilter = document.getElementById('logFilterType')?.value || '';
+            const userFilter = document.getElementById('logFilterUser')?.value || '';
+            const searchFilter = document.getElementById('logFilterSearch')?.value || '';
+
+            filteredActivityLogs = allActivityLogs.filter(log => {
+                const matchType = !typeFilter || log.itemType === typeFilter;
+                const matchUser = !userFilter || log.userName.toLowerCase().includes(userFilter.toLowerCase());
+                const matchSearch = !searchFilter || log.itemName.toLowerCase().includes(searchFilter.toLowerCase());
+
+                return matchType && matchUser && matchSearch;
+            });
+
+            renderActivityLogs();
+        }
+
+        function sortLogs(field) {
+            // Toggle sort order if clicking the same field
+            if (logSortField === field) {
+                logSortOrder = logSortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                logSortField = field;
+                logSortOrder = 'desc';
+            }
+
+            renderActivityLogs();
+        }
+
+        function clearLogFilters() {
+            document.getElementById('logFilterType').value = '';
+            document.getElementById('logFilterUser').value = '';
+            document.getElementById('logFilterSearch').value = '';
+
+            filteredActivityLogs = [...allActivityLogs];
+            renderActivityLogs();
+        }
+
         // Update task in Firestore
         async function updateTaskInFirebase(taskId, taskData) {
             if (!db) return;
@@ -7193,7 +7397,7 @@
                 }
             }
 
-            const pages = ['dashboard', 'projectslist', 'tasks', 'team', 'reports', 'adminRules', 'pagePermissions', 'roleManagement'];
+            const pages = ['dashboard', 'projectslist', 'tasks', 'team', 'reports', 'adminRules', 'pagePermissions', 'roleManagement', 'activityLogs'];
             pages.forEach(p => {
                 const page = document.getElementById(p + 'Page');
                 if (page) page.classList.remove('active');
@@ -7248,6 +7452,8 @@
                 renderPagePermissionsTable();
             } else if (pageName === 'roleManagement' && db) {
                 loadRolesFromFirebase();
+            } else if (pageName === 'activityLogs' && db) {
+                loadActivityLogs();
             }
         }
 
