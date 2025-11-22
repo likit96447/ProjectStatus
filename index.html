@@ -3657,6 +3657,8 @@
                                         <option value="">All Types</option>
                                         <option value="task">Task</option>
                                         <option value="subtask">Subtask</option>
+                                        <option value="project">Project</option>
+                                        <option value="team_member">Team Member</option>
                                     </select>
                                 </div>
                                 <div>
@@ -7069,8 +7071,23 @@
                         <td style="padding: 12px 16px; text-align: left;">${timestamp}</td>
                         <td style="padding: 12px 16px; text-align: left;">${escapeHtml(log.userName)}</td>
                         <td style="padding: 12px 16px; text-align: left;">
-                            <span style="background: ${log.itemType === 'task' ? '#e7f5ff' : '#f3e9ff'}; color: ${log.itemType === 'task' ? '#1971c2' : '#6f42c1'}; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">
-                                ${log.itemType === 'task' ? 'Task' : 'Subtask'}
+                            <span style="background: ${
+                                log.itemType === 'task' ? '#e7f5ff' :
+                                log.itemType === 'subtask' ? '#f3e9ff' :
+                                log.itemType === 'project' ? '#e6f9e6' :
+                                '#fff5e6'
+                            }; color: ${
+                                log.itemType === 'task' ? '#1971c2' :
+                                log.itemType === 'subtask' ? '#6f42c1' :
+                                log.itemType === 'project' ? '#2f7f2f' :
+                                '#b8860b'
+                            }; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                                ${
+                                    log.itemType === 'task' ? 'Task' :
+                                    log.itemType === 'subtask' ? 'Subtask' :
+                                    log.itemType === 'project' ? 'Project' :
+                                    'Team Member'
+                                }
                             </span>
                         </td>
                         <td style="padding: 12px 16px; text-align: left;">
@@ -12537,8 +12554,42 @@
                     // Get old member data to check if name changed
                     const oldMemberDoc = await db.collection('team_members').doc(editingMemberId).get();
                     const oldMemberData = oldMemberDoc.data();
-                    const nameChanged = oldMemberData.name !== memberData.name;
-                    
+
+                    // Track which fields changed
+                    const changedFields = [];
+                    const changeDetails = {};
+
+                    if (oldMemberData.name !== memberData.name) {
+                        changedFields.push('name');
+                        changeDetails['name'] = { oldValue: oldMemberData.name, newValue: memberData.name };
+                    }
+                    if (oldMemberData.email !== memberData.email) {
+                        changedFields.push('email');
+                        changeDetails['email'] = { oldValue: oldMemberData.email, newValue: memberData.email };
+                    }
+                    if (oldMemberData.role !== memberData.role) {
+                        changedFields.push('role');
+                        changeDetails['role'] = { oldValue: oldMemberData.role, newValue: memberData.role };
+                    }
+                    if (oldMemberData.department !== memberData.department) {
+                        changedFields.push('department');
+                        changeDetails['department'] = { oldValue: oldMemberData.department || '', newValue: memberData.department || '' };
+                    }
+                    if (oldMemberData.status !== memberData.status) {
+                        changedFields.push('status');
+                        changeDetails['status'] = { oldValue: oldMemberData.status, newValue: memberData.status };
+                    }
+                    if (oldMemberData.avatar !== memberData.avatar) {
+                        changedFields.push('avatar');
+                        changeDetails['avatar'] = { oldValue: oldMemberData.avatar, newValue: memberData.avatar };
+                    }
+                    if (JSON.stringify(oldMemberData.skills) !== JSON.stringify(memberData.skills)) {
+                        changedFields.push('skills');
+                        const oldSkills = (oldMemberData.skills && oldMemberData.skills.length > 0) ? oldMemberData.skills.join(', ') : 'None';
+                        const newSkills = (memberData.skills && memberData.skills.length > 0) ? memberData.skills.join(', ') : 'None';
+                        changeDetails['skills'] = { oldValue: oldSkills, newValue: newSkills };
+                    }
+
                     // Update existing member
                     if (db) {
                         await db.collection('team_members').doc(editingMemberId).update({
@@ -12546,19 +12597,24 @@
                             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
                         // //console.log("✅ Member updated:", editingMemberId);
+
+                        // Log the changes
+                        if (changedFields.length > 0) {
+                            await saveActivityLog('team_member', editingMemberId, memberData.name, changedFields, changeDetails);
+                        }
                     }
-                    
+
                     // If name changed, update all tasks assigned to this member
-                    if (nameChanged && db) {
+                    if (oldMemberData.name !== memberData.name && db) {
                         //console.log(`📝 Name changed from "${oldMemberData.name}" to "${memberData.name}", updating tasks...`);
-                        
+
                         const tasksSnapshot = await db.collection('tasks')
                             .where('assignedTo', '==', editingMemberId)
                             .get();
-                        
+
                         const batch = db.batch();
                         let updateCount = 0;
-                        
+
                         tasksSnapshot.forEach(doc => {
                             batch.update(doc.ref, {
                                 person: memberData.name,
@@ -12566,7 +12622,7 @@
                             });
                             updateCount++;
                         });
-                        
+
                         if (updateCount > 0) {
                             await batch.commit();
                             //console.log(`✅ Updated ${updateCount} tasks with new member name`);
@@ -12575,12 +12631,17 @@
                 } else {
                     // Add new member
                     if (db) {
-                        await db.collection('team_members').add({
+                        const memberId = await db.collection('team_members').add({
                             ...memberData,
                             joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
+                        }).then(doc => doc.id);
                         // //console.log("✅ Member added");
+
+                        // Log member creation
+                        await saveActivityLog('team_member', memberId, memberData.name, ['created'], {
+                            'created': { oldValue: 'N/A', newValue: 'New Team Member' }
+                        });
                     }
                 }
 
@@ -16786,11 +16847,87 @@
                 if (editingProjectIndex >= 0) {
                     // Update existing project
                     const project = projects[editingProjectIndex];
+                    const changedFields = [];
+                    const changeDetails = {};
+
+                    // Track which fields changed
+                    if (project.name !== projectData.name) {
+                        changedFields.push('name');
+                        changeDetails['name'] = { oldValue: project.name, newValue: projectData.name };
+                    }
+                    if (project.code !== projectData.code) {
+                        changedFields.push('code');
+                        changeDetails['code'] = { oldValue: project.code, newValue: projectData.code };
+                    }
+                    if (project.description !== projectData.description) {
+                        changedFields.push('description');
+                        changeDetails['description'] = { oldValue: project.description || '', newValue: projectData.description || '' };
+                    }
+                    if (project.projectType !== projectData.projectType) {
+                        changedFields.push('projectType');
+                        changeDetails['projectType'] = { oldValue: project.projectType, newValue: projectData.projectType };
+                    }
+                    if (project.status !== projectData.status) {
+                        changedFields.push('status');
+                        changeDetails['status'] = { oldValue: project.status, newValue: projectData.status };
+                    }
+                    if (project.priority !== projectData.priority) {
+                        changedFields.push('priority');
+                        changeDetails['priority'] = { oldValue: project.priority, newValue: projectData.priority };
+                    }
+                    if (project.projectHealth !== projectData.projectHealth) {
+                        changedFields.push('projectHealth');
+                        changeDetails['projectHealth'] = { oldValue: project.projectHealth, newValue: projectData.projectHealth };
+                    }
+                    if (project.progress !== projectData.progress) {
+                        changedFields.push('progress');
+                        changeDetails['progress'] = { oldValue: project.progress, newValue: projectData.progress };
+                    }
+                    if (project.startDate !== projectData.startDate) {
+                        changedFields.push('startDate');
+                        changeDetails['startDate'] = { oldValue: project.startDate || '', newValue: projectData.startDate || '' };
+                    }
+                    if (project.endDate !== projectData.endDate) {
+                        changedFields.push('endDate');
+                        changeDetails['endDate'] = { oldValue: project.endDate || '', newValue: projectData.endDate || '' };
+                    }
+                    if (project.budget !== projectData.budget) {
+                        changedFields.push('budget');
+                        changeDetails['budget'] = { oldValue: project.budget || 0, newValue: projectData.budget || 0 };
+                    }
+                    if (project.sdlc !== projectData.sdlc) {
+                        changedFields.push('sdlc');
+                        changeDetails['sdlc'] = { oldValue: project.sdlc || '', newValue: projectData.sdlc || '' };
+                    }
+                    if (JSON.stringify(project.teamMembers) !== JSON.stringify(projectData.teamMembers)) {
+                        changedFields.push('teamMembers');
+                        const oldTeam = (project.teamMembers && project.teamMembers.length > 0) ? project.teamMembers.join(', ') : 'None';
+                        const newTeam = (projectData.teamMembers && projectData.teamMembers.length > 0) ? projectData.teamMembers.join(', ') : 'None';
+                        changeDetails['teamMembers'] = { oldValue: oldTeam, newValue: newTeam };
+                    }
+                    if (JSON.stringify(project.projectManagers) !== JSON.stringify(projectData.projectManagers)) {
+                        changedFields.push('projectManagers');
+                        const oldManagers = (project.projectManagers && project.projectManagers.length > 0) ? project.projectManagers.join(', ') : 'None';
+                        const newManagers = (projectData.projectManagers && projectData.projectManagers.length > 0) ? projectData.projectManagers.join(', ') : 'None';
+                        changeDetails['projectManagers'] = { oldValue: oldManagers, newValue: newManagers };
+                    }
+                    if (JSON.stringify(project.tags) !== JSON.stringify(projectData.tags)) {
+                        changedFields.push('tags');
+                        const oldTags = (project.tags && project.tags.length > 0) ? project.tags.join(', ') : 'None';
+                        const newTags = (projectData.tags && projectData.tags.length > 0) ? projectData.tags.join(', ') : 'None';
+                        changeDetails['tags'] = { oldValue: oldTags, newValue: newTags };
+                    }
 
                     // Update in Firebase if project has an ID
                     if (project.id && db) {
                         await updateProjectInFirebase(project.id, projectData);
                         // //console.log('✅ Project updated in Firebase:', project.id);
+
+                        // Log the changes
+                        if (changedFields.length > 0) {
+                            await saveActivityLog('project', project.id, projectData.name, changedFields, changeDetails);
+                        }
+
                         alert('✅ Project updated successfully!');
                     } else {
                         // Fallback to local storage if no ID
@@ -16802,6 +16939,12 @@
                     if (db) {
                         const projectId = await addProjectToFirebase(projectData);
                         // //console.log('✅ Project added to Firebase with ID:', projectId);
+
+                        // Log project creation
+                        await saveActivityLog('project', projectId, projectData.name, ['created'], {
+                            'created': { oldValue: 'N/A', newValue: 'New Project' }
+                        });
+
                         alert('✅ Project created successfully!');
                     } else {
                         // Fallback to local storage if Firebase not available
