@@ -13269,6 +13269,8 @@
             showSpinner('Updating status...');
 
             try {
+                const oldStatus = projects[projectIndex].status;
+
                 // Update in Firebase
                 await db.collection('projects').doc(projectId).update({
                     status: newStatus,
@@ -13279,6 +13281,11 @@
 
                 // Update local array
                 projects[projectIndex].status = newStatus;
+
+                // Log the status change
+                await saveActivityLog('project', projectId, project.name, ['status'], {
+                    'status': { oldValue: oldStatus, newValue: newStatus }
+                });
 
                 // Re-render projects
                 renderProjects();
@@ -13317,6 +13324,8 @@
             showSpinner('Updating SDLC phase...');
 
             try {
+                const oldSDLC = projects[projectIndex].sdlc;
+
                 // Update in Firebase
                 await db.collection('projects').doc(projectId).update({
                     sdlc: newSDLC,
@@ -13327,6 +13336,11 @@
 
                 // Update local array
                 projects[projectIndex].sdlc = newSDLC;
+
+                // Log the SDLC change
+                await saveActivityLog('project', projectId, project.name, ['sdlc'], {
+                    'sdlc': { oldValue: oldSDLC, newValue: newSDLC }
+                });
 
                 // Re-render projects
                 renderProjects();
