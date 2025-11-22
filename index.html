@@ -6131,6 +6131,12 @@
                     passwordUpdatedAt: new Date().toISOString()
                 });
 
+                // Log the password change
+                const memberName = document.getElementById('passwordMemberName').value;
+                await saveActivityLog('team_member', memberId, memberName, ['password'], {
+                    'password': { oldValue: 'N/A', newValue: 'Password Changed' }
+                });
+
                 // Success
                 successDiv.textContent = 'Password changed successfully!';
                 successDiv.classList.add('show');
