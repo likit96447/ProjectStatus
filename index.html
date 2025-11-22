@@ -12763,9 +12763,6 @@
         // ========================================
 
         async function renderProjects() {
-            // Reset filtered projects when rendering all projects
-            currentFilteredProjects = null;
-
             // Default to table view (Project Details)
             currentProjectView = 'table';
 
@@ -12775,15 +12772,37 @@
             // Store accessible projects globally for charts to use
             userAccessibleProjects = [...visibleProjects];
 
-            // Render table view by default
-            await renderProjectsTable();
+            // Apply default status filter (exclude Completed) if no other filters are active
+            // Check if any filters are currently active
+            const statusCheckboxes = document.querySelectorAll('#projectStatusFilterOptions input[type="checkbox"]');
+            const typeFilter = document.getElementById('projectFilterType')?.value || '';
+            const sdlcFilter = document.getElementById('projectFilterSDLC')?.value || '';
+            const priorityFilter = document.getElementById('projectFilterPriority')?.value || '';
 
-            // Also render grid view in background for quick switching (but keep it hidden)
-            renderProjectsGridView(visibleProjects);
+            const managerCheckboxes = document.querySelectorAll('#projectManagerFilterOptions input[type="checkbox"]');
+            const selectedManagers = Array.from(managerCheckboxes).filter(cb => cb.checked).length > 0;
 
-            // Update filteredProjectsForGantt to keep Timeline 2 in sync
-            window.filteredProjectsForGantt = visibleProjects;
-            // //console.log('✅ Updated filteredProjectsForGantt with', visibleProjects.length, 'visible projects');
+            const healthCheckboxes = document.querySelectorAll('#projectHealthFilterOptions input[type="checkbox"]');
+            const selectedHealth = Array.from(healthCheckboxes).filter(cb => cb.checked).length > 0;
+
+            // Check if user has set custom status filter or has any other filters active
+            const hasCustomFilters = typeFilter || sdlcFilter || priorityFilter || selectedManagers || selectedHealth;
+            const selectedStatuses = Array.from(statusCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
+
+            if (!hasCustomFilters) {
+                // No custom filters set, apply default status filter if not already applied
+                if (selectedStatuses.length === 0) {
+                    // No status selected, apply default
+                    document.getElementById('status-planned').checked = true;
+                    document.getElementById('status-in-progress').checked = true;
+                    document.getElementById('status-completed').checked = false;
+                    document.getElementById('status-on-hold').checked = true;
+                    document.getElementById('projectStatusFilterText').textContent = 'Planned, In Progress, On Hold';
+                }
+            }
+
+            // Apply all active filters
+            applyProjectFilters();
         }
 
         /**
