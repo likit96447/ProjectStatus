@@ -6938,7 +6938,23 @@
                     'project': 'Project',
                     'projectId': 'Project',
                     'person': 'Assigned To',
-                    'personName': 'Assigned To'
+                    'personName': 'Assigned To',
+                    'code': 'Code',
+                    'projectType': 'Type',
+                    'projectHealth': 'Health',
+                    'progress': 'Progress',
+                    'budget': 'Budget',
+                    'sdlc': 'SDLC',
+                    'teamMembers': 'Team Members',
+                    'projectManagers': 'Project Managers',
+                    'tags': 'Tags',
+                    'issues': 'Issues',
+                    'epics': 'Epics',
+                    'password': 'Password',
+                    'department': 'Department',
+                    'avatar': 'Avatar',
+                    'skills': 'Skills',
+                    'created': 'Created'
                 };
 
                 // Convert field names and remove duplicates
@@ -16936,6 +16952,22 @@
                         const oldTags = (project.tags && project.tags.length > 0) ? project.tags.join(', ') : 'None';
                         const newTags = (projectData.tags && projectData.tags.length > 0) ? projectData.tags.join(', ') : 'None';
                         changeDetails['tags'] = { oldValue: oldTags, newValue: newTags };
+                    }
+                    if (JSON.stringify(project.issues) !== JSON.stringify(projectData.issues)) {
+                        changedFields.push('issues');
+                        const oldIssuesCount = (project.issues && project.issues.length > 0) ? project.issues.length : 0;
+                        const newIssuesCount = (projectData.issues && projectData.issues.length > 0) ? projectData.issues.length : 0;
+                        const oldIssuesList = (project.issues && project.issues.length > 0) ? project.issues.map(i => i.title).join(', ') : 'None';
+                        const newIssuesList = (projectData.issues && projectData.issues.length > 0) ? projectData.issues.map(i => i.title).join(', ') : 'None';
+                        changeDetails['issues'] = { oldValue: `${oldIssuesCount} issue(s): ${oldIssuesList}`, newValue: `${newIssuesCount} issue(s): ${newIssuesList}` };
+                    }
+                    if (JSON.stringify(project.epics) !== JSON.stringify(projectData.epics)) {
+                        changedFields.push('epics');
+                        const oldEpicsCount = (project.epics && project.epics.length > 0) ? project.epics.length : 0;
+                        const newEpicsCount = (projectData.epics && projectData.epics.length > 0) ? projectData.epics.length : 0;
+                        const oldEpicsList = (project.epics && project.epics.length > 0) ? project.epics.map(e => e.name).join(', ') : 'None';
+                        const newEpicsList = (projectData.epics && projectData.epics.length > 0) ? projectData.epics.map(e => e.name).join(', ') : 'None';
+                        changeDetails['epics'] = { oldValue: `${oldEpicsCount} epic(s): ${oldEpicsList}`, newValue: `${newEpicsCount} epic(s): ${newEpicsList}` };
                     }
 
                     // Update in Firebase if project has an ID
