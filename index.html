@@ -3018,13 +3018,29 @@
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
                             <div>
                                 <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Status</label>
-                                <select id="projectFilterStatus" onchange="applyProjectFilters()" style="width: 100%; padding: 8px; border: 1px solid #e6e9ef; border-radius: 6px; font-size: 14px;">
-                                    <option value="">All Statuses</option>
-                                    <option value="planned">Planned</option>
-                                    <option value="in-progress">In Progress</option>
-                                    <option value="completed">Completed</option>
-                                    <option value="on-hold">On Hold</option>
-                                </select>
+                                <div class="multi-select-dropdown" id="projectStatusFilterDropdown">
+                                    <div class="multi-select-display" id="projectStatusFilterDisplay" onclick="toggleProjectStatusDropdown()">
+                                        <span id="projectStatusFilterText">Planned, In Progress, On Hold</span>
+                                    </div>
+                                    <div class="multi-select-options" id="projectStatusFilterOptions">
+                                        <div class="multi-select-option" onclick="event.stopPropagation()">
+                                            <input type="checkbox" id="status-planned" value="planned" onchange="updateProjectStatusFilter()" checked>
+                                            <label for="status-planned">Planned</label>
+                                        </div>
+                                        <div class="multi-select-option" onclick="event.stopPropagation()">
+                                            <input type="checkbox" id="status-in-progress" value="in-progress" onchange="updateProjectStatusFilter()" checked>
+                                            <label for="status-in-progress">In Progress</label>
+                                        </div>
+                                        <div class="multi-select-option" onclick="event.stopPropagation()">
+                                            <input type="checkbox" id="status-completed" value="completed" onchange="updateProjectStatusFilter()">
+                                            <label for="status-completed">Completed</label>
+                                        </div>
+                                        <div class="multi-select-option" onclick="event.stopPropagation()">
+                                            <input type="checkbox" id="status-on-hold" value="on-hold" onchange="updateProjectStatusFilter()" checked>
+                                            <label for="status-on-hold">On Hold</label>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label style="display: block; font-size: 13px; font-weight: 600; color: #676879; margin-bottom: 6px;">Project Type</label>
@@ -14962,10 +14978,18 @@
         }
 
         function applyProjectFilters() {
-            const statusFilter = document.getElementById('projectFilterStatus').value;
             const typeFilter = document.getElementById('projectFilterType').value;
             const sdlcFilter = document.getElementById('projectFilterSDLC').value;
             const priorityFilter = document.getElementById('projectFilterPriority').value;
+
+            // Get multiple selected statuses from checkboxes
+            const statusCheckboxes = document.querySelectorAll('#projectStatusFilterOptions input[type="checkbox"]');
+            const selectedStatuses = [];
+            statusCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedStatuses.push(checkbox.value);
+                }
+            });
 
             // Get multiple selected managers from checkboxes
             const managerCheckboxes = document.querySelectorAll('#projectManagerFilterOptions input[type="checkbox"]');
@@ -14987,9 +15011,9 @@
 
             let filteredProjects = projects;
 
-            // Apply status filter
-            if (statusFilter) {
-                filteredProjects = filteredProjects.filter(p => p.status === statusFilter);
+            // Apply status filter (multiple selection)
+            if (selectedStatuses.length > 0) {
+                filteredProjects = filteredProjects.filter(p => selectedStatuses.includes(p.status));
             }
 
             // Apply project type filter
@@ -15248,10 +15272,15 @@
         }
 
         function clearProjectFilters() {
-            document.getElementById('projectFilterStatus').value = '';
             document.getElementById('projectFilterType').value = '';
             document.getElementById('projectFilterSDLC').value = '';
             document.getElementById('projectFilterPriority').value = '';
+
+            // Reset status filter to default (exclude Completed)
+            document.getElementById('status-planned').checked = true;
+            document.getElementById('status-in-progress').checked = true;
+            document.getElementById('status-completed').checked = false;
+            document.getElementById('status-on-hold').checked = true;
 
             // Clear all selected checkboxes in the manager filter
             const managerCheckboxes = document.querySelectorAll('#projectManagerFilterOptions input[type="checkbox"]');
@@ -15262,6 +15291,7 @@
             healthCheckboxes.forEach(checkbox => checkbox.checked = false);
 
             // Reset display text
+            document.getElementById('projectStatusFilterText').textContent = 'Planned, In Progress, On Hold';
             document.getElementById('projectManagerFilterText').textContent = 'All Managers';
             document.getElementById('projectHealthFilterText').textContent = 'All Health';
 
@@ -15318,6 +15348,69 @@
         }
 
         // Toggle project health filter dropdown
+        function toggleProjectStatusDropdown() {
+            const display = document.getElementById('projectStatusFilterDisplay');
+            const options = document.getElementById('projectStatusFilterOptions');
+
+            display.classList.toggle('open');
+            options.classList.toggle('open');
+        }
+
+        // Close project status filter dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('projectStatusFilterDropdown');
+            const display = document.getElementById('projectStatusFilterDisplay');
+            const options = document.getElementById('projectStatusFilterOptions');
+
+            if (dropdown && !dropdown.contains(event.target)) {
+                display.classList.remove('open');
+                options.classList.remove('open');
+            }
+        });
+
+        // Update project status filter when checkboxes change
+        function updateProjectStatusFilter() {
+            const checkboxes = document.querySelectorAll('#projectStatusFilterOptions input[type="checkbox"]');
+            const selectedStatus = [];
+            let selectedCount = 0;
+
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedStatus.push(checkbox.value);
+                    selectedCount++;
+                }
+            });
+
+            // Update display text
+            const displayText = document.getElementById('projectStatusFilterText');
+            if (selectedCount === 0) {
+                displayText.textContent = 'No Status Selected';
+            } else if (selectedCount === 1) {
+                const statusNames = {
+                    'planned': 'Planned',
+                    'in-progress': 'In Progress',
+                    'completed': 'Completed',
+                    'on-hold': 'On Hold'
+                };
+                const checkedCheckbox = document.querySelector('#projectStatusFilterOptions input[type="checkbox"]:checked');
+                displayText.textContent = statusNames[checkedCheckbox.value] || checkedCheckbox.value;
+            } else if (selectedCount === 4) {
+                displayText.textContent = 'All Statuses';
+            } else {
+                const statusNames = {
+                    'planned': 'Planned',
+                    'in-progress': 'In Progress',
+                    'completed': 'Completed',
+                    'on-hold': 'On Hold'
+                };
+                const labels = selectedStatus.map(s => statusNames[s] || s).join(', ');
+                displayText.textContent = labels;
+            }
+
+            // Apply filters
+            applyProjectFilters();
+        }
+
         function toggleProjectHealthDropdown() {
             const display = document.getElementById('projectHealthFilterDisplay');
             const options = document.getElementById('projectHealthFilterOptions');
