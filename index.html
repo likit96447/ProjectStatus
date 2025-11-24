@@ -14009,15 +14009,49 @@
                     .orderBy('createdAt', 'desc')
                     .get();
 
+                // Get current user
+                const currentUser = getCurrentUser();
+                const currentUserId = currentUser ? currentUser.id : null;
+
+                // Check if user has admin permission (can see all projects)
+                const userIsAdmin = await isAdmin();
+
                 projects = [];
+                let totalProjects = 0;
                 snapshot.forEach(doc => {
-                    projects.push({
+                    totalProjects++;
+                    const projectData = {
                         id: doc.id,
                         ...doc.data()
-                    });
+                    };
+
+                    // Filter projects based on user role
+                    // Admin users can see all projects
+                    // Other users can only see projects where they are project manager or team member
+                    if (userIsAdmin || !currentUserId) {
+                        // Admin or no user (guest mode) - show all projects
+                        projects.push(projectData);
+                    } else {
+                        // Check if current user is project manager or team member
+                        const isProjectManager = projectData.projectManagerIds &&
+                                                projectData.projectManagerIds.includes(currentUserId);
+                        const isTeamMember = projectData.teamMemberIds &&
+                                           projectData.teamMemberIds.includes(currentUserId);
+
+                        if (isProjectManager || isTeamMember) {
+                            projects.push(projectData);
+                        }
+                    }
                 });
 
-                // //console.log(`✅ Loaded ${projects.length} projects from Firebase`);
+                // Log project filtering info
+                if (userIsAdmin) {
+                    console.log(`✅ Loaded ${projects.length} projects (Admin: showing all projects)`);
+                } else if (!currentUserId) {
+                    console.log(`✅ Loaded ${projects.length} projects (Guest mode: showing all projects)`);
+                } else {
+                    console.log(`✅ Loaded ${projects.length} of ${totalProjects} projects (filtered by user membership)`);
+                }
                 populateProjectManagerFilterDropdown();
                 renderProjects();
 
@@ -14029,14 +14063,50 @@
                 // If orderBy fails (no index), try without ordering
                 try {
                     const snapshot = await db.collection('projects').get();
+
+                    // Get current user
+                    const currentUser = getCurrentUser();
+                    const currentUserId = currentUser ? currentUser.id : null;
+
+                    // Check if user has admin permission (can see all projects)
+                    const userIsAdmin = await isAdmin();
+
                     projects = [];
+                    let totalProjects = 0;
                     snapshot.forEach(doc => {
-                        projects.push({
+                        totalProjects++;
+                        const projectData = {
                             id: doc.id,
                             ...doc.data()
-                        });
+                        };
+
+                        // Filter projects based on user role
+                        // Admin users can see all projects
+                        // Other users can only see projects where they are project manager or team member
+                        if (userIsAdmin || !currentUserId) {
+                            // Admin or no user (guest mode) - show all projects
+                            projects.push(projectData);
+                        } else {
+                            // Check if current user is project manager or team member
+                            const isProjectManager = projectData.projectManagerIds &&
+                                                    projectData.projectManagerIds.includes(currentUserId);
+                            const isTeamMember = projectData.teamMemberIds &&
+                                               projectData.teamMemberIds.includes(currentUserId);
+
+                            if (isProjectManager || isTeamMember) {
+                                projects.push(projectData);
+                            }
+                        }
                     });
-                    // //console.log(`✅ Loaded ${projects.length} projects from Firebase (fallback)`);
+
+                    // Log project filtering info (fallback)
+                    if (userIsAdmin) {
+                        console.log(`✅ Loaded ${projects.length} projects (Admin: showing all projects) (fallback)`);
+                    } else if (!currentUserId) {
+                        console.log(`✅ Loaded ${projects.length} projects (Guest mode: showing all projects) (fallback)`);
+                    } else {
+                        console.log(`✅ Loaded ${projects.length} of ${totalProjects} projects (filtered by user membership) (fallback)`);
+                    }
                     populateProjectManagerFilterDropdown();
                     renderProjects();
 
