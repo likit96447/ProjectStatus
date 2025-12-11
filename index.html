@@ -10766,14 +10766,15 @@
                 kanbanContainer.style.display = 'block';
                 btn.classList.add('active');
                 document.getElementById('kanbanToggleBtnText').textContent = 'Table View';
-                renderKanbanBoard();
+                await renderKanbanBoard();
             } else {
                 taskViewMode = 'table';
                 tableContainer.style.display = 'block';
                 kanbanContainer.style.display = 'none';
                 btn.classList.remove('active');
                 document.getElementById('kanbanToggleBtnText').textContent = 'Kanban View';
-                renderTasks();
+                // Apply filters when switching back to table view
+                applyTaskFilters();
             }
         }
 
